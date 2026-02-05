@@ -1,0 +1,1 @@
+ALTER TABLE rankings ADD COLUMN IF NOT EXISTS completed_tasks_count INTEGER DEFAULT 0;
