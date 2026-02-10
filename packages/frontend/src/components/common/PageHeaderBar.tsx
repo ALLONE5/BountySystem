@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Space } from 'antd';
+import { Typography } from 'antd';
 
 interface PageHeaderBarProps {
   title: React.ReactNode;

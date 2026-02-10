@@ -3,8 +3,10 @@
  * Wrapper around NotificationService that uses queue for async processing
  */
 
-import { QueueService, NotificationJob } from './QueueService';
-import { NotificationCreateDTO, NotificationType } from '../models/Notification';
+import type { NotificationJob } from './QueueService';
+import { QueueService } from './QueueService';
+import type { NotificationCreateDTO } from '../models/Notification';
+import { NotificationType } from '../models/Notification';
 
 export class AsyncNotificationService {
   /**

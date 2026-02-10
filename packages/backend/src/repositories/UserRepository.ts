@@ -3,6 +3,7 @@ import { BaseRepository, IRepository } from './BaseRepository.js';
 import { User, UserRole } from '../models/User.js';
 import { Validator } from '../utils/Validator.js';
 import { NotFoundError } from '../utils/errors.js';
+import { logger } from '../config/logger.js';
 
 /**
  * User Statistics Interface
@@ -126,7 +127,10 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
       return this.mapRowToModel(rows[0]);
     } catch (error) {
-      console.error('Error finding user by email:', error);
+      logger.error('Error finding user by email', { 
+        error: error instanceof Error ? error.message : String(error),
+        email 
+      });
       throw error;
     }
   }
@@ -152,7 +156,10 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
       return this.mapRowToModel(rows[0]);
     } catch (error) {
-      console.error('Error finding user by username:', error);
+      logger.error('Error finding user by username', { 
+        error: error instanceof Error ? error.message : String(error),
+        username 
+      });
       throw error;
     }
   }
@@ -204,7 +211,10 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
         }
       };
     } catch (error) {
-      console.error('Error finding user with stats:', error);
+      logger.error('Error finding user with stats', { 
+        error: error instanceof Error ? error.message : String(error),
+        userId 
+      });
       throw error;
     }
   }
@@ -224,7 +234,10 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
       await this.executeQuery(query, [userId]);
     } catch (error) {
-      console.error('Error updating last login:', error);
+      logger.error('Error updating last login', { 
+        error: error instanceof Error ? error.message : String(error),
+        userId 
+      });
       throw error;
     }
   }
@@ -250,7 +263,10 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
       return this.mapRowToModel(rows[0]);
     } catch (error) {
-      console.error('Error finding user by id:', error);
+      logger.error('Error finding user by id', { 
+        error: error instanceof Error ? error.message : String(error),
+        id 
+      });
       throw error;
     }
   }
@@ -311,7 +327,10 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
       return this.mapRowToModel(rows[0]);
     } catch (error) {
-      console.error('Error updating user:', error);
+      logger.error('Error updating user', { 
+        error: error instanceof Error ? error.message : String(error),
+        id 
+      });
       throw error;
     }
   }
@@ -330,7 +349,10 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
       await this.executeQuery(query, [id], client);
     } catch (error) {
-      console.error('Error deleting user:', error);
+      logger.error('Error deleting user', { 
+        error: error instanceof Error ? error.message : String(error),
+        id 
+      });
       throw error;
     }
   }
@@ -349,7 +371,9 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
       const rows = await this.executeQuery<any>(query, []);
       return rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding all users:', error);
+      logger.error('Error finding all users', { 
+        error: error instanceof Error ? error.message : String(error)
+      });
       throw error;
     }
   }
@@ -406,7 +430,11 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
       return this.mapRowToModel(rows[0]);
     } catch (error) {
-      console.error('Error creating user:', error);
+      logger.error('Error creating user', { 
+        error: error instanceof Error ? error.message : String(error),
+        username: data.username,
+        email: data.email
+      });
       throw error;
     }
   }

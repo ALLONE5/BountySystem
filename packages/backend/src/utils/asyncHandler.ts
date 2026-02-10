@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 /**
  * 异步路由处理器包装器
@@ -18,26 +18,4 @@ export const asyncHandler = (
   };
 };
 
-/**
- * 带类型的异步处理器（用于TypeScript类型推断）
- */
-export function createAsyncHandler<
-  P = any,
-  ResBody = any,
-  ReqBody = any,
-  ReqQuery = any
->(
-  fn: (
-    req: Request<P, ResBody, ReqBody, ReqQuery>,
-    res: Response<ResBody>,
-    next: NextFunction
-  ) => Promise<any>
-) {
-  return (
-    req: Request<P, ResBody, ReqBody, ReqQuery>,
-    res: Response<ResBody>,
-    next: NextFunction
-  ) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-}
+

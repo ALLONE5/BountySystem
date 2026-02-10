@@ -2,16 +2,18 @@ import { pool } from '../config/database.js';
 import { BountyAlgorithm, BountyAlgorithmCreateDTO, BountyCalculationInput } from '../models/BountyAlgorithm.js';
 import { Task } from '../models/Task.js';
 import { ValidationError, NotFoundError } from '../utils/errors.js';
+import { Validator } from '../utils/Validator.js';
 
 export class BountyService {
   /**
    * Calculate bounty for a task based on the current algorithm
    * Requirements 19.1, 19.2: Automatic bounty calculation using algorithm parameters
    * 
-   * Formula: baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight)
+   * Formula: baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight) + (remainingDays * remainingDaysWeight)
    * - urgency: calculated from time until deadline (higher = more urgent)
    * - importance: task priority (1-5)
    * - duration: estimated hours
+   * - remainingDays: days remaining until deadline (automatically calculated)
    */
   async calculateBounty(input: BountyCalculationInput): Promise<{ amount: number; algorithmVersion: string }> {
     // Get the current active algorithm
@@ -26,20 +28,25 @@ export class BountyService {
     const urgencyWeight = parseFloat(algorithm.urgencyWeight as any);
     const importanceWeight = parseFloat(algorithm.importanceWeight as any);
     const durationWeight = parseFloat(algorithm.durationWeight as any);
+    const remainingDaysWeight = parseFloat(algorithm.remainingDaysWeight as any);
 
     // Extract parameters with defaults
     const estimatedHours = input.estimatedHours || 0;
     const priority = input.priority || 1;
     
-    // Calculate urgency based on deadline
+    // Calculate urgency and remaining days based on deadline
     let urgency = 1; // default urgency
+    let remainingDays = 0; // days remaining until deadline
+    
     if (input.plannedStartDate && input.plannedEndDate) {
       const now = new Date();
       const deadline = new Date(input.plannedEndDate);
       const start = new Date(input.plannedStartDate);
       
-      // Calculate days until deadline
-      const daysUntilDeadline = Math.max(0, (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      // Calculate days until deadline (can be negative if overdue)
+      const daysUntilDeadline = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      remainingDays = Math.max(0, Math.round(daysUntilDeadline)); // Round to nearest day, minimum 0
+      
       const totalDuration = Math.max(1, (deadline.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
       
       // Urgency increases as deadline approaches
@@ -58,11 +65,13 @@ export class BountyService {
     }
 
     // Calculate bounty using the algorithm formula
+    // New formula includes remaining days as a dimension
     const bountyAmount = 
       baseAmount +
       (urgency * urgencyWeight) +
       (priority * importanceWeight) +
-      (estimatedHours * durationWeight);
+      (estimatedHours * durationWeight) +
+      (remainingDays * remainingDaysWeight);
 
     // Ensure bounty is non-negative
     const finalAmount = Math.max(0, bountyAmount);
@@ -82,8 +91,8 @@ export class BountyService {
       SELECT 
         id, version, base_amount as "baseAmount",
         urgency_weight as "urgencyWeight", importance_weight as "importanceWeight",
-        duration_weight as "durationWeight", formula,
-        effective_from as "effectiveFrom", created_by as "createdBy",
+        duration_weight as "durationWeight", remaining_days_weight as "remainingDaysWeight",
+        formula, effective_from as "effectiveFrom", created_by as "createdBy",
         created_at as "createdAt"
       FROM bounty_algorithms
       WHERE effective_from <= NOW()
@@ -103,8 +112,8 @@ export class BountyService {
       SELECT 
         id, version, base_amount as "baseAmount",
         urgency_weight as "urgencyWeight", importance_weight as "importanceWeight",
-        duration_weight as "durationWeight", formula,
-        effective_from as "effectiveFrom", created_by as "createdBy",
+        duration_weight as "durationWeight", remaining_days_weight as "remainingDaysWeight",
+        formula, effective_from as "effectiveFrom", created_by as "createdBy",
         created_at as "createdAt"
       FROM bounty_algorithms
       WHERE version = $1
@@ -125,32 +134,32 @@ export class BountyService {
       urgencyWeight,
       importanceWeight,
       durationWeight,
+      remainingDaysWeight,
       formula,
       effectiveFrom = new Date(),
       createdBy,
     } = algorithmData;
 
     // Validate weights are non-negative
-    if (urgencyWeight < 0 || importanceWeight < 0 || durationWeight < 0) {
-      throw new ValidationError('Algorithm weights must be non-negative');
-    }
+    Validator.nonNegative(urgencyWeight, 'Urgency weight');
+    Validator.nonNegative(importanceWeight, 'Importance weight');
+    Validator.nonNegative(durationWeight, 'Duration weight');
+    Validator.nonNegative(remainingDaysWeight, 'Remaining days weight');
 
     // Validate base amount is non-negative
-    if (baseAmount < 0) {
-      throw new ValidationError('Base amount must be non-negative');
-    }
+    Validator.bountyAmount(baseAmount, 'Base amount');
 
     const query = `
       INSERT INTO bounty_algorithms (
         version, base_amount, urgency_weight, importance_weight,
-        duration_weight, formula, effective_from, created_by
+        duration_weight, remaining_days_weight, formula, effective_from, created_by
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING 
         id, version, base_amount as "baseAmount",
         urgency_weight as "urgencyWeight", importance_weight as "importanceWeight",
-        duration_weight as "durationWeight", formula,
-        effective_from as "effectiveFrom", created_by as "createdBy",
+        duration_weight as "durationWeight", remaining_days_weight as "remainingDaysWeight",
+        formula, effective_from as "effectiveFrom", created_by as "createdBy",
         created_at as "createdAt"
     `;
 
@@ -160,6 +169,7 @@ export class BountyService {
       urgencyWeight,
       importanceWeight,
       durationWeight,
+      remainingDaysWeight,
       formula,
       effectiveFrom,
       createdBy,
@@ -184,8 +194,8 @@ export class BountyService {
       SELECT 
         id, version, base_amount as "baseAmount",
         urgency_weight as "urgencyWeight", importance_weight as "importanceWeight",
-        duration_weight as "durationWeight", formula,
-        effective_from as "effectiveFrom", created_by as "createdBy",
+        duration_weight as "durationWeight", remaining_days_weight as "remainingDaysWeight",
+        formula, effective_from as "effectiveFrom", created_by as "createdBy",
         created_at as "createdAt"
       FROM bounty_algorithms
       ORDER BY effective_from DESC

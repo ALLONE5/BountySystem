@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { NotificationService } from '../services/NotificationService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -76,7 +77,7 @@ router.patch('/read-all', authenticate, asyncHandler(async (req: Request, res: R
 
 router.post('/broadcast', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const adminId = req.user!.userId;
-  const { title, message, userIds } = req.body;
+  const { title, message, targetType, targetValue } = req.body;
 
   // Validate admin role
   const userRole = req.user!.role;
@@ -96,17 +97,56 @@ router.post('/broadcast', authenticate, asyncHandler(async (req: Request, res: R
   }
 
   let count: number;
-  if (userIds && Array.isArray(userIds) && userIds.length > 0) {
-    // Broadcast to specific users
-    count = await notificationService.broadcastToUsers(adminId, userIds, title, message);
-  } else {
-    // Broadcast to all users
-    count = await notificationService.broadcastNotification(adminId, title, message);
+  
+  switch (targetType) {
+    case 'all':
+      // Broadcast to all users
+      count = await notificationService.broadcastNotification(adminId, title, message);
+      break;
+      
+    case 'users':
+      // Broadcast to specific users
+      if (!targetValue || !Array.isArray(targetValue) || targetValue.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'User IDs array is required for user-specific broadcast',
+        });
+      }
+      count = await notificationService.broadcastToUsers(adminId, targetValue, title, message);
+      break;
+      
+    case 'role':
+      // Broadcast to users with specific role
+      if (!targetValue || typeof targetValue !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Role is required for role-specific broadcast',
+        });
+      }
+      count = await notificationService.broadcastToRole(adminId, targetValue, title, message);
+      break;
+      
+    case 'position':
+      // Broadcast to users with specific position
+      if (!targetValue || typeof targetValue !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'Position ID is required for position-specific broadcast',
+        });
+      }
+      count = await notificationService.broadcastToPosition(adminId, targetValue, title, message);
+      break;
+      
+    default:
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid targetType. Must be one of: all, users, role, position',
+      });
   }
 
   res.json({
     success: true,
-    message: `Broadcast notification sent to ${count} users`,
+    message: `Notification sent to ${count} users`,
     data: { count },
   });
 }));

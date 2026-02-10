@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Avatar, Dropdown, Space, Badge } from 'antd';
 import { avatarApi } from '../api/avatar';
 import { taskApi } from '../api/task';
+import { adminApi } from '../api/admin';
 import {
   DashboardOutlined,
   FileTextOutlined,
@@ -32,6 +33,7 @@ export const MainLayout: React.FC = () => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [invitationCount, setInvitationCount] = useState(0);
+  const [pendingApplicationCount, setPendingApplicationCount] = useState(0);
 
   const selectedKeys = useMemo(() => {
     const path = location.pathname;
@@ -48,6 +50,7 @@ export const MainLayout: React.FC = () => {
     if (path.startsWith('/admin/avatars')) return ['avatar-management'];
     if (path.startsWith('/admin/positions')) return ['position-management'];
     if (path.startsWith('/admin/bounty-algorithm')) return ['bounty-algorithm'];
+    if (path.startsWith('/admin/notifications')) return ['notification-broadcast'];
     return ['dashboard'];
   }, [location.pathname]);
 
@@ -112,6 +115,46 @@ export const MainLayout: React.FC = () => {
       window.removeEventListener('invitation-updated', handleInvitationUpdate);
     };
   }, []);
+
+  // Load pending application count (for admins only)
+  useEffect(() => {
+    if (!canAccessAdminPanel()) return;
+
+    const loadPendingApplicationCount = async () => {
+      try {
+        const data = await adminApi.getApplications();
+        const pendingCount = data.applications.filter(app => app.status === 'pending').length;
+        setPendingApplicationCount(pendingCount);
+      } catch (error) {
+        console.error('Failed to load pending application count:', error);
+      }
+    };
+    
+    // Initial load
+    loadPendingApplicationCount();
+    
+    // Listen for application review updates (from same tab)
+    const handleApplicationUpdate = () => {
+      loadPendingApplicationCount();
+    };
+    window.addEventListener('application-reviewed', handleApplicationUpdate);
+    
+    // Listen for new application submissions (from WebSocket)
+    const handleNewApplication = () => {
+      loadPendingApplicationCount();
+    };
+    window.addEventListener('application-submitted', handleNewApplication);
+    
+    // Fallback: Refresh pending application count every 60 seconds
+    // This ensures count stays in sync even if WebSocket events are missed
+    const interval = setInterval(loadPendingApplicationCount, 60000);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('application-reviewed', handleApplicationUpdate);
+      window.removeEventListener('application-submitted', handleNewApplication);
+    };
+  }, [canAccessAdminPanel]);
 
   const handleLogout = () => {
     clearAuth();
@@ -216,7 +259,14 @@ export const MainLayout: React.FC = () => {
     },
     {
       key: 'approval',
-      label: '审核操作',
+      label: (
+        <Space>
+          审核操作
+          {pendingApplicationCount > 0 && (
+            <Badge count={pendingApplicationCount} size="small" />
+          )}
+        </Space>
+      ),
       onClick: () => navigate('/admin/approval'),
       roles: [UserRole.SUPER_ADMIN, UserRole.POSITION_ADMIN],
     },
@@ -238,6 +288,12 @@ export const MainLayout: React.FC = () => {
       onClick: () => navigate('/admin/bounty-algorithm'),
       roles: [UserRole.SUPER_ADMIN],
     },
+    {
+      key: 'notification-broadcast',
+      label: '发布通知',
+      onClick: () => navigate('/admin/notifications'),
+      roles: [UserRole.SUPER_ADMIN, UserRole.POSITION_ADMIN],
+    },
   ];
 
   const adminMenuItems = canAccessAdminPanel()
@@ -247,7 +303,14 @@ export const MainLayout: React.FC = () => {
         },
         {
           key: 'admin',
-          label: '管理功能',
+          label: (
+            <Space>
+              管理功能
+              {pendingApplicationCount > 0 && (
+                <Badge count={pendingApplicationCount} size="small" />
+              )}
+            </Space>
+          ),
           children: adminChildren.filter((item) => {
             if (!item.roles || item.roles.length === 0) return true;
             if (isSuperAdmin()) return true;

@@ -4,7 +4,7 @@
  */
 
 import { pool } from '../config/database.js';
-
+import { logger } from '../config/logger.js';
 export class DatabaseOptimizationService {
   /**
    * Refresh the current month rankings materialized view
@@ -13,9 +13,9 @@ export class DatabaseOptimizationService {
   static async refreshCurrentMonthRankings(): Promise<void> {
     try {
       await pool.query('REFRESH MATERIALIZED VIEW CONCURRENTLY current_month_rankings');
-      console.log('Refreshed current_month_rankings materialized view');
+      logger.info('Refreshed current_month_rankings materialized view');
     } catch (error) {
-      console.error('Error refreshing current_month_rankings:', error);
+      logger.error('Error refreshing current_month_rankings:', error);
       throw error;
     }
   }
@@ -42,11 +42,11 @@ export class DatabaseOptimizationService {
     try {
       for (const table of tablesToAnalyze) {
         await pool.query(`ANALYZE ${table}`);
-        console.log(`Analyzed table: ${table}`);
+        logger.info(`Analyzed table: ${table}`);
       }
-      console.log('Statistics update completed');
+      logger.info('Statistics update completed');
     } catch (error) {
-      console.error('Error updating statistics:', error);
+      logger.error('Error updating statistics:', error);
       throw error;
     }
   }
@@ -67,11 +67,11 @@ export class DatabaseOptimizationService {
     try {
       for (const table of tablesToVacuum) {
         await pool.query(`VACUUM ANALYZE ${table}`);
-        console.log(`Vacuumed table: ${table}`);
+        logger.info(`Vacuumed table: ${table}`);
       }
-      console.log('Vacuum completed');
+      logger.info('Vacuum completed');
     } catch (error) {
-      console.error('Error vacuuming tables:', error);
+      logger.error('Error vacuuming tables:', error);
       throw error;
     }
   }
@@ -97,7 +97,7 @@ export class DatabaseOptimizationService {
       const result = await pool.query(query);
       return result.rows;
     } catch (error) {
-      console.error('Error getting index usage stats:', error);
+      logger.error('Error getting index usage stats:', error);
       throw error;
     }
   }
@@ -122,7 +122,7 @@ export class DatabaseOptimizationService {
       const result = await pool.query(query);
       return result.rows;
     } catch (error) {
-      console.error('Error getting table sizes:', error);
+      logger.error('Error getting table sizes:', error);
       throw error;
     }
   }
@@ -150,7 +150,7 @@ export class DatabaseOptimizationService {
       return result.rows;
     } catch (error) {
       // pg_stat_statements extension might not be enabled
-      console.warn('pg_stat_statements extension not available');
+      logger.warn('pg_stat_statements extension not available');
       return [];
     }
   }

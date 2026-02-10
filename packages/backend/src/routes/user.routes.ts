@@ -1,4 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { z } from 'zod';
 import { UserService } from '../services/UserService.js';
 import { ValidationError, AuthenticationError } from '../utils/errors.js';
@@ -21,6 +22,10 @@ const changePasswordSchema = z.object({
 
 const updateEmailSchema = z.object({
   newEmail: z.string().email(),
+});
+
+const updateProfileSchema = z.object({
+  username: z.string().min(3).max(50).optional(),
 });
 
 const batchUsersSchema = z.object({
@@ -50,6 +55,26 @@ router.post('/batch', authenticate, asyncHandler(async (req: Request, res: Respo
   const users = await userService.findByIds(ids);
   const map = Object.fromEntries(users.map((u) => [u.id, userService.toUserResponse(u)]));
   res.json(map);
+}));
+
+router.put('/me', asyncHandler(async (req: Request, res: Response) => {
+  // Get user from request (set by auth middleware)
+  const userId = (req as any).user?.userId;
+
+  if (!userId) {
+    throw new AuthenticationError('Not authenticated');
+  }
+
+  // Validate input
+  const validatedData = updateProfileSchema.parse(req.body);
+
+  // Update profile
+  const updatedUser = await userService.updateUser(userId, userId, validatedData);
+
+  res.status(200).json({
+    message: 'Profile updated successfully',
+    user: updatedUser,
+  });
 }));
 
 router.put('/me/password', asyncHandler(async (req: Request, res: Response) => {

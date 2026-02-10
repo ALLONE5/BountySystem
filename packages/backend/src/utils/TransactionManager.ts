@@ -16,7 +16,7 @@
  * ```
  */
 
-import { Pool, PoolClient } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 
 export class TransactionManager {
   constructor(private pool: Pool) {}

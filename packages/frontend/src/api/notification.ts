@@ -1,6 +1,5 @@
 import apiClient from './client';
-import { createApiMethod, createApiMethodWithParams } from './createApiClient';
-import { Notification } from '../types';
+import type { Notification } from '../types';
 
 export interface NotificationResponse {
   success: boolean;
@@ -17,7 +16,8 @@ export interface UnreadCountResponse {
 export interface BroadcastRequest {
   title: string;
   message: string;
-  userIds?: string[];
+  targetType: 'all' | 'users' | 'role' | 'position';
+  targetValue?: string | string[]; // userIds array, role string, or position ID
 }
 
 /**

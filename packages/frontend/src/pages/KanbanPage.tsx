@@ -13,9 +13,9 @@ const { Panel } = Collapse;
 const STATUS_COLUMNS = [
   { key: TaskStatus.NOT_STARTED, title: '未开始', color: '#d9d9d9' },
   { key: TaskStatus.AVAILABLE, title: '可承接', color: '#52c41a' },
+  { key: TaskStatus.PENDING_ACCEPTANCE, title: '待接受', color: '#faad14' },
   { key: TaskStatus.IN_PROGRESS, title: '进行中', color: '#1890ff' },
   { key: TaskStatus.COMPLETED, title: '已完成', color: '#52c41a' },
-  { key: TaskStatus.ABANDONED, title: '已放弃', color: '#ff4d4f' },
 ];
 
 interface KanbanPageProps {
@@ -36,23 +36,6 @@ export const KanbanPage: React.FC<KanbanPageProps> = ({ tasks: propTasks, loadin
   const [expandedProjects, setExpandedProjects] = useState<string[]>([]);
 
   const loading = propLoading !== undefined ? propLoading : internalLoading;
-
-  // If using props, we need a way to update the parent state when drag ends.
-  // For now, we'll just update the local state if props are not provided,
-  // or rely on the parent to refresh if we had a callback.
-  // But wait, handleDragEnd updates the task status via API.
-  // If we use props, the parent's data will be stale unless we trigger a refresh.
-  // Ideally we should accept an onTaskUpdate callback.
-  // For simplicity, I'll just update the API and let the user refresh manually or rely on optimistic UI.
-  // But `tasks` is derived from props. We can't mutate props.
-  // We might need a local state that is initialized from props but can diverge?
-  // Or better, just use the API and assume the parent will re-fetch or we force a reload.
-  
-  // Actually, if propTasks is provided, we should probably use a local state initialized from it to allow optimistic updates,
-  // OR just ignore optimistic updates for the prop-driven mode if it's too complex.
-  // Let's stick to the pattern:
-  // If propTasks is provided, we use it. But for Kanban drag and drop, we need to update the list immediately.
-  // So we should probably sync propTasks to a local state when it changes.
 
   const [displayTasks, setDisplayTasks] = useState<Task[]>([]);
 
@@ -111,7 +94,7 @@ export const KanbanPage: React.FC<KanbanPageProps> = ({ tasks: propTasks, loadin
       filtered = filtered.filter(
         task =>
           task.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          task.description.toLowerCase().includes(searchText.toLowerCase())
+          (task.description && task.description.toLowerCase().includes(searchText.toLowerCase()))
       );
     }
 
@@ -199,8 +182,6 @@ export const KanbanPage: React.FC<KanbanPageProps> = ({ tasks: propTasks, loadin
       );
       
       if (propTasks) {
-         // If controlled by props, we can't easily update "internalTasks".
-         // We update the local displayTasks.
          setDisplayTasks(updatedTasks);
       } else {
          setInternalTasks(updatedTasks);
@@ -509,9 +490,9 @@ export const KanbanPage: React.FC<KanbanPageProps> = ({ tasks: propTasks, loadin
                   <Option value="all">所有状态</Option>
                   <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                   <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                  <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                   <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                   <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                  <Option value={TaskStatus.ABANDONED}>已放弃</Option>
                 </Select>
                 <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                   刷新
@@ -621,9 +602,9 @@ export const KanbanPage: React.FC<KanbanPageProps> = ({ tasks: propTasks, loadin
                 <Option value="all">所有状态</Option>
                 <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                 <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                 <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                 <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                <Option value={TaskStatus.ABANDONED}>已放弃</Option>
               </Select>
               <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                 刷新

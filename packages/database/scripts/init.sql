@@ -21,8 +21,16 @@ CREATE TYPE notification_type AS ENUM (
   'status_changed',
   'position_approved',
   'position_rejected',
+  'review_required',
   'broadcast',
-  'review_required'
+  'task_recommendation',
+  'account_updated',
+  'group_invitation',
+  'task_assignment_invitation',
+  'task_assignment_accepted',
+  'task_assignment_rejected',
+  'bonus_reward',
+  'admin_announcement'
 );
 CREATE TYPE application_status AS ENUM ('pending', 'approved', 'rejected');
 CREATE TYPE allocation_type AS ENUM ('percentage', 'fixed');

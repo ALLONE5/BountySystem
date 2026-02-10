@@ -92,6 +92,8 @@ export const ApplicationReviewPage: React.FC = () => {
       message.success('申请已批准');
       setReviewModalVisible(false);
       loadApplications();
+      // Trigger event to update badge count in MainLayout
+      window.dispatchEvent(new Event('application-reviewed'));
     } catch (error: any) {
       message.error(error.response?.data?.message || '批准申请失败');
       console.error('Failed to approve application:', error);
@@ -115,6 +117,8 @@ export const ApplicationReviewPage: React.FC = () => {
       message.success('申请已拒绝');
       setReviewModalVisible(false);
       loadApplications();
+      // Trigger event to update badge count in MainLayout
+      window.dispatchEvent(new Event('application-reviewed'));
     } catch (error: any) {
       message.error(error.response?.data?.message || '拒绝申请失败');
       console.error('Failed to reject application:', error);
@@ -193,6 +197,8 @@ export const ApplicationReviewPage: React.FC = () => {
                         });
                         message.success('申请已批准');
                         loadApplications();
+                        // Trigger event to update badge count in MainLayout
+                        window.dispatchEvent(new Event('application-reviewed'));
                       } catch (error: any) {
                         message.error(error.response?.data?.message || '批准申请失败');
                       }

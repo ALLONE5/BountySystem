@@ -227,22 +227,6 @@ export const GroupsPage: React.FC = () => {
     });
   };
 
-  const handleAbandonTask = async (taskId: string) => {
-    try {
-      await taskApi.abandonTask(taskId);
-      message.success('任务已放弃');
-      
-      // 刷新组群任务列表
-      if (selectedGroup) {
-        const tasks = await groupApi.getGroupTasks(selectedGroup.id);
-        setGroupTasks(tasks);
-      }
-    } catch (error) {
-      message.error('放弃任务失败');
-      console.error('Failed to abandon task:', error);
-    }
-  };
-
   const handleDeleteTask = async (taskId: string) => {
     try {
       await taskApi.deleteTask(taskId);
@@ -465,7 +449,6 @@ export const GroupsPage: React.FC = () => {
                     isGroupTasksPage
                     onAcceptTask={handleAcceptTask}
                     onCompleteTask={handleCompleteTask}
-                    onAbandonTask={handleAbandonTask}
                     onDeleteTask={handleDeleteTask}
                     onTaskUpdated={handleTaskUpdated}
                   />

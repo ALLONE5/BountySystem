@@ -10,7 +10,7 @@ import { projectGroupApi } from '../api/projectGroup';
 import { groupApi } from '../api/group';
 import { TaskComments } from './TaskComments';
 import { TaskAttachments } from './TaskAttachments';
-import { Assistant } from './TaskAssistants';
+import type { Assistant } from './TaskAssistants';
 import { InfoRow } from './common/InfoRow';
 import { UserChip } from './common/UserChip';
 import { StatusTag } from './common/StatusTag';
@@ -22,23 +22,11 @@ import { useAuthStore } from '../store/authStore';
 
 const { Title, Text } = Typography;
 
-interface SubtaskPreview {
-  id: string;
-  name: string;
-  status: TaskStatus;
-  progress: number;
-  assignee?: { username: string; avatarUrl?: string };
-  plannedStartDate?: Date;
-  plannedEndDate?: Date;
-  priority?: number;
-}
-
 interface TaskDetailDrawerProps {
   task: Task | null;
   visible: boolean;
   onClose: () => void;
   onUpdateProgress?: (task: Task) => void;
-  onAbandonTask?: (taskId: string) => void;
   onCompleteTask?: (taskId: string) => void;
   onTaskUpdated?: () => void; // Callback to refresh task list after any update
   onTaskClick?: (taskId: string) => void; // Callback to open a different task
@@ -49,10 +37,8 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   visible,
   onClose,
   onUpdateProgress,
-  onAbandonTask,
   onCompleteTask,
   onTaskUpdated,
-  onTaskClick,
 }) => {
   const { user } = useAuthStore();
   const [assistants, setAssistants] = useState<Assistant[]>([]);
@@ -63,7 +49,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const [addAssistantSubmitting, setAddAssistantSubmitting] = useState(false);
   const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [createSubtaskVisible, setCreateSubtaskVisible] = useState(false);
-  const [createSubtaskLoading, setCreateSubtaskLoading] = useState(false);
+  const [_createSubtaskLoading, setCreateSubtaskLoading] = useState(false);
   const [publishSubtaskVisible, setPublishSubtaskVisible] = useState(false);
   const [publishingSubtask, setPublishingSubtask] = useState<Task | null>(null);
   const [publishSubtaskLoading, setPublishSubtaskLoading] = useState(false);
@@ -72,7 +58,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const [publishSubtaskForm] = Form.useForm();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm] = Form.useForm();
-  const [taskModified, setTaskModified] = useState(false); // Track if task was modified
+  const [_taskModified, setTaskModified] = useState(false); // Track if task was modified
   const isUpdatingProgressRef = useRef(false); // Track if we're currently updating progress
   const [positions, setPositions] = useState<any[]>([]);
   const [projectGroups, setProjectGroups] = useState<any[]>([]);
@@ -85,6 +71,11 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const [userGroups, setUserGroups] = useState<any[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [convertingToGroup, setConvertingToGroup] = useState(false);
+  const [bonusModalVisible, setBonusModalVisible] = useState(false);
+  const [bonusForm] = Form.useForm();
+  const [addingBonus, setAddingBonus] = useState(false);
+  const [bonusRewards, setBonusRewards] = useState<any[]>([]);
+  const [loadingBonusRewards, setLoadingBonusRewards] = useState(false);
 
   // Define helper functions before useEffect
   const loadProjectGroups = async () => {
@@ -105,12 +96,33 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
     }
   };
 
+  const loadBonusRewards = async () => {
+    if (!task?.id) return;
+    
+    try {
+      setLoadingBonusRewards(true);
+      const data = await taskApi.getBonusRewards(task.id);
+      setBonusRewards(data.bonusRewards);
+    } catch (error) {
+      console.error('Failed to load bonus rewards:', error);
+    } finally {
+      setLoadingBonusRewards(false);
+    }
+  };
+
   // Load positions and project groups for edit form
   useEffect(() => {
     positionApi.getAllPositions().then(setPositions).catch(console.error);
     loadProjectGroups();
     loadUserGroups();
   }, []);
+
+  // Load bonus rewards when task changes
+  useEffect(() => {
+    if (task?.id) {
+      loadBonusRewards();
+    }
+  }, [task?.id]);
 
   const handleAddProjectGroup = async () => {
     if (!newProjectGroupName || newProjectGroupName.trim().length === 0) {
@@ -481,6 +493,34 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
     setConvertToGroupModalVisible(true);
   };
 
+  const handleAddBonus = () => {
+    bonusForm.resetFields();
+    setBonusModalVisible(true);
+  };
+
+  const handleSubmitBonus = async (values: { amount: number; reason?: string }) => {
+    if (!task) return;
+    
+    try {
+      setAddingBonus(true);
+      await taskApi.addBonusReward(task.id, values.amount, values.reason);
+      
+      message.success('额外奖赏发放成功');
+      
+      // 立即重置状态并关闭模态框
+      setAddingBonus(false);
+      setBonusModalVisible(false);
+      bonusForm.resetFields();
+      
+      // 刷新奖赏记录
+      loadBonusRewards();
+      
+    } catch (error: any) {
+      setAddingBonus(false);
+      message.error(error.response?.data?.error || '发放额外奖赏失败');
+    }
+  };
+
   const handleConvertToGroupConfirm = async () => {
     // If task already has a group, just close the modal (view mode)
     if (task?.groupId) {
@@ -645,7 +685,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
         </InfoRow>
         
         <InfoRow label="描述">
-          <Text style={{ color: '#666' }}>{task.description}</Text>
+          <Text style={{ color: '#666' }}>{task.description || '无描述'}</Text>
         </InfoRow>
 
         {task.groupName && (
@@ -824,39 +864,6 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
     }
   };
 
-  const handleAbandonSubtask = async (subtaskId: string) => {
-    if (!onAbandonTask) return;
-    
-    Modal.confirm({
-      title: '确定要放弃这个子任务吗？',
-      content: '放弃后任务将恢复为未承接状态',
-      onOk: async () => {
-        try {
-          await onAbandonTask(subtaskId);
-          message.success('已放弃子任务');
-          
-          // Close popover and refresh
-          setSubtaskPopoverVisible({});
-          setSubtaskInPopover(null);
-          
-          // Refresh parent task's subtasks list
-          if (task) {
-            const updatedSubtasks = await taskApi.getSubtasks(task.id);
-            setSubtasks(updatedSubtasks);
-          }
-          
-          // Refresh main task list
-          if (onTaskUpdated) {
-            await onTaskUpdated();
-          }
-        } catch (error) {
-          console.error('Failed to abandon subtask:', error);
-          message.error('放弃任务失败');
-        }
-      },
-    });
-  };
-
   const handleEditSubtask = () => {
     if (!subtaskInPopover || !task) return;
     editSubtaskForm.setFieldsValue({
@@ -975,7 +982,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
             </InfoRow>
             
             <InfoRow label="描述">
-              <Text style={{ color: '#666' }}>{subtaskInPopover.description}</Text>
+              <Text style={{ color: '#666' }}>{subtaskInPopover.description || '无描述'}</Text>
             </InfoRow>
 
             {subtaskInPopover.projectGroupName && (
@@ -1083,18 +1090,6 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
               onClick={() => handleCompleteSubtask(subtaskInPopover.id)}
             >
               完成
-            </Button>
-          );
-        }
-        if (onAbandonTask) {
-          buttons.push(
-            <Button
-              key="abandon"
-              danger
-              size="small"
-              onClick={() => handleAbandonSubtask(subtaskInPopover.id)}
-            >
-              放弃
             </Button>
           );
         }
@@ -1281,7 +1276,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
     {
       key: 'comments',
       label: '评论',
-      children: <TaskComments taskId={task.id} task={task} />,
+      children: <TaskComments taskId={task.id} task={task} bonusRewards={bonusRewards} loadingBonusRewards={loadingBonusRewards} />,
     },
     {
       key: 'attachments',
@@ -1295,8 +1290,8 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
 
     const buttons: React.ReactNode[] = [];
 
-    // 如果是承接者且任务进行中，显示完成和放弃按钮
-    if (isAssignee && onAbandonTask && task.status === TaskStatus.IN_PROGRESS) {
+    // 如果是承接者且任务进行中，显示完成按钮
+    if (isAssignee && task.status === TaskStatus.IN_PROGRESS) {
       if (onCompleteTask) {
         buttons.push(
           <Button
@@ -1309,19 +1304,26 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
           </Button>
         );
       }
+    }
+
+    // 如果是管理员且任务已完成，显示额外奖赏按钮
+    if (
+      (user?.role === 'super_admin' || user?.role === 'position_admin') &&
+      task.status === TaskStatus.COMPLETED &&
+      task.assigneeId
+    ) {
+      // 检查当前管理员是否已经给过奖赏
+      const hasGivenBonus = bonusRewards.some(reward => reward.from_user_id === user?.id);
+      
       buttons.push(
         <Button
-          key="abandon"
-          danger
-          onClick={() => {
-            Modal.confirm({
-              title: '确定要放弃这个任务吗？',
-              content: '放弃后任务将恢复为未承接状态',
-              onOk: () => onAbandonTask(task.id),
-            });
-          }}
+          key="bonus"
+          type="default"
+          style={{ borderColor: '#faad14', color: '#faad14' }}
+          onClick={handleAddBonus}
+          disabled={hasGivenBonus}
         >
-          放弃
+          {hasGivenBonus ? '已奖赏' : '额外奖赏'}
         </Button>
       );
     }
@@ -2057,6 +2059,56 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
             </>
           )}
         </Space>
+      </Modal>
+
+      {/* 额外奖赏模态框 */}
+      <Modal
+        title="添加额外奖赏"
+        open={bonusModalVisible}
+        onCancel={() => {
+          setBonusModalVisible(false);
+          bonusForm.resetFields();
+        }}
+        onOk={() => bonusForm.submit()}
+        okText="确认发放"
+        cancelText="取消"
+        confirmLoading={addingBonus}
+      >
+        <Form
+          form={bonusForm}
+          layout="vertical"
+          onFinish={handleSubmitBonus}
+        >
+          <Form.Item
+            name="amount"
+            label="额外奖赏金额"
+            rules={[
+              { required: true, message: '请输入奖赏金额' },
+              { type: 'number', min: 0.01, message: '金额必须大于0' },
+            ]}
+            extra={task && `当前任务赏金: ${formatBounty(task.bountyAmount || 0)}`}
+          >
+            <InputNumber
+              min={0.01}
+              step={10}
+              precision={2}
+              style={{ width: '100%' }}
+              prefix="$"
+              placeholder="请输入额外奖赏金额"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="reason"
+            label="奖赏原因"
+            extra="可选，说明发放额外奖赏的原因"
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="例如：任务完成质量优秀，提前完成等"
+            />
+          </Form.Item>
+        </Form>
       </Modal>
     </Modal>
   );

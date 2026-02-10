@@ -7,6 +7,8 @@ import { NotificationType } from '../models/Notification.js';
 import { GroupRepository, IGroupRepository } from '../repositories/GroupRepository.js';
 import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { GroupMapper } from '../utils/mappers/GroupMapper.js';
+import { Validator } from '../utils/Validator.js';
+import { OwnershipValidator } from '../utils/OwnershipValidator.js';
 
 import { UserResponse } from '../models/User.js';
 import { Task } from '../models/Task.js';
@@ -97,12 +99,26 @@ export class GroupService {
   }
 
   /**
-   * Delete a task group as admin (bypasses creator check)
+   * Delete (dissolve) a task group as admin (bypasses creator check)
+   * Cannot delete if group has completed tasks
    */
   async deleteGroupAsAdmin(groupId: string): Promise<void> {
     const group = await this.groupRepository.findById(groupId);
     if (!group) {
       throw new NotFoundError('Task group not found');
+    }
+
+    // Check if group has any completed tasks
+    const completedTasksQuery = `
+      SELECT COUNT(*) as count
+      FROM tasks
+      WHERE group_id = $1 AND status = 'completed'
+    `;
+    const result = await pool.query(completedTasksQuery, [groupId]);
+    const completedTasksCount = parseInt(result.rows[0].count, 10);
+
+    if (completedTasksCount > 0) {
+      throw new ValidationError('无法解散组群：组群中存在已完成的任务');
     }
 
     await this.groupRepository.delete(groupId);
@@ -127,11 +143,14 @@ export class GroupService {
       throw new NotFoundError('Task group not found');
     }
 
-    // Prevent removing the creator if they are the only member
+    // Prevent removing the creator if they are the only member using Validator
     const members = await this.groupRepository.getGroupMembers(groupId);
-    if (members.length === 1 && group.creatorId === userId) {
-      throw new ValidationError('Cannot remove the creator when they are the only member. Delete the group instead.');
-    }
+    Validator.custom(
+      members.length === 1 && group.creatorId === userId,
+      (shouldPrevent) => !shouldPrevent,
+      'Member removal',
+      'Cannot remove the creator when they are the only member. Delete the group instead.'
+    );
 
     await this.groupRepository.removeMember(groupId, userId);
   }
@@ -173,8 +192,9 @@ export class GroupService {
   }
 
   /**
-   * Delete a task group
+   * Delete (dissolve) a task group
    * Only the creator can delete the group
+   * Cannot delete if group has completed tasks
    */
   async deleteGroup(groupId: string, userId: string): Promise<void> {
     const group = await this.groupRepository.findById(groupId);
@@ -182,9 +202,20 @@ export class GroupService {
       throw new NotFoundError('Task group not found');
     }
 
-    // Verify user is the creator
-    if (group.creatorId !== userId) {
-      throw new AuthorizationError('Only the group creator can delete the group');
+    // Verify user is the creator using OwnershipValidator
+    await OwnershipValidator.validateGroupOwnership(groupId, userId);
+
+    // Check if group has any completed tasks
+    const completedTasksQuery = `
+      SELECT COUNT(*) as count
+      FROM tasks
+      WHERE group_id = $1 AND status = 'completed'
+    `;
+    const result = await pool.query(completedTasksQuery, [groupId]);
+    const completedTasksCount = parseInt(result.rows[0].count, 10);
+
+    if (completedTasksCount > 0) {
+      throw new ValidationError('无法解散组群：组群中存在已完成的任务');
     }
 
     await this.groupRepository.delete(groupId);
@@ -199,10 +230,8 @@ export class GroupService {
       throw new NotFoundError('Task group not found');
     }
 
-    // Verify user is the creator
-    if (group.creatorId !== userId) {
-      throw new AuthorizationError('Only the group creator can update the group');
-    }
+    // Verify user is the creator using OwnershipValidator
+    await OwnershipValidator.validateGroupOwnership(groupId, userId);
 
     const updated = await this.groupRepository.update(groupId, { name });
     return GroupMapper.toDTO(updated);
@@ -489,20 +518,22 @@ export class GroupService {
 
     const task = taskResult.rows[0];
 
-    if (!task.group_id) {
-      throw new ValidationError('Task is not a group task');
-    }
+    // Validate task is a group task using Validator
+    Validator.required(task.group_id, 'Group ID');
 
-    if (task.status !== 'completed') {
-      throw new ValidationError('Task must be completed before distributing bounty');
-    }
+    // Validate task status using Validator
+    Validator.custom(
+      task.status,
+      (status) => status === 'completed',
+      'Task status',
+      'Task must be completed before distributing bounty'
+    );
 
     // Get group members
     const members = await this.groupRepository.getGroupMembers(task.group_id);
     
-    if (members.length === 0) {
-      throw new ValidationError('Group has no members');
-    }
+    // Validate group has members using Validator
+    Validator.arrayNotEmpty(members, 'Group members');
 
     // Calculate equal distribution
     const totalBounty = Number(task.bounty_amount);

@@ -1,5 +1,5 @@
 import { createApiMethod } from './createApiClient';
-import { AuthResponse, LoginRequest, RegisterRequest } from '../types';
+import type { AuthResponse } from '../types';
 
 export const authApi = {
   // 登录

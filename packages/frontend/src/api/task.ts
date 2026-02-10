@@ -40,9 +40,6 @@ export const taskApi = {
   // 承接任务
   acceptTask: createApiMethodWithParams<Task, string>('post', (taskId) => `/tasks/${taskId}/accept`),
 
-  // 放弃任务
-  abandonTask: createApiMethodWithParams<Task, string>('post', (taskId) => `/tasks/${taskId}/abandon`),
-
   // 完成任务
   completeTask: createApiMethodWithParams<{ message: string; resolvedTaskIds: string[] }, string>('post', (taskId) => `/tasks/${taskId}/complete`),
 
@@ -161,4 +158,18 @@ export const taskApi = {
       (id) => `/tasks/${id}/reject-assignment`
     )(taskId, { reason });
   },
+
+  // 添加额外奖赏（管理员功能）
+  addBonusReward: async (taskId: string, amount: number, reason?: string) => {
+    return createApiMethodWithParams<{ message: string; task: Task; transaction: any }, string>(
+      'post',
+      (id) => `/tasks/${id}/bonus`
+    )(taskId, { amount, reason });
+  },
+
+  // 获取任务的奖赏记录
+  getBonusRewards: createApiMethodWithParams<{ bonusRewards: any[] }, string>(
+    'get',
+    (taskId) => `/tasks/${taskId}/bonus-rewards`
+  ),
 };

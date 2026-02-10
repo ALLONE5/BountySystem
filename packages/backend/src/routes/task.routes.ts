@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { pool } from '../config/database.js';
 import { TaskService } from '../services/TaskService.js';
 import { CommentService } from '../services/CommentService.js';
@@ -21,6 +22,7 @@ import {
 import { z } from 'zod';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { resolve } from '../config/container.js';
+import { Validator } from '../utils/Validator.js';
 
 const router = Router();
 // Use DI container to get properly configured TaskService
@@ -338,15 +340,40 @@ router.post('/:taskId/complete', authenticate, asyncHandler(async (req: Request,
   });
 }));
 
-router.post('/:taskId/abandon', authenticate, asyncHandler(async (req: Request, res: Response) => {
+// Add bonus reward to completed task (admin only)
+router.post('/:taskId/bonus', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
+  const { amount, reason } = req.body;
   const userId = req.user!.userId;
+  const userRole = req.user!.role;
 
-  const result = await taskService.abandonTask(taskId, userId);
+  // Verify admin permissions
+  if (!Validator.isSuperAdmin(userRole) && userRole !== UserRole.POSITION_ADMIN) {
+    return res.status(403).json({ error: 'Only administrators can add bonus rewards' });
+  }
+
+  // Validate amount
+  if (!amount || typeof amount !== 'number' || amount <= 0) {
+    return res.status(400).json({ error: 'Valid bonus amount is required' });
+  }
+
+  const result = await taskService.addBonusReward(taskId, amount, userId, reason);
 
   res.json({
-    message: 'Task abandoned successfully',
+    message: 'Bonus reward added successfully',
     task: result.task,
+    transaction: result.transaction,
+  });
+}));
+
+// Get bonus reward records for a task
+router.get('/:taskId/bonus-rewards', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { taskId } = req.params;
+  
+  const bonusRewards = await taskService.getBonusRewards(taskId);
+  
+  res.json({
+    bonusRewards,
   });
 }));
 
@@ -410,7 +437,7 @@ router.post('/:id/comments', authenticate, asyncHandler(async (req: Request, res
 
   const isPublisher = task.publisherId === userId;
   const isAssignee = task.assigneeId === userId;
-  const isAdmin = userRole === UserRole.SUPER_ADMIN;
+  const isAdmin = Validator.isSuperAdmin(userRole);
 
   if (!isPublisher && !isAssignee && !isAdmin) {
     return res.status(403).json({ error: 'Permission denied' });
@@ -488,7 +515,7 @@ router.post('/:id/assistants', authenticate, asyncHandler(async (req: Request, r
   }
 
   const isAssignee = task.assigneeId === userId;
-  const isAdmin = userRole === UserRole.SUPER_ADMIN;
+  const isAdmin = Validator.isSuperAdmin(userRole);
 
   if (!isAssignee && !isAdmin) {
     return res.status(403).json({ error: 'Permission denied. Only Assignee or Admin can add assistants.' });
@@ -516,7 +543,7 @@ router.delete('/:id/assistants/:assistantId', authenticate, asyncHandler(async (
   }
 
   const isAssignee = task.assigneeId === userId;
-  const isAdmin = userRole === UserRole.SUPER_ADMIN;
+  const isAdmin = Validator.isSuperAdmin(userRole);
 
   if (!isAssignee && !isAdmin) {
     return res.status(403).json({ error: 'Permission denied. Only Assignee or Admin can remove assistants.' });

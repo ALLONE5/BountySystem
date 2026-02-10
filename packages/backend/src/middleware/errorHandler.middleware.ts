@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { ValidationError, NotFoundError, UnauthorizedError, ForbiddenError } from '../utils/errors.js';
+import type { Request, Response, NextFunction } from 'express';
+import { ValidationError, NotFoundError, AuthenticationError, ForbiddenError } from '../utils/errors.js';
 import logger from '../config/logger.js';
 
 /**
@@ -40,10 +40,10 @@ export const errorHandler = (
   }
 
   // 未授权错误 (401)
-  if (error instanceof UnauthorizedError) {
+  if (error instanceof AuthenticationError) {
     return res.status(401).json({
       error: error.message,
-      type: 'UnauthorizedError',
+      type: 'AuthenticationError',
     });
   }
 

@@ -218,7 +218,7 @@ export const BrowseTasksPage: React.FC = () => {
               ellipsis={{ rows: 2 }}
               style={{ color: '#666', marginBottom: 12 }}
             >
-              {task.description}
+              {task.description || '无描述'}
             </Paragraph>
             
             <Space wrap>
@@ -457,7 +457,7 @@ export const BrowseTasksPage: React.FC = () => {
 
             <div style={{ marginBottom: 12 }}>
               <Text strong>任务描述：</Text>
-              <Paragraph style={{ marginTop: 8 }}>{selectedTask.description}</Paragraph>
+              <Paragraph style={{ marginTop: 8 }}>{selectedTask.description || '无描述'}</Paragraph>
             </div>
 
             <div style={{ marginBottom: 12 }}>

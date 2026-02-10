@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../models/User.js';
-import { PermissionService, PageAccess } from '../services/PermissionService.js';
+import type { PageAccess } from '../services/PermissionService.js';
+import { PermissionService } from '../services/PermissionService.js';
 import { AuthenticationError, AuthorizationError } from '../utils/errors.js';
 
 const permissionService = new PermissionService();

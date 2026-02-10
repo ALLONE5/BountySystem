@@ -1,5 +1,6 @@
-import { Router, Request, Response } from 'express';
-import { Pool } from 'pg';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
+import type { Pool } from 'pg';
 import { ProjectGroupService } from '../services/ProjectGroupService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';

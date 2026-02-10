@@ -6,7 +6,7 @@ import { TaskRepository } from '../repositories/TaskRepository.js';
 import { GroupRepository } from '../repositories/GroupRepository.js';
 import { PositionRepository } from '../repositories/PositionRepository.js';
 import { PermissionChecker } from '../utils/PermissionChecker.js';
-import { AuthorizationError, NotFoundError, ValidationError } from '../utils/errors.js';
+import { AuthorizationError, NotFoundError, ValidationError, OwnershipError } from '../utils/errors.js';
 import { UserRole } from '../models/User.js';
 
 describe('GroupService', () => {
@@ -207,10 +207,10 @@ describe('GroupService', () => {
         expect(updatedGroup.id).toBe(testGroupId);
       });
 
-      it('should throw AuthorizationError when non-creator tries to update', async () => {
+      it('should throw OwnershipError when non-creator tries to update', async () => {
         await expect(
           groupService.updateGroup(testGroupId, 'Unauthorized Update', testUser2Id)
-        ).rejects.toThrow(AuthorizationError);
+        ).rejects.toThrow(OwnershipError);
       });
 
       it('should throw NotFoundError for non-existent group', async () => {
@@ -248,13 +248,13 @@ describe('GroupService', () => {
     });
 
     describe('deleteGroup', () => {
-      it('should throw AuthorizationError when non-creator tries to delete', async () => {
+      it('should throw OwnershipError when non-creator tries to delete', async () => {
         // Add user2 back as member
         await groupService.addMember(testGroupId, testUser2Id);
 
         await expect(
           groupService.deleteGroup(testGroupId, testUser2Id)
-        ).rejects.toThrow(AuthorizationError);
+        ).rejects.toThrow(OwnershipError);
       });
 
       it('should delete group using repository when creator deletes', async () => {

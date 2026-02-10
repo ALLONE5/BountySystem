@@ -239,10 +239,3 @@ export class QueryBuilder {
     return this;
   }
 }
-
-/**
- * Helper function to create a new QueryBuilder
- */
-export function query(): QueryBuilder {
-  return new QueryBuilder();
-}

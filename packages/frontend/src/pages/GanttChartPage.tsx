@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Spin, message, Select, Button, Switch, Space, Input } from 'antd';
-import { ReloadOutlined, FolderOutlined, FolderOpenOutlined, SearchOutlined } from '@ant-design/icons';
+import { Card, Spin, message, Select, Button, Switch, Space, Input, Modal } from 'antd';
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import * as d3 from 'd3';
 import { taskApi } from '../api/task';
 import { Task, TaskStatus } from '../types';
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
-import dayjs from 'dayjs';
+import { getTaskStatusConfig } from '../utils/statusConfig';
 
 const { Option } = Select;
 
@@ -84,7 +84,7 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
       filtered = filtered.filter(
         task =>
           task.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          task.description.toLowerCase().includes(searchText.toLowerCase())
+          (task.description && task.description.toLowerCase().includes(searchText.toLowerCase()))
       );
     }
 
@@ -253,7 +253,7 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
 
     // Render items
     let currentY = 0;
-    displayItems.forEach((item, index) => {
+    displayItems.forEach((item) => {
       if (item.type === 'project') {
         // Render project as a summary task bar
         const projectData = item.data;
@@ -301,7 +301,8 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
             const start = xScale(new Date(projectData.plannedStartDate));
             const end = xScale(new Date(projectData.plannedEndDate));
             const totalWidth = Math.max(end - start, 2);
-            return totalWidth * (projectData.progress / 100);
+            const progress = Math.min(Math.max(projectData.progress || 0, 0), 100); // Ensure progress is between 0-100
+            return totalWidth * (progress / 100);
           })
           .attr('height', barHeight)
           .attr('rx', 4)
@@ -322,7 +323,8 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
           .style('font-size', '11px')
           .style('fill', 'white')
           .style('font-weight', 'bold')
-          .text(`${projectData.progress}%`);
+          .style('pointer-events', 'none') // Prevent text from blocking clicks
+          .text(`${Math.round(projectData.progress || 0)}%`);
 
         currentY += barHeight + barPadding;
       } else {
@@ -362,7 +364,11 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
           .attr('rx', 4)
           .attr('fill', getStatusColor(task.status))
           .attr('opacity', 0.3)
-          .style('cursor', 'pointer');
+          .style('cursor', 'pointer')
+          .on('click', () => {
+            setSelectedTask(task);
+            setDrawerVisible(true);
+          });
 
         // Progress bar
         taskGroup.append('rect')
@@ -371,12 +377,17 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
             const start = xScale(new Date(task.plannedStartDate));
             const end = xScale(new Date(task.plannedEndDate));
             const totalWidth = Math.max(end - start, 2);
-            return totalWidth * (task.progress / 100);
+            const progress = Math.min(Math.max(task.progress || 0, 0), 100); // Ensure progress is between 0-100
+            return totalWidth * (progress / 100);
           })
           .attr('height', barHeight)
           .attr('rx', 4)
           .attr('fill', getStatusColor(task.status))
-          .style('cursor', 'pointer');
+          .style('cursor', 'pointer')
+          .on('click', () => {
+            setSelectedTask(task);
+            setDrawerVisible(true);
+          });
 
         // Progress text
         taskGroup.append('text')
@@ -391,7 +402,8 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
           .style('font-size', '11px')
           .style('fill', 'white')
           .style('font-weight', 'bold')
-          .text(`${task.progress}%`);
+          .style('pointer-events', 'none') // Prevent text from blocking clicks
+          .text(`${Math.round(task.progress || 0)}%`);
 
         currentY += barHeight + barPadding;
       }
@@ -411,20 +423,15 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
   };
 
   const getStatusColor = (status: TaskStatus): string => {
-    switch (status) {
-      case TaskStatus.NOT_STARTED:
-        return '#d9d9d9';
-      case TaskStatus.AVAILABLE:
-        return '#52c41a';
-      case TaskStatus.IN_PROGRESS:
-        return '#1890ff';
-      case TaskStatus.COMPLETED:
-        return '#52c41a';
-      case TaskStatus.ABANDONED:
-        return '#ff4d4f';
-      default:
-        return '#d9d9d9';
-    }
+    const colorMap: Record<string, string> = {
+      'default': '#d9d9d9',
+      'success': '#52c41a',
+      'processing': '#1890ff',
+      'error': '#ff4d4f',
+      'orange': '#fa8c16',
+    };
+    const config = getTaskStatusConfig(status);
+    return colorMap[config.color] || config.color;
   };
 
   return (
@@ -459,9 +466,9 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
                   <Option value="all">所有状态</Option>
                   <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                   <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                  <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                   <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                   <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                  <Option value={TaskStatus.ABANDONED}>已放弃</Option>
                 </Select>
                 <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                   刷新
@@ -533,9 +540,9 @@ export const GanttChartPage: React.FC<GanttChartPageProps> = ({ tasks: propTasks
                 <Option value="all">所有状态</Option>
                 <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                 <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                 <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                 <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                <Option value={TaskStatus.ABANDONED}>已放弃</Option>
               </Select>
               <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                 刷新

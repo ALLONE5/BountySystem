@@ -1,6 +1,6 @@
 
-import { Pool } from 'pg';
-import { Comment, CommentCreateDTO } from '../models/Comment.js';
+import type { Pool } from 'pg';
+import type { Comment, CommentCreateDTO } from '../models/Comment.js';
 import { AppError } from '../utils/errors.js';
 
 export class CommentService {

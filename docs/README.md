@@ -1,139 +1,178 @@
-# 项目文档
+# 项目文档索引
 
-本目录包含项目的核心文档。
+**最后更新**: 2026-02-09
 
----
-
-## 📚 文档列表
-
-### 核心文档
-- [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) - 开发指南
-  - 环境配置
-  - 项目结构
-  - 编码规范
-  - 测试指南
-  - 调试方法
-
-- [FEATURES_SUMMARY.md](./FEATURES_SUMMARY.md) - 功能总结
-  - 所有功能模块说明
-  - 技术特性
-  - 数据模型
-  - 后续规划
-
-- [OPTIMIZATION_SUMMARY.md](./OPTIMIZATION_SUMMARY.md) - 优化总结
-  - 4个优化阶段的完整记录
-  - 代码减少统计
-  - 质量提升指标
-  - 工具使用说明
-
-- [DOCUMENTATION_STRUCTURE.md](./DOCUMENTATION_STRUCTURE.md) - 文档结构
-  - 文档组织方式
-  - 清理计划
-  - 归档说明
-
-- [BACKEND_FILE_STRUCTURE.md](./BACKEND_FILE_STRUCTURE.md) - 后端文件结构
-  - 完整的后端目录说明
-  - 各文件用途
-  - 架构层次
-  - 数据流
-
-### UI/UX文档
-- [UI_OPTIMIZATION_PLAN.md](./UI_OPTIMIZATION_PLAN.md) - UI优化计划
-  - 设计系统规范
-  - 优化清单
-  - 实施计划
-
-- [UI_OPTIMIZATION_IMPLEMENTATION.md](./UI_OPTIMIZATION_IMPLEMENTATION.md) - UI优化实施指南
-  - 详细实施步骤
-  - 代码示例
-  - 验收标准
-
-- [UI_OPTIMIZATION_COMPLETED.md](./UI_OPTIMIZATION_COMPLETED.md) - UI优化完成报告
-  - 已完成工作
-  - 设计系统规范
-  - 使用指南
-  - 后续建议
-
-- [UI_OPTIMIZATION_PROGRESS.md](./UI_OPTIMIZATION_PROGRESS.md) - UI优化进度报告
-  - 实时进度跟踪
-  - 优化详情
-  - 统计数据
-
-- [UI_OPTIMIZATION_FINAL_SUMMARY.md](./UI_OPTIMIZATION_FINAL_SUMMARY.md) - UI优化最终总结
-  - 完整成果总览
-  - 设计规范应用
-  - 管理页面分析
-
-- [UI_POLISH_FEATURES_GUIDE.md](./UI_POLISH_FEATURES_GUIDE.md) - 🎨 锦上添花功能使用指南
-  - 骨架屏加载
-  - 页面切换动画
-  - 触摸手势
-  - 加载状态管理
-  - 响应式工具
-  - 错误处理
-  - 最佳实践
+欢迎查阅赏金猎人平台的文档。本文档提供了所有文档的索引和导航。
 
 ---
 
-## 🔗 其他重要文档
+## 📚 核心文档
 
-### 根目录文档
-- [README.md](../README.md) - 项目主文档
+### 项目概览
+- **[PROJECT_ARCHITECTURE_OVERVIEW.md](PROJECT_ARCHITECTURE_OVERVIEW.md)** - 项目架构全览（必读）
+  - 技术栈、系统架构、核心业务概念
+  - 前后端架构、数据库设计
+  - 部署架构、性能优化
 
-### 运维文档
-- [operations/OPERATIONS_GUIDE.md](./operations/OPERATIONS_GUIDE.md) - 完整的运维指南
-  - 快速启动
-  - 环境配置
-  - 部署指南
-  - 日常运维
-  - 故障排除
+### 开发指南
+- **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - 开发指南
+  - 环境搭建、开发流程
+  - 调试技巧、常见问题
 
-### 技术文档
-位于各个package目录下：
-- `packages/backend/src/services/` - 后端服务文档
-- `packages/backend/src/middleware/` - 中间件文档
-- `packages/backend/src/workers/` - 后台任务文档
-- `packages/frontend/` - 前端实现文档
-- `packages/database/` - 数据库文档
+### 功能指南
+- **[FEATURES_GUIDE.md](FEATURES_GUIDE.md)** - 功能指南（推荐）
+  - 任务管理、子任务系统
+  - 岗位管理、组群管理
+  - 排名和赏金系统
+  - 通知系统、管理员功能
 
-### 规格文档
-位于 `.kiro/specs/bounty-hunter-platform/`：
-- requirements.md - 需求文档
-- design.md - 设计文档
-- tasks.md - 任务列表
-
----
-
-## 📖 阅读顺序建议
-
-### 新手入门
-1. [README.md](../README.md) - 了解项目
-2. [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) - 快速上手和开发规范
-3. [operations/OPERATIONS_GUIDE.md](./operations/OPERATIONS_GUIDE.md) - 环境配置和部署
-
-### 功能开发
-1. [FEATURES_SUMMARY.md](./FEATURES_SUMMARY.md) - 了解现有功能
-2. [DEVELOPMENT_GUIDE.md](./DEVELOPMENT_GUIDE.md) - 学习开发工具和最佳实践
-3. [UI_POLISH_FEATURES_GUIDE.md](./UI_POLISH_FEATURES_GUIDE.md) - 学习UI增强功能
-4. 相关技术文档 - 深入了解具体模块
-
-### 运维部署
-1. [operations/OPERATIONS_GUIDE.md](./operations/OPERATIONS_GUIDE.md) - 完整的运维指南
-   - 环境配置
-   - 部署流程
-   - 日常运维
-   - 故障排除
+### 代码质量
+- **[CODE_QUALITY_GUIDE.md](CODE_QUALITY_GUIDE.md)** - 代码质量指南
+  - 日志记录最佳实践
+  - 代码优化行动计划
+  - 已完成的优化工作
+  - 代码审查发现
 
 ---
 
-## 🔄 文档更新
+## 🗂️ 数据库和架构
 
-文档更新原则：
-- 核心文档保持最新
-- 技术文档随代码更新
-- 历史文档移至archive目录
+### 数据库
+- **[DATABASE_MODELS_OVERVIEW.md](DATABASE_MODELS_OVERVIEW.md)** - 数据库模型概览
+  - 核心表结构、关系说明
+  - 字段定义、索引设计
+
+### 后端架构
+- **[BACKEND_FILE_STRUCTURE.md](BACKEND_FILE_STRUCTURE.md)** - 后端文件结构
+  - 目录组织、模块说明
+  - 分层架构、设计模式
 
 ---
 
-**最后更新**: 2026-01-09
+## 📖 分析文档
 
+### 代码分析
+- **[analysis/BACKEND_CODE_REVIEW_AND_REFACTORING_PLAN.md](analysis/BACKEND_CODE_REVIEW_AND_REFACTORING_PLAN.md)** - 后端代码审查和重构计划
+- **[analysis/DATABASE_MODEL_SERVICE_MAPPING.md](analysis/DATABASE_MODEL_SERVICE_MAPPING.md)** - 数据库模型和服务映射
+- **[analysis/TASK_RELATIONSHIP_FIELDS_ANALYSIS.md](analysis/TASK_RELATIONSHIP_FIELDS_ANALYSIS.md)** - 任务关系字段分析
+- **[analysis/TASK_RELATIONSHIP_DESIGN_COMPARISON.md](analysis/TASK_RELATIONSHIP_DESIGN_COMPARISON.md)** - 任务关系设计对比
+
+---
+
+## 📝 其他文档
+
+### 用户系统
+- **[USER_BALANCE_SYSTEM.md](USER_BALANCE_SYSTEM.md)** - 用户余额系统
+
+### 功能总结
+- **[FEATURES_SUMMARY.md](FEATURES_SUMMARY.md)** - 功能总结
+
+### 文档结构
+- **[DOCUMENTATION_STRUCTURE.md](DOCUMENTATION_STRUCTURE.md)** - 文档结构说明
+- **[DOCUMENTATION_CLEANUP_2026_02_09.md](DOCUMENTATION_CLEANUP_2026_02_09.md)** - 文档清理记录
+
+---
+
+## 🔍 快速查找
+
+### 按主题查找
+
+#### 任务相关
+- 任务管理 → [FEATURES_GUIDE.md#任务管理](FEATURES_GUIDE.md#任务管理)
+- 子任务系统 → [FEATURES_GUIDE.md#子任务系统](FEATURES_GUIDE.md#子任务系统)
+
+#### 用户和权限
+- 岗位管理 → [FEATURES_GUIDE.md#岗位管理](FEATURES_GUIDE.md#岗位管理)
+- 组群管理 → [FEATURES_GUIDE.md#组群管理](FEATURES_GUIDE.md#组群管理)
+
+#### 赏金和排名
+- 排名系统 → [FEATURES_GUIDE.md#排名和赏金系统](FEATURES_GUIDE.md#排名和赏金系统)
+- 用户余额 → [USER_BALANCE_SYSTEM.md](USER_BALANCE_SYSTEM.md)
+
+#### 开发相关
+- 代码规范 → [CODE_QUALITY_GUIDE.md#开发规范](CODE_QUALITY_GUIDE.md#开发规范)
+- 日志记录 → [CODE_QUALITY_GUIDE.md#日志记录最佳实践](CODE_QUALITY_GUIDE.md#日志记录最佳实践)
+- 数据库设计 → [DATABASE_MODELS_OVERVIEW.md](DATABASE_MODELS_OVERVIEW.md)
+
+---
+
+## 📊 文档统计
+
+### 文档数量
+- **核心文档**: 4 个
+- **数据库和架构**: 2 个
+- **分析文档**: 4 个
+- **其他文档**: 4 个
+- **总计**: 14 个主要文档
+
+### 文档覆盖
+- ✅ 项目架构和技术栈
+- ✅ 开发指南和规范
+- ✅ 功能说明和使用指南
+- ✅ 代码质量和最佳实践
+- ✅ 数据库设计和模型
+- ✅ 分析和重构计划
+
+---
+
+## 🚀 新手入门
+
+如果你是新加入的开发者，建议按以下顺序阅读文档：
+
+1. **[PROJECT_ARCHITECTURE_OVERVIEW.md](PROJECT_ARCHITECTURE_OVERVIEW.md)** - 了解项目整体架构
+2. **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - 搭建开发环境
+3. **[FEATURES_GUIDE.md](FEATURES_GUIDE.md)** - 了解核心功能
+4. **[CODE_QUALITY_GUIDE.md](CODE_QUALITY_GUIDE.md)** - 学习代码规范
+5. **[DATABASE_MODELS_OVERVIEW.md](DATABASE_MODELS_OVERVIEW.md)** - 理解数据模型
+
+---
+
+## 📮 文档维护
+
+### 更新频率
+- 核心文档：随项目演进持续更新
+- 功能文档：功能变更时更新
+- 分析文档：定期审查和更新
+
+### 贡献指南
+如果你发现文档有误或需要补充，请：
+1. 创建 Issue 说明问题
+2. 提交 Pull Request 修改文档
+3. 在 commit 信息中说明修改内容
+
+### 文档规范
+- 使用 Markdown 格式
+- 包含最后更新日期
+- 添加目录和导航链接
+- 使用清晰的标题层级
+- 提供代码示例和图表
+
+---
+
+## 🔗 相关资源
+
+### 外部文档
+- [TypeScript 官方文档](https://www.typescriptlang.org/docs/)
+- [React 官方文档](https://react.dev/)
+- [Express.js 文档](https://expressjs.com/)
+- [PostgreSQL 文档](https://www.postgresql.org/docs/)
+- [Redis 文档](https://redis.io/docs/)
+
+### 项目仓库
+- GitHub: [项目地址]
+- Issue Tracker: [问题追踪]
+- Wiki: [项目 Wiki]
+
+---
+
+## 📞 联系方式
+
+如有问题或建议，请联系：
+- 技术负责人: [联系方式]
+- 开发团队: [团队邮箱]
+
+---
+
+**文档索引维护**: 本文档提供所有文档的导航和索引  
+**最后更新**: 2026-02-09  
+**维护者**: 开发团队

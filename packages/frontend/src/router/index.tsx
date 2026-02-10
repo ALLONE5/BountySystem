@@ -19,16 +19,33 @@ import { ApplicationReviewPage } from '../pages/admin/ApplicationReviewPage';
 import { AvatarManagementPage } from '../pages/admin/AvatarManagementPage';
 import { PositionManagementPage } from '../pages/admin/PositionManagementPage';
 import { BountyAlgorithmPage } from '../pages/admin/BountyAlgorithmPage';
+import { NotificationBroadcastPage } from '../pages/admin/NotificationBroadcastPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { Result, Button } from 'antd';
+
+const ErrorBoundary = () => (
+  <Result
+    status="404"
+    title="404"
+    subTitle="抱歉，您访问的页面不存在。"
+    extra={
+      <Button type="primary" onClick={() => window.location.href = '/dashboard'}>
+        返回首页
+      </Button>
+    }
+  />
+);
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <Navigate to="/dashboard" replace />,
+    errorElement: <ErrorBoundary />,
   },
   {
     path: '/auth',
     element: <AuthLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         path: 'login',
@@ -47,6 +64,7 @@ export const router = createBrowserRouter([
         <MainLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundary />,
     children: [
       {
         path: 'dashboard',
@@ -112,6 +130,14 @@ export const router = createBrowserRouter([
         path: 'admin/bounty-algorithm',
         element: <BountyAlgorithmPage />,
       },
+      {
+        path: 'admin/notifications',
+        element: <NotificationBroadcastPage />,
+      },
     ],
+  },
+  {
+    path: '*',
+    element: <ErrorBoundary />,
   },
 ]);

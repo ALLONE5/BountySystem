@@ -22,9 +22,10 @@ export interface BountyDistribution {
 export interface BountyTransaction {
   id: string;
   taskId: string;
-  userId: string;
+  fromUserId: string | null;
+  toUserId: string;
   amount: number;
-  transactionType: 'main_bounty' | 'assistant_bounty' | 'extra_bounty';
+  transactionType: 'task_completion' | 'assistant_share' | 'extra_reward';
   createdAt: Date;
 }
 
@@ -266,10 +267,10 @@ export class BountyDistributionService {
       // Create transaction records
       const transactionIds: string[] = [];
 
-      // Record main assignee bounty
+      // Record main assignee bounty (task completion)
       const mainTxQuery = `
-        INSERT INTO bounty_transactions (task_id, user_id, amount, transaction_type)
-        VALUES ($1, $2, $3, 'main_bounty')
+        INSERT INTO bounty_transactions (task_id, from_user_id, to_user_id, amount, type, description)
+        VALUES ($1, NULL, $2, $3, 'task_completion', 'Task completion bounty')
         RETURNING id
       `;
       const mainTxResult = await client.query(mainTxQuery, [
@@ -279,11 +280,11 @@ export class BountyDistributionService {
       ]);
       transactionIds.push(mainTxResult.rows[0].id);
 
-      // Record assistant bounties
+      // Record assistant bounties (assistant share)
       for (const assistant of distribution.assistants) {
         const assistantTxQuery = `
-          INSERT INTO bounty_transactions (task_id, user_id, amount, transaction_type)
-          VALUES ($1, $2, $3, 'assistant_bounty')
+          INSERT INTO bounty_transactions (task_id, from_user_id, to_user_id, amount, type, description)
+          VALUES ($1, NULL, $2, $3, 'assistant_share', 'Assistant bounty share')
           RETURNING id
         `;
         const assistantTxResult = await client.query(assistantTxQuery, [
@@ -294,11 +295,11 @@ export class BountyDistributionService {
         transactionIds.push(assistantTxResult.rows[0].id);
       }
 
-      // Record extra bounty if any
+      // Record extra bounty if any (extra reward)
       if (distribution.extraBounty > 0) {
         const extraTxQuery = `
-          INSERT INTO bounty_transactions (task_id, user_id, amount, transaction_type)
-          VALUES ($1, $2, $3, 'extra_bounty')
+          INSERT INTO bounty_transactions (task_id, from_user_id, to_user_id, amount, type, description)
+          VALUES ($1, NULL, $2, $3, 'extra_reward', 'Extra bounty reward')
           RETURNING id
         `;
         const extraTxResult = await client.query(extraTxQuery, [
@@ -335,9 +336,10 @@ export class BountyDistributionService {
       SELECT 
         id,
         task_id as "taskId",
-        user_id as "userId",
+        from_user_id as "fromUserId",
+        to_user_id as "toUserId",
         amount,
-        transaction_type as "transactionType",
+        type as "transactionType",
         created_at as "createdAt"
       FROM bounty_transactions
       WHERE task_id = $1
@@ -356,12 +358,13 @@ export class BountyDistributionService {
       SELECT 
         id,
         task_id as "taskId",
-        user_id as "userId",
+        from_user_id as "fromUserId",
+        to_user_id as "toUserId",
         amount,
-        transaction_type as "transactionType",
+        type as "transactionType",
         created_at as "createdAt"
       FROM bounty_transactions
-      WHERE user_id = $1
+      WHERE to_user_id = $1 OR from_user_id = $1
       ORDER BY created_at DESC
     `;
 

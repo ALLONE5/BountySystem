@@ -9,4 +9,8 @@ export const userApi = {
   searchUsers: async (query: string): Promise<User[]> => {
     return createApiMethod<User[]>('get', '/users/search')({ q: query });
   },
+
+  updateProfile: createApiMethod<{ message: string; user: User }>('put', '/users/me'),
+
+  changePassword: createApiMethod<{ message: string }>('put', '/users/me/password'),
 };

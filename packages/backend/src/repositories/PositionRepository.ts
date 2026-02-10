@@ -2,6 +2,7 @@ import { PoolClient } from 'pg';
 import { BaseRepository, IRepository } from './BaseRepository.js';
 import { Position, PositionApplication, ApplicationStatus } from '../models/Position.js';
 import { Validator } from '../utils/Validator.js';
+import { logger } from '../config/logger.js';
 
 /**
  * Position Repository Interface
@@ -91,7 +92,10 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
       const rows = await this.executeQuery<any>(query, [taskId]);
       return rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding positions by task:', error);
+      logger.error('Error finding positions by task', { 
+        error: error instanceof Error ? error.message : String(error),
+        taskId 
+      });
       throw error;
     }
   }
@@ -115,7 +119,10 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
       const rows = await this.executeQuery<any>(query, [userId]);
       return rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding positions by user:', error);
+      logger.error('Error finding positions by user', { 
+        error: error instanceof Error ? error.message : String(error),
+        userId 
+      });
       throw error;
     }
   }
@@ -171,7 +178,10 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
         applications
       };
     } catch (error) {
-      console.error('Error finding position with applications:', error);
+      logger.error('Error finding position with applications', { 
+        error: error instanceof Error ? error.message : String(error),
+        positionId 
+      });
       throw error;
     }
   }
@@ -198,12 +208,16 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
       }
 
       // Current schema doesn't have a ranking field on positions
-      console.warn('updateRanking: positions table does not have a ranking column');
+      logger.warn('updateRanking: positions table does not have a ranking column', { positionId });
       
       // Return the position unchanged as a placeholder
       return position;
     } catch (error) {
-      console.error('Error updating position ranking:', error);
+      logger.error('Error updating position ranking', { 
+        error: error instanceof Error ? error.message : String(error),
+        positionId,
+        ranking 
+      });
       throw error;
     }
   }

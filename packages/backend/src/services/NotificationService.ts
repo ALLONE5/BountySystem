@@ -360,7 +360,82 @@ export class NotificationService {
 
     await pool.query(insertQuery, [
       userIds,
-      NotificationType.BROADCAST,
+      NotificationType.ADMIN_ANNOUNCEMENT,
+      title,
+      message,
+      adminId,
+    ]);
+
+    return userIds.length;
+  }
+
+  /**
+   * Send broadcast notification to users by role
+   * Useful for role-specific announcements
+   */
+  async broadcastToRole(
+    adminId: string,
+    role: string,
+    title: string,
+    message: string
+  ): Promise<number> {
+    // Get all user IDs with the specified role
+    const userQuery = 'SELECT id FROM users WHERE role = $1';
+    const userResult = await pool.query(userQuery, [role]);
+    const userIds = userResult.rows.map((row) => row.id);
+
+    if (userIds.length === 0) {
+      return 0;
+    }
+
+    const insertQuery = `
+      INSERT INTO notifications (user_id, type, title, message, sender_id)
+      SELECT unnest($1::uuid[]), $2, $3, $4, $5
+    `;
+
+    await pool.query(insertQuery, [
+      userIds,
+      NotificationType.ADMIN_ANNOUNCEMENT,
+      title,
+      message,
+      adminId,
+    ]);
+
+    return userIds.length;
+  }
+
+  /**
+   * Send broadcast notification to users by position
+   * Useful for position-specific announcements
+   */
+  async broadcastToPosition(
+    adminId: string,
+    positionId: string,
+    title: string,
+    message: string
+  ): Promise<number> {
+    // Get all user IDs with the specified position
+    const userQuery = `
+      SELECT DISTINCT u.id 
+      FROM users u
+      INNER JOIN user_positions up ON u.id = up.user_id
+      WHERE up.position_id = $1 AND up.status = 'approved'
+    `;
+    const userResult = await pool.query(userQuery, [positionId]);
+    const userIds = userResult.rows.map((row) => row.id);
+
+    if (userIds.length === 0) {
+      return 0;
+    }
+
+    const insertQuery = `
+      INSERT INTO notifications (user_id, type, title, message, sender_id)
+      SELECT unnest($1::uuid[]), $2, $3, $4, $5
+    `;
+
+    await pool.query(insertQuery, [
+      userIds,
+      NotificationType.ADMIN_ANNOUNCEMENT,
       title,
       message,
       adminId,

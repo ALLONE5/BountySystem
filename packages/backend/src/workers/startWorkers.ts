@@ -5,6 +5,7 @@
 
 import { pool } from '../config/database.js';
 import { connectRedis } from '../config/redis.js';
+import { logger } from '../config/logger.js';
 import { QueueWorker } from './QueueWorker';
 import { NotificationService } from '../services/NotificationService';
 import { RankingService } from '../services/RankingService';
@@ -18,7 +19,7 @@ let worker: QueueWorker | null = null;
  */
 export async function startWorkers(): Promise<QueueWorker> {
   if (worker) {
-    console.log('Workers already started');
+    logger.info('Workers already started');
     return worker;
   }
 
@@ -43,10 +44,10 @@ export async function startWorkers(): Promise<QueueWorker> {
 
     await worker.start();
 
-    console.log('✓ Queue workers started successfully');
+    logger.info('Queue workers started successfully');
     return worker;
   } catch (error) {
-    console.error('Failed to start queue workers:', error);
+    logger.error('Failed to start queue workers', error as Error);
     throw error;
   }
 }
@@ -56,16 +57,16 @@ export async function startWorkers(): Promise<QueueWorker> {
  */
 export async function stopWorkers(): Promise<void> {
   if (!worker) {
-    console.log('No workers to stop');
+    logger.info('No workers to stop');
     return;
   }
 
   try {
     await worker.stop();
     worker = null;
-    console.log('✓ Queue workers stopped successfully');
+    logger.info('Queue workers stopped successfully');
   } catch (error) {
-    console.error('Error stopping queue workers:', error);
+    logger.error('Error stopping queue workers', error as Error);
     throw error;
   }
 }
@@ -82,13 +83,13 @@ export function getWorkerStatus(): any {
 
 // Handle graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, stopping workers...');
+  logger.info('SIGTERM received, stopping workers...');
   await stopWorkers();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('SIGINT received, stopping workers...');
+  logger.info('SIGINT received, stopping workers...');
   await stopWorkers();
   process.exit(0);
 });
@@ -97,10 +98,10 @@ process.on('SIGINT', async () => {
 if (require.main === module) {
   startWorkers()
     .then(() => {
-      console.log('Workers running. Press Ctrl+C to stop.');
+      logger.info('Workers running. Press Ctrl+C to stop.');
     })
     .catch((error) => {
-      console.error('Failed to start workers:', error);
+      logger.error('Failed to start workers', error as Error);
       process.exit(1);
     });
 }

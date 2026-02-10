@@ -1,10 +1,10 @@
 import { Pool } from 'pg';
+import { logger } from '../config/logger.js';
 import { Avatar, AvatarCreateDTO, AvatarUpdateDTO } from '../models/Avatar.js';
 import { RankingService } from './RankingService.js';
 import { RankingPeriod } from '../models/Ranking.js';
 import { AppError } from '../utils/errors.js';
 import { CacheService } from './CacheService.js';
-
 export class AvatarService {
   private rankingService: RankingService;
 
@@ -198,7 +198,7 @@ export class AvatarService {
         CacheService.invalidateUserAvatars(userId),
       ]);
     } catch (cacheError) {
-      console.warn('Failed to invalidate avatar caches:', cacheError);
+      logger.warn('Failed to invalidate avatar caches:', cacheError);
     }
   }
 

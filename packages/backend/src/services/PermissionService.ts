@@ -1,6 +1,7 @@
 import { pool } from '../config/database.js';
 import { UserRole } from '../models/User.js';
 import { AuthorizationError } from '../utils/errors.js';
+import { Validator } from '../utils/Validator.js';
 
 export enum PageAccess {
   PERSONAL = 'personal',
@@ -75,7 +76,7 @@ export class PermissionService {
     const { role, is_position_admin } = result.rows[0];
 
     // Super admin can manage all positions
-    if (role === UserRole.SUPER_ADMIN) {
+    if (Validator.isSuperAdmin(role)) {
       return true;
     }
 
@@ -108,7 +109,7 @@ export class PermissionService {
     const { role, position_ids } = result.rows[0];
 
     // Super admin manages all positions
-    if (role === UserRole.SUPER_ADMIN) {
+    if (Validator.isSuperAdmin(role)) {
       const allPositionsQuery = `SELECT id FROM positions`;
       const allPositions = await pool.query(allPositionsQuery);
       return allPositions.rows.map((row) => row.id);
@@ -146,7 +147,7 @@ export class PermissionService {
     const { role } = result.rows[0];
 
     // Super admin can access all user data
-    if (role === UserRole.SUPER_ADMIN) {
+    if (Validator.isSuperAdmin(role)) {
       return true;
     }
 
@@ -194,7 +195,7 @@ export class PermissionService {
     const { role, publisher_id, assignee_id, position_id } = result.rows[0];
 
     // Super admin can access all tasks
-    if (role === UserRole.SUPER_ADMIN) {
+    if (Validator.isSuperAdmin(role)) {
       return true;
     }
 

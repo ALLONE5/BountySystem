@@ -1,4 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { z } from 'zod';
 import { UserService } from '../services/UserService.js';
 import { PermissionService, PageAccess } from '../services/PermissionService.js';
@@ -12,6 +13,7 @@ import { UserRole } from '../models/User.js';
 import { Visibility } from '../models/Task.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { resolve } from '../config/container.js';
+import { Validator } from '../utils/Validator.js';
 
 const router = Router();
 // Use DI container to get properly configured services
@@ -96,7 +98,7 @@ router.get('/users', async (req: Request, res: Response, next: NextFunction) => 
 
     let users;
 
-    if (userRole === UserRole.SUPER_ADMIN) {
+    if (Validator.isSuperAdmin(userRole)) {
       // Super admin sees all users
       users = await userService.getAllUsers();
     } else if (userRole === UserRole.POSITION_ADMIN) {
@@ -309,7 +311,7 @@ router.get('/tasks', async (req: Request, res: Response, next: NextFunction) => 
 
     let tasks;
 
-    if (userRole === UserRole.SUPER_ADMIN) {
+    if (Validator.isSuperAdmin(userRole)) {
       // Super admin sees all tasks
       tasks = await taskService.getAllTasks();
     } else if (userRole === UserRole.POSITION_ADMIN) {
@@ -431,7 +433,7 @@ router.delete('/tasks/:taskId', async (req: Request, res: Response, next: NextFu
 
 /**
  * GET /api/admin/applications
- * Get pending position applications
+ * Get position applications (all statuses)
  */
 router.get('/applications', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -443,13 +445,13 @@ router.get('/applications', async (req: Request, res: Response, next: NextFuncti
 
     let applications;
 
-    if (userRole === UserRole.SUPER_ADMIN) {
-      // Super admin sees all pending applications
-      applications = await positionService.getAllPendingApplications();
+    if (Validator.isSuperAdmin(userRole)) {
+      // Super admin sees all applications (all statuses)
+      applications = await positionService.getAllApplications();
     } else if (userRole === UserRole.POSITION_ADMIN) {
-      // Position admin sees only applications for their managed positions
+      // Position admin sees only applications for their managed positions (all statuses)
       const managedPositions = await permissionService.getManagedPositions(userId);
-      applications = await positionService.getPendingApplicationsByPositions(managedPositions);
+      applications = await positionService.getApplicationsByPositions(managedPositions);
     } else {
       throw new AuthorizationError('Insufficient permissions');
     }

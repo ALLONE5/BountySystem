@@ -1,4 +1,4 @@
-import { Task, TaskStatus, Visibility } from '../../models/Task.js';
+import type { Task, TaskStatus, Visibility } from '../../models/Task.js';
 import { UserMapper } from './UserMapper.js';
 
 /**
@@ -74,24 +74,6 @@ export class TaskMapper {
   }
 
   /**
-   * Extract task from joined query with prefix
-   */
-  static extractTaskFromJoin(row: any, prefix: string): any | undefined {
-    const idKey = `${prefix}.id`;
-    if (!row[idKey]) return undefined;
-
-    return {
-      id: row[idKey],
-      name: row[`${prefix}.name`],
-      description: row[`${prefix}.description`],
-      status: row[`${prefix}.status`],
-      bountyAmount: row[`${prefix}.bountyAmount`],
-      createdAt: row[`${prefix}.createdAt`],
-      updatedAt: row[`${prefix}.updatedAt`],
-    };
-  }
-
-  /**
    * Get SELECT fields for task query
    */
   static getSelectFields(alias: string = 't'): string[] {
@@ -126,21 +108,6 @@ export class TaskMapper {
       `${alias}.aggregated_estimated_hours as "aggregatedEstimatedHours"`,
       `${alias}.aggregated_complexity as "aggregatedComplexity"`,
       `${alias}.updated_at as "updatedAt"`,
-    ];
-  }
-
-  /**
-   * Get SELECT fields for joined task (with prefix)
-   */
-  static getJoinedSelectFields(alias: string, prefix: string): string[] {
-    return [
-      `${alias}.id as "${prefix}.id"`,
-      `${alias}.name as "${prefix}.name"`,
-      `${alias}.description as "${prefix}.description"`,
-      `${alias}.status as "${prefix}.status"`,
-      `${alias}.bounty_amount as "${prefix}.bountyAmount"`,
-      `${alias}.created_at as "${prefix}.createdAt"`,
-      `${alias}.updated_at as "${prefix}.updatedAt"`,
     ];
   }
 }

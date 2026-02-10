@@ -51,3 +51,19 @@ export class ForbiddenError extends AppError {
     this.name = 'ForbiddenError';
   }
 }
+
+export class OwnershipError extends AppError {
+  constructor(
+    message: string,
+    public userId: string,
+    public resourceType: string,
+    public resourceId: string
+  ) {
+    super('OWNERSHIP_ERROR', message, 403, {
+      userId,
+      resourceType,
+      resourceId,
+    });
+    this.name = 'OwnershipError';
+  }
+}

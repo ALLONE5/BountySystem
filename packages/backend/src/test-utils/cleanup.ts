@@ -4,6 +4,7 @@
  */
 
 import { pool } from '../config/database.js';
+import { logger } from '../config/logger.js';
 
 /**
  * Clean up all test data in the correct order to avoid foreign key violations
@@ -37,7 +38,9 @@ export async function cleanupAllTestData(): Promise<void> {
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error cleaning up test data:', error);
+    logger.error('Error cleaning up test data', { 
+      error: error instanceof Error ? error.message : String(error)
+    });
     throw error;
   } finally {
     client.release();
@@ -69,7 +72,10 @@ export async function cleanupUserTestData(userId: string): Promise<void> {
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error(`Error cleaning up test data for user ${userId}:`, error);
+    logger.error('Error cleaning up test data for user', { 
+      error: error instanceof Error ? error.message : String(error),
+      userId 
+    });
     throw error;
   } finally {
     client.release();
@@ -99,7 +105,10 @@ export async function cleanupTaskTestData(taskId: string): Promise<void> {
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error(`Error cleaning up test data for task ${taskId}:`, error);
+    logger.error('Error cleaning up test data for task', { 
+      error: error instanceof Error ? error.message : String(error),
+      taskId 
+    });
     throw error;
   } finally {
     client.release();
@@ -158,7 +167,9 @@ export async function truncateAllTables(): Promise<void> {
   } catch (error) {
     await client.query('ROLLBACK');
     await client.query('SET session_replication_role = DEFAULT');
-    console.error('Error truncating tables:', error);
+    logger.error('Error truncating tables', { 
+      error: error instanceof Error ? error.message : String(error)
+    });
     throw error;
   } finally {
     client.release();

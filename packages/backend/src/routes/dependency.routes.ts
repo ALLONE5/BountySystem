@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { DependencyService } from '../services/DependencyService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { ValidationError, NotFoundError } from '../utils/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();

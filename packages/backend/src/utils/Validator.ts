@@ -15,6 +15,24 @@ export class Validator {
   }
 
   /**
+   * Validate value is a string
+   */
+  static string(value: any, fieldName: string): void {
+    if (typeof value !== 'string') {
+      throw new ValidationError(`${fieldName} must be a string`);
+    }
+  }
+
+  /**
+   * Validate value is a number
+   */
+  static number(value: any, fieldName: string): void {
+    if (typeof value !== 'number' || isNaN(value)) {
+      throw new ValidationError(`${fieldName} must be a valid number`);
+    }
+  }
+
+  /**
    * Validate string is not empty after trimming
    */
   static notEmpty(value: string, fieldName: string): void {
@@ -62,6 +80,24 @@ export class Validator {
   }
 
   /**
+   * Validate minimum value for numbers
+   */
+  static min(value: number, min: number, fieldName: string): void {
+    if (value < min) {
+      throw new ValidationError(`${fieldName} must be at least ${min}`);
+    }
+  }
+
+  /**
+   * Validate maximum value for numbers
+   */
+  static max(value: number, max: number, fieldName: string): void {
+    if (value > max) {
+      throw new ValidationError(`${fieldName} must be at most ${max}`);
+    }
+  }
+
+  /**
    * Validate number range
    */
   static range(value: number, min: number, max: number, fieldName: string): void {
@@ -96,6 +132,16 @@ export class Validator {
       throw new ValidationError(
         `${fieldName} must be one of: ${allowedValues.join(', ')}`
       );
+    }
+  }
+
+  /**
+   * Validate value is a valid date
+   */
+  static date(value: any, fieldName: string): void {
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) {
+      throw new ValidationError(`${fieldName} must be a valid date`);
     }
   }
 
@@ -182,5 +228,118 @@ export class Validator {
         errorMessage || `${fieldName} failed custom validation`
       );
     }
+  }
+
+  // ========================================
+  // Task-specific validation methods
+  // ========================================
+
+  /**
+   * Validate task status is one of the allowed values
+   * Consolidates duplicate status validation across services
+   */
+  static taskStatus(status: string, fieldName: string = 'Task status'): void {
+    const validStatuses = [
+      'not_started',
+      'available',
+      'pending_acceptance',
+      'in_progress',
+      'completed',
+      'abandoned'
+    ];
+    
+    if (!validStatuses.includes(status)) {
+      throw new ValidationError(
+        `${fieldName} must be one of: ${validStatuses.join(', ')}`
+      );
+    }
+  }
+
+  /**
+   * Validate bounty amount is non-negative
+   * Consolidates duplicate bounty validation across services
+   */
+  static bountyAmount(amount: number, fieldName: string = 'Bounty amount'): void {
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      throw new ValidationError(`${fieldName} must be a valid number`);
+    }
+    
+    if (amount < 0) {
+      throw new ValidationError(`${fieldName} must be non-negative`);
+    }
+  }
+
+  /**
+   * Validate task rating (1-5 scale)
+   * Consolidates rating validation from TaskReviewService
+   */
+  static taskRating(rating: number, fieldName: string = 'Rating'): void {
+    if (typeof rating !== 'number' || isNaN(rating)) {
+      throw new ValidationError(`${fieldName} must be a valid number`);
+    }
+    
+    if (rating < 1 || rating > 5) {
+      throw new ValidationError(`${fieldName} must be between 1 and 5`);
+    }
+  }
+
+  /**
+   * Validate task title meets length requirements
+   * Consolidates title validation patterns
+   */
+  static taskTitle(title: string, fieldName: string = 'Task title'): void {
+    this.required(title, fieldName);
+    this.string(title, fieldName);
+    this.notEmpty(title, fieldName);
+    
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length < 3) {
+      throw new ValidationError(`${fieldName} must be at least 3 characters`);
+    }
+    
+    if (trimmedTitle.length > 200) {
+      throw new ValidationError(`${fieldName} must be at most 200 characters`);
+    }
+  }
+
+  // ========================================
+  // Permission validation methods
+  // ========================================
+
+  /**
+   * Validate user is admin (SUPER_ADMIN or POSITION_ADMIN)
+   * Consolidates admin check patterns across services
+   */
+  static isAdmin(userRole: string): boolean {
+    return userRole === 'super_admin' || userRole === 'position_admin';
+  }
+
+  /**
+   * Validate user is super admin
+   * Consolidates super admin check patterns
+   */
+  static isSuperAdmin(userRole: string): boolean {
+    return userRole === 'super_admin';
+  }
+
+  /**
+   * Validate user has permission (is owner or admin)
+   * Consolidates ownership/admin check patterns
+   */
+  static hasPermission(userId: string, ownerId: string, userRole: string): boolean {
+    return userId === ownerId || this.isAdmin(userRole);
+  }
+
+  /**
+   * Validate user is one of multiple possible owners or admin
+   * Consolidates multi-owner permission patterns
+   */
+  static hasAnyPermission(
+    userId: string,
+    ownerIds: (string | null | undefined)[],
+    userRole: string
+  ): boolean {
+    const validOwnerIds = ownerIds.filter((id): id is string => id !== null && id !== undefined);
+    return validOwnerIds.includes(userId) || this.isAdmin(userRole);
   }
 }

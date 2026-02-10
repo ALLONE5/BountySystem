@@ -1,6 +1,8 @@
-import { Router, Request, Response } from 'express';
-import { Pool } from 'pg';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
+import type { Pool } from 'pg';
 import { RankingService } from '../services/RankingService.js';
+import { rankingUpdateQueue } from '../services/RankingUpdateQueue.js';
 import { RankingPeriod } from '../models/Ranking.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -145,6 +147,7 @@ export function createRankingRouter(pool: Pool): Router {
   /**
    * POST /api/rankings/update-all
    * Update all rankings (monthly, quarterly, all-time) (admin only)
+   * This endpoint forces an immediate update, bypassing the debounce queue
    */
   router.post('/update-all', authenticate, asyncHandler(async (req: Request, res: Response) => {
     const user = (req as any).user;
@@ -154,14 +157,26 @@ export function createRankingRouter(pool: Pool): Router {
       throw new AppError('FORBIDDEN', 'Only super admins can update rankings', 403);
     }
 
-    const result = await rankingService.updateAllRankings();
+    // Force immediate update (bypass debouncing)
+    await rankingUpdateQueue.forceUpdate();
 
     res.json({
       message: 'All rankings updated successfully',
-      monthly: result.monthly.length,
-      quarterly: result.quarterly.length,
-      allTime: result.allTime.length,
     });
+  }));
+
+  /**
+   * GET /api/rankings/status
+   * Get ranking update queue status
+   */
+  router.get('/status', authenticate, asyncHandler(async (req: Request, res: Response) => {
+    const status = {
+      isUpdating: rankingUpdateQueue.isUpdateInProgress(),
+      hasPendingUpdate: rankingUpdateQueue.hasPendingUpdate(),
+      debounceDelay: rankingUpdateQueue.getDebounceDelay(),
+    };
+
+    res.json(status);
   }));
 
   return router;

@@ -5,6 +5,7 @@
  */
 
 import { redisClient } from '../config/redis.js';
+import { logger } from '../config/logger.js';
 
 export enum QueueName {
   NOTIFICATIONS = 'queue:notifications',
@@ -84,10 +85,10 @@ export class QueueService {
 
     try {
       await redisClient.rPush(queueName, JSON.stringify(job));
-      console.log(`Job ${job.id} enqueued to ${queueName}`);
+      logger.info('Job enqueued to queue', { jobId: job.id, queueName, type });
       return job.id;
     } catch (error) {
-      console.error(`Error enqueueing job to ${queueName}:`, error);
+      logger.error('Error enqueueing job to queue', error as Error, { queueName, type });
       throw error;
     }
   }
@@ -102,10 +103,15 @@ export class QueueService {
 
       const job: QueueJob = JSON.parse(result.element);
       job.attempts++;
-      console.log(`Job ${job.id} dequeued from ${queueName} (attempt ${job.attempts})`);
+      logger.info('Job dequeued from queue', { 
+        jobId: job.id, 
+        queueName, 
+        attempt: job.attempts,
+        maxAttempts: job.maxAttempts 
+      });
       return job;
     } catch (error) {
-      console.error(`Error dequeuing from ${queueName}:`, error);
+      logger.error('Error dequeuing from queue', error as Error, { queueName });
       return null;
     }
   }
@@ -115,7 +121,12 @@ export class QueueService {
    */
   static async retry(queueName: QueueName, job: QueueJob, error: string): Promise<void> {
     if (job.attempts >= job.maxAttempts) {
-      console.error(`Job ${job.id} failed after ${job.attempts} attempts:`, error);
+      logger.error('Job failed after maximum attempts', new Error(error), { 
+        jobId: job.id, 
+        attempts: job.attempts,
+        maxAttempts: job.maxAttempts,
+        queueName 
+      });
       await this.moveToDeadLetterQueue(queueName, job, error);
       return;
     }
@@ -126,9 +137,14 @@ export class QueueService {
     setTimeout(async () => {
       try {
         await redisClient.rPush(queueName, JSON.stringify(job));
-        console.log(`Job ${job.id} re-queued for retry (attempt ${job.attempts + 1})`);
+        logger.info('Job re-queued for retry', { 
+          jobId: job.id, 
+          queueName,
+          nextAttempt: job.attempts + 1,
+          maxAttempts: job.maxAttempts 
+        });
       } catch (err) {
-        console.error(`Error re-queuing job ${job.id}:`, err);
+        logger.error('Error re-queuing job', err as Error, { jobId: job.id, queueName });
       }
     }, this.RETRY_DELAY);
   }
@@ -147,9 +163,18 @@ export class QueueService {
 
     try {
       await redisClient.rPush(dlqName, JSON.stringify(job));
-      console.log(`Job ${job.id} moved to dead letter queue: ${dlqName}`);
+      logger.info('Job moved to dead letter queue', { 
+        jobId: job.id, 
+        queueName,
+        dlqName,
+        error 
+      });
     } catch (err) {
-      console.error(`Error moving job ${job.id} to DLQ:`, err);
+      logger.error('Error moving job to DLQ', err as Error, { 
+        jobId: job.id, 
+        queueName,
+        dlqName 
+      });
     }
   }
 
@@ -160,7 +185,7 @@ export class QueueService {
     try {
       return await redisClient.lLen(queueName);
     } catch (error) {
-      console.error(`Error getting queue length for ${queueName}:`, error);
+      logger.error('Error getting queue length', error as Error, { queueName });
       return 0;
     }
   }
@@ -171,9 +196,9 @@ export class QueueService {
   static async clearQueue(queueName: QueueName): Promise<void> {
     try {
       await redisClient.del(queueName);
-      console.log(`Queue ${queueName} cleared`);
+      logger.info('Queue cleared', { queueName });
     } catch (error) {
-      console.error(`Error clearing queue ${queueName}:`, error);
+      logger.error('Error clearing queue', error as Error, { queueName });
     }
   }
 

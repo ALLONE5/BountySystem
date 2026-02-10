@@ -1,6 +1,6 @@
 import { redisClient, redisSubscriber } from '../config/redis.js';
+import { logger } from '../config/logger.js';
 import { Notification } from '../models/Notification.js';
-
 /**
  * NotificationPushService handles real-time notification delivery using Redis Pub/Sub
  * This service can be extended to support WebSocket connections in the future
@@ -25,7 +25,7 @@ export class NotificationPushService {
         message
       );
     } catch (error) {
-      console.error('Error publishing notification:', error);
+      logger.error('Error publishing notification:', error);
       // Don't throw - notification is already saved in database
     }
   }
@@ -53,7 +53,7 @@ export class NotificationPushService {
 
       await redisClient.publish(NotificationPushService.NOTIFICATION_CHANNEL, message);
     } catch (error) {
-      console.error('Error publishing broadcast:', error);
+      logger.error('Error publishing broadcast:', error);
     }
   }
 
@@ -74,7 +74,7 @@ export class NotificationPushService {
           callback(parsed.data);
         }
       } catch (error) {
-        console.error('Error parsing notification message:', error);
+        logger.error('Error parsing notification message:', error);
       }
     });
   }
@@ -92,7 +92,7 @@ export class NotificationPushService {
             callback(parsed.data);
           }
         } catch (error) {
-          console.error('Error parsing broadcast message:', error);
+          logger.error('Error parsing broadcast message:', error);
         }
       }
     );
@@ -122,7 +122,7 @@ export class NotificationPushService {
       const count = await redisClient.pubSubNumSub(channel);
       return count[channel] || 0;
     } catch (error) {
-      console.error('Error getting subscriber count:', error);
+      logger.error('Error getting subscriber count:', error);
       return 0;
     }
   }

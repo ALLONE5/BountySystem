@@ -5,6 +5,7 @@ import { IUserRepository } from '../repositories/UserRepository.js';
 import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { UserMapper } from '../utils/mappers/UserMapper.js';
 import { AuthorizationError, NotFoundError } from '../utils/errors.js';
+import { Validator } from '../utils/Validator.js';
 
 const SALT_ROUNDS = 10;
 
@@ -224,33 +225,39 @@ export class UserService {
   /**
    * Validate password strength
    * Requirements: at least 8 characters, contains uppercase, lowercase, number
+   * Uses Validator utility for consistent validation
    */
   validatePasswordStrength(password: string): void {
-    if (password.length < 8) {
-      throw new Error('Password must be at least 8 characters long');
-    }
+    Validator.minLength(password, 8, 'Password');
 
-    if (!/[A-Z]/.test(password)) {
-      throw new Error('Password must contain at least one uppercase letter');
-    }
+    Validator.custom(
+      password,
+      (pwd) => /[A-Z]/.test(pwd),
+      'Password',
+      'Password must contain at least one uppercase letter'
+    );
 
-    if (!/[a-z]/.test(password)) {
-      throw new Error('Password must contain at least one lowercase letter');
-    }
+    Validator.custom(
+      password,
+      (pwd) => /[a-z]/.test(pwd),
+      'Password',
+      'Password must contain at least one lowercase letter'
+    );
 
-    if (!/[0-9]/.test(password)) {
-      throw new Error('Password must contain at least one number');
-    }
+    Validator.custom(
+      password,
+      (pwd) => /[0-9]/.test(pwd),
+      'Password',
+      'Password must contain at least one number'
+    );
   }
 
   /**
    * Validate email format
+   * Uses Validator utility for consistent validation
    */
   validateEmailFormat(email: string): void {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error('Invalid email format');
-    }
+    Validator.email(email, 'Email');
   }
 
   /**

@@ -70,6 +70,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       
       // Show toast notification
       showNotificationToast(notification);
+      
+      // Trigger events for specific notification types
+      if (notification.type === 'review_required') {
+        // New application submitted - notify admins
+        window.dispatchEvent(new Event('application-submitted'));
+      } else if (notification.type === 'position_approved' || notification.type === 'position_rejected') {
+        // Application reviewed - update badge for admins
+        window.dispatchEvent(new Event('application-reviewed'));
+      }
     },
     [showNotificationToast]
   );

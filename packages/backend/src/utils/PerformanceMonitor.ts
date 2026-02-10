@@ -5,7 +5,7 @@
 
 import { logger } from '../config/logger.js';
 
-export interface PerformanceMetrics {
+interface PerformanceMetrics {
   operation: string;
   duration: number;
   cacheHit?: boolean;
@@ -13,7 +13,7 @@ export interface PerformanceMetrics {
   timestamp: Date;
 }
 
-export interface AggregatedMetrics {
+interface AggregatedMetrics {
   operation: string;
   count: number;
   avgDuration: number;

@@ -1,4 +1,4 @@
-import { Position, PositionApplication, ApplicationStatus } from '../../models/Position.js';
+import type { Position, PositionApplication, ApplicationStatus } from '../../models/Position.js';
 import { UserMapper } from './UserMapper.js';
 
 /**
@@ -63,23 +63,6 @@ export class PositionMapper {
   }
 
   /**
-   * Extract position from joined query with prefix
-   */
-  static extractPositionFromJoin(row: any, prefix: string): any | undefined {
-    const idKey = `${prefix}.id`;
-    if (!row[idKey]) return undefined;
-
-    return {
-      id: row[idKey],
-      name: row[`${prefix}.name`],
-      description: row[`${prefix}.description`],
-      requiredSkills: row[`${prefix}.requiredSkills`],
-      createdAt: row[`${prefix}.createdAt`],
-      updatedAt: row[`${prefix}.updatedAt`],
-    };
-  }
-
-  /**
    * Get SELECT fields for position query
    */
   static getSelectFields(alias: string = 'p'): string[] {
@@ -89,38 +72,6 @@ export class PositionMapper {
       `${alias}.description`,
       `${alias}.required_skills as "requiredSkills"`,
       `${alias}.created_at as "createdAt"`,
-      `${alias}.updated_at as "updatedAt"`,
-    ];
-  }
-
-  /**
-   * Get SELECT fields for joined position (with prefix)
-   */
-  static getJoinedSelectFields(alias: string, prefix: string): string[] {
-    return [
-      `${alias}.id as "${prefix}.id"`,
-      `${alias}.name as "${prefix}.name"`,
-      `${alias}.description as "${prefix}.description"`,
-      `${alias}.required_skills as "${prefix}.requiredSkills"`,
-      `${alias}.created_at as "${prefix}.createdAt"`,
-      `${alias}.updated_at as "${prefix}.updatedAt"`,
-    ];
-  }
-
-  /**
-   * Get SELECT fields for position application query
-   */
-  static getApplicationSelectFields(alias: string = 'pa'): string[] {
-    return [
-      `${alias}.id`,
-      `${alias}.user_id as "userId"`,
-      `${alias}.position_id as "positionId"`,
-      `${alias}.reason`,
-      `${alias}.status`,
-      `${alias}.reviewed_by as "reviewedBy"`,
-      `${alias}.review_comment as "reviewComment"`,
-      `${alias}.created_at as "createdAt"`,
-      `${alias}.reviewed_at as "reviewedAt"`,
       `${alias}.updated_at as "updatedAt"`,
     ];
   }

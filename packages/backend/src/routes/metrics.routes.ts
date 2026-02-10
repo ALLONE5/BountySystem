@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { UserRole } from '../models/User.js';
 import { performanceMonitor } from '../utils/PerformanceMonitor.js';

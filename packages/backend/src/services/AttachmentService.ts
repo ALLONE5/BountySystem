@@ -1,6 +1,6 @@
 
-import { Pool } from 'pg';
-import { Attachment, AttachmentCreateDTO } from '../models/Attachment.js';
+import type { Pool } from 'pg';
+import type { Attachment, AttachmentCreateDTO } from '../models/Attachment.js';
 
 export class AttachmentService {
   constructor(private pool: Pool) {}

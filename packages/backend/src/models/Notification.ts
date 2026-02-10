@@ -13,6 +13,8 @@ export enum NotificationType {
   TASK_ASSIGNMENT_INVITATION = 'task_assignment_invitation',
   TASK_ASSIGNMENT_ACCEPTED = 'task_assignment_accepted',
   TASK_ASSIGNMENT_REJECTED = 'task_assignment_rejected',
+  BONUS_REWARD = 'bonus_reward',
+  ADMIN_ANNOUNCEMENT = 'admin_announcement',
 }
 
 export interface Notification {

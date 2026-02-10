@@ -3,7 +3,9 @@ import { Task, TaskCreateDTO, TaskUpdateDTO, TaskStatus, Visibility, TaskStats, 
 import { ValidationError, NotFoundError, AuthorizationError } from '../utils/errors.js';
 import { DependencyService } from './DependencyService.js';
 import { BountyService } from './BountyService.js';
+import { BountyDistributionService } from './BountyDistributionService.js';
 import { RankingService } from './RankingService.js';
+import { rankingUpdateQueue } from './RankingUpdateQueue.js';
 import { NotificationService } from './NotificationService.js';
 import { NotificationType } from '../models/Notification.js';
 import { UserResponse } from '../models/User.js';
@@ -15,10 +17,14 @@ import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { TransactionManager } from '../utils/TransactionManager.js';
 import { CacheService } from './CacheService.js';
 import { performanceMonitor } from '../utils/PerformanceMonitor.js';
+import { Validator } from '../utils/Validator.js';
+import { OwnershipValidator } from '../utils/OwnershipValidator.js';
+import { logger } from '../config/logger.js';
 
 export class TaskService {
   private dependencyService: DependencyService;
   private bountyService: BountyService;
+  private bountyDistributionService: BountyDistributionService;
   private rankingService: RankingService;
   private notificationService: NotificationService;
   private taskRepository: TaskRepository;
@@ -37,6 +43,7 @@ export class TaskService {
   ) {
     this.dependencyService = new DependencyService();
     this.bountyService = new BountyService();
+    this.bountyDistributionService = new BountyDistributionService();
     this.rankingService = new RankingService(pool);
     this.notificationService = new NotificationService();
     
@@ -108,14 +115,6 @@ export class TaskService {
       
       return result;
     });
-  }
-
-  /**
-   * Build cache key for available tasks query
-   * Format: available_tasks:{userId}:{role}:{page}:{pageSize}
-   */
-  private buildCacheKey(userId: string, role: string, page: number, pageSize: number): string {
-    return `available_tasks:${userId}:${role}:${page}:${pageSize}`;
   }
 
   /**
@@ -337,7 +336,7 @@ export class TaskService {
     try {
       await this.cacheService.deletePattern('available_tasks:*');
     } catch (error) {
-      console.warn('Failed to invalidate cache after task creation', { error, taskId: task.id });
+      logger.warn('Failed to invalidate cache after task creation', { error, taskId: task.id });
     }
 
     // If this is a subtask, update parent task statistics
@@ -367,10 +366,8 @@ export class TaskService {
       throw new NotFoundError('Task not found');
     }
 
-    // Verify permission: only publisher can publish
-    if (task.publisherId !== publisherId) {
-      throw new AuthorizationError('Only the publisher can publish this task');
-    }
+    // Verify permission: only publisher can publish using OwnershipValidator
+    await OwnershipValidator.validateTaskOwnership(taskId, publisherId);
 
     // Verify task is in NOT_STARTED status
     if (task.status !== TaskStatus.NOT_STARTED) {
@@ -395,7 +392,7 @@ export class TaskService {
     try {
       await this.cacheService.deletePattern('available_tasks:*');
     } catch (error) {
-      console.warn('Failed to invalidate cache after task publish', { error, taskId });
+      logger.warn('Failed to invalidate cache after task publish', { error, taskId });
     }
 
     return updatedTask;
@@ -406,6 +403,18 @@ export class TaskService {
    */
   async getTask(taskId: string): Promise<Task | null> {
     return this.taskRepository.findByIdWithRelations(taskId);
+  }
+
+  /**
+   * Get task by ID or throw NotFoundError
+   * Helper method to eliminate repeated null checks
+   */
+  private async getTaskOrThrow(taskId: string, errorMessage?: string): Promise<Task> {
+    const task = await this.getTask(taskId);
+    if (!task) {
+      throw new NotFoundError(errorMessage || `Task ${taskId} not found`);
+    }
+    return task;
   }
 
   /**
@@ -616,16 +625,16 @@ export class TaskService {
       try {
         await this.cacheService.deletePattern('available_tasks:*');
       } catch (error) {
-        console.warn('Failed to invalidate cache after task update', { error, taskId });
+        logger.warn('Failed to invalidate cache after task update', { error, taskId });
       }
     }
 
-    // Trigger ranking update if task is completed (async, don't wait)
-    // This improves response time as ranking updates can be slow
+    // Trigger ranking update if task is completed (async with debouncing)
+    // Uses a 2-second debounce to batch multiple completions together
+    // This ensures rankings are updated quickly (within 2 seconds) while avoiding excessive calculations
     if (updates.status === TaskStatus.COMPLETED && task.status !== TaskStatus.COMPLETED) {
-      this.rankingService.updateAllRankings().catch(error => {
-        console.error('Failed to update rankings:', error);
-      });
+      rankingUpdateQueue.scheduleUpdate();
+      logger.debug('Ranking update scheduled for task completion', { taskId });
     }
 
     // If task attributes that affect parent stats were updated, recalculate parent stats
@@ -648,12 +657,12 @@ export class TaskService {
       throw new NotFoundError('Task not found');
     }
 
-    // Check permission: only publisher can delete tasks in not_started or available status
-    const canDelete = task.publisherId === userId && 
-      (task.status === TaskStatus.NOT_STARTED || task.status === TaskStatus.AVAILABLE);
+    // Check permission: only publisher can delete tasks in not_started or available status using OwnershipValidator
+    await OwnershipValidator.validateTaskOwnership(taskId, userId);
     
-    if (!canDelete) {
-      throw new AuthorizationError('Only the publisher can delete tasks in not_started or available status');
+    // Additional check: task must be in not_started or available status
+    if (task.status !== TaskStatus.NOT_STARTED && task.status !== TaskStatus.AVAILABLE) {
+      throw new AuthorizationError('Only tasks in not_started or available status can be deleted');
     }
 
     const query = 'DELETE FROM tasks WHERE id = $1';
@@ -663,7 +672,7 @@ export class TaskService {
     try {
       await this.cacheService.deletePattern('available_tasks:*');
     } catch (error) {
-      console.warn('Failed to invalidate cache after task deletion', { error, taskId });
+      logger.warn('Failed to invalidate cache after task deletion', { error, taskId });
     }
 
     // If this was a subtask, update parent statistics
@@ -676,37 +685,87 @@ export class TaskService {
    * Get tasks by user (as publisher or assignee)
    */
   async getTasksByUser(userId: string, role: 'publisher' | 'assignee', onlyTopLevel: boolean = false): Promise<Task[]> {
-    const whereCondition = role === 'publisher' 
-      ? 't.publisher_id = $1' 
-      : 't.assignee_id = $1';
-    
     const parentCondition = onlyTopLevel ? 'AND t.parent_id IS NULL' : '';
 
-    const query = `
-      SELECT 
-        t.id, t.name, t.description, t.parent_id as "parentId", t.depth, t.is_executable as "isExecutable",
-        t.tags, t.created_at as "createdAt", t.planned_start_date as "plannedStartDate",
-        t.planned_end_date as "plannedEndDate", t.actual_start_date as "actualStartDate",
-        t.actual_end_date as "actualEndDate", t.estimated_hours as "estimatedHours",
-        t.complexity, t.priority, t.status, t.progress, t.visibility,
-        t.bounty_amount as "bountyAmount", t.bounty_algorithm_version as "bountyAlgorithmVersion",
-        t.publisher_id as "publisherId", t.assignee_id as "assigneeId",
-        t.project_group_id as "projectGroupId", t.group_id as "groupId",
-        t.updated_at as "updatedAt",
-        u_publisher.username as publisher_name,
-        u_assignee.username as assignee_name,
-        a_publisher.image_url as publisher_avatar_url,
-        a_assignee.image_url as assignee_avatar_url,
-        pg.name as "projectGroupName"
-      FROM tasks t
-      LEFT JOIN users u_publisher ON t.publisher_id = u_publisher.id
-      LEFT JOIN users u_assignee ON t.assignee_id = u_assignee.id
-      LEFT JOIN avatars a_publisher ON u_publisher.avatar_id = a_publisher.id
-      LEFT JOIN avatars a_assignee ON u_assignee.avatar_id = a_assignee.id
-      LEFT JOIN project_groups pg ON t.project_group_id = pg.id
-      WHERE ${whereCondition} ${parentCondition}
-      ORDER BY t.created_at DESC
-    `;
+    let query: string;
+    
+    if (role === 'publisher') {
+      // For publisher: get all tasks where user is publisher
+      query = `
+        SELECT 
+          t.id, t.name, t.description, t.parent_id as "parentId", t.depth, t.is_executable as "isExecutable",
+          t.tags, t.created_at as "createdAt", t.planned_start_date as "plannedStartDate",
+          t.planned_end_date as "plannedEndDate", t.actual_start_date as "actualStartDate",
+          t.actual_end_date as "actualEndDate", t.estimated_hours as "estimatedHours",
+          t.complexity, t.priority, t.status, t.progress, t.visibility,
+          t.bounty_amount as "bountyAmount", t.bounty_algorithm_version as "bountyAlgorithmVersion",
+          t.publisher_id as "publisherId", t.assignee_id as "assigneeId",
+          t.project_group_id as "projectGroupId", t.group_id as "groupId",
+          t.updated_at as "updatedAt",
+          u_publisher.username as publisher_name,
+          u_assignee.username as assignee_name,
+          a_publisher.image_url as publisher_avatar_url,
+          a_assignee.image_url as assignee_avatar_url,
+          pg.name as "projectGroupName"
+        FROM tasks t
+        LEFT JOIN users u_publisher ON t.publisher_id = u_publisher.id
+        LEFT JOIN users u_assignee ON t.assignee_id = u_assignee.id
+        LEFT JOIN avatars a_publisher ON u_publisher.avatar_id = a_publisher.id
+        LEFT JOIN avatars a_assignee ON u_assignee.avatar_id = a_assignee.id
+        LEFT JOIN project_groups pg ON t.project_group_id = pg.id
+        WHERE t.publisher_id = $1 ${parentCondition}
+        ORDER BY t.created_at DESC
+      `;
+    } else {
+      // For assignee: get tasks assigned to user AND their subtasks
+      query = `
+        WITH RECURSIVE task_tree AS (
+          -- Get tasks directly assigned to the user
+          SELECT 
+            t.id, t.name, t.description, t.parent_id as "parentId", t.depth, t.is_executable as "isExecutable",
+            t.tags, t.created_at as "createdAt", t.planned_start_date as "plannedStartDate",
+            t.planned_end_date as "plannedEndDate", t.actual_start_date as "actualStartDate",
+            t.actual_end_date as "actualEndDate", t.estimated_hours as "estimatedHours",
+            t.complexity, t.priority, t.status, t.progress, t.visibility,
+            t.bounty_amount as "bountyAmount", t.bounty_algorithm_version as "bountyAlgorithmVersion",
+            t.publisher_id as "publisherId", t.assignee_id as "assigneeId",
+            t.project_group_id as "projectGroupId", t.group_id as "groupId",
+            t.updated_at as "updatedAt"
+          FROM tasks t
+          WHERE t.assignee_id = $1 ${parentCondition}
+          
+          UNION ALL
+          
+          -- Get all subtasks of assigned tasks
+          SELECT 
+            t.id, t.name, t.description, t.parent_id, t.depth, t.is_executable,
+            t.tags, t.created_at, t.planned_start_date,
+            t.planned_end_date, t.actual_start_date,
+            t.actual_end_date, t.estimated_hours,
+            t.complexity, t.priority, t.status, t.progress, t.visibility,
+            t.bounty_amount, t.bounty_algorithm_version,
+            t.publisher_id, t.assignee_id,
+            t.project_group_id, t.group_id,
+            t.updated_at
+          FROM tasks t
+          INNER JOIN task_tree tt ON t.parent_id = tt.id
+        )
+        SELECT DISTINCT
+          tt.*,
+          u_publisher.username as publisher_name,
+          u_assignee.username as assignee_name,
+          a_publisher.image_url as publisher_avatar_url,
+          a_assignee.image_url as assignee_avatar_url,
+          pg.name as "projectGroupName"
+        FROM task_tree tt
+        LEFT JOIN users u_publisher ON tt."publisherId" = u_publisher.id
+        LEFT JOIN users u_assignee ON tt."assigneeId" = u_assignee.id
+        LEFT JOIN avatars a_publisher ON u_publisher.avatar_id = a_publisher.id
+        LEFT JOIN avatars a_assignee ON u_assignee.avatar_id = a_assignee.id
+        LEFT JOIN project_groups pg ON tt."projectGroupId" = pg.id
+        ORDER BY tt."createdAt" DESC
+      `;
+    }
     
     const result = await pool.query(query, [userId]);
     return this.mapTasksWithUsers(result.rows);
@@ -915,10 +974,8 @@ export class TaskService {
       throw new ValidationError('Only the parent task assignee can publish subtasks after the parent task is accepted');
     }
 
-    // Validate bounty amount
-    if (publishData.bountyAmount <= 0) {
-      throw new ValidationError('Bounty amount must be greater than 0');
-    }
+    // Validate bounty amount using Validator
+    Validator.positive(publishData.bountyAmount, 'Bounty amount');
 
     // Get user to verify balance
     const userQuery = `
@@ -993,7 +1050,7 @@ export class TaskService {
     try {
       await this.cacheService.deletePattern('available_tasks:*');
     } catch (error) {
-      console.warn('Failed to invalidate cache after task assignment', { error, taskId });
+      logger.warn('Failed to invalidate cache after task assignment', { error, taskId });
     }
 
     return updatedTask;
@@ -1108,7 +1165,7 @@ export class TaskService {
       try {
         await this.cacheService.deletePattern('available_tasks:*');
       } catch (error) {
-        console.warn('Failed to invalidate cache after task acceptance', { error, taskId });
+        logger.warn('Failed to invalidate cache after task acceptance', { error, taskId });
       }
 
       // Return updated task
@@ -1139,7 +1196,7 @@ export class TaskService {
     try {
       await this.cacheService.deletePattern('available_tasks:*');
     } catch (error) {
-      console.warn('Failed to invalidate cache after task acceptance', { error, taskId });
+      logger.warn('Failed to invalidate cache after task acceptance', { error, taskId });
     }
 
     return updatedTask;
@@ -1192,10 +1249,28 @@ export class TaskService {
     // Requirement 27.5: Lock progress after completion
     await this.lockProgress(taskId);
 
+    // Distribute bounty and create transaction records
+    // This should happen after task completion to ensure bounty is only distributed once
+    try {
+      if (!task.isBountySettled) {
+        await this.bountyDistributionService.distributeBounty(taskId);
+        logger.info('Bounty distributed successfully', { taskId, userId });
+      }
+    } catch (error) {
+      // Log error but don't fail the task completion
+      // Bounty distribution can be retried manually if needed
+      logger.error('Failed to distribute bounty after task completion', { 
+        error, 
+        taskId, 
+        userId,
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+
     // Invalidate available tasks cache asynchronously (don't wait for it)
     // This improves response time significantly as Redis KEYS operation can be slow
     this.cacheService.deletePattern('available_tasks:*').catch(error => {
-      console.warn('Failed to invalidate cache after task completion', { error, taskId });
+      logger.warn('Failed to invalidate cache after task completion', { error, taskId });
     });
 
     // Check if task has any dependent tasks
@@ -1222,10 +1297,154 @@ export class TaskService {
   }
 
   /**
+   * Add bonus reward to a completed task (admin only)
+   * Requirements: Admin can add extra bounty to reward exceptional work
+   * 
+   * @param taskId - Task ID
+   * @param bonusAmount - Additional bounty amount
+   * @param adminId - Admin user ID who is adding the bonus
+   * @param reason - Optional reason for the bonus
+   * @returns Updated task and transaction record
+   */
+  async addBonusReward(
+    taskId: string, 
+    bonusAmount: number, 
+    adminId: string, 
+    reason?: string
+  ): Promise<{ task: Task; transaction: any }> {
+    const task = await this.getTask(taskId);
+    if (!task) {
+      throw new NotFoundError('Task not found');
+    }
+
+    // Verify task is completed
+    if (task.status !== TaskStatus.COMPLETED) {
+      throw new ValidationError('Can only add bonus to completed tasks');
+    }
+
+    // Verify task has an assignee
+    if (!task.assigneeId) {
+      throw new ValidationError('Task must have an assignee to receive bonus');
+    }
+
+    // Check if this admin has already given a bonus for this task
+    const existingBonusQuery = `
+      SELECT id, created_at FROM bounty_transactions 
+      WHERE task_id = $1 AND from_user_id = $2 AND type = 'extra_reward'
+    `;
+    const existingBonus = await pool.query(existingBonusQuery, [taskId, adminId]);
+    
+    if (existingBonus.rows.length > 0) {
+      const existingDate = new Date(existingBonus.rows[0].created_at).toLocaleString();
+      console.log(`🚫 Duplicate bonus attempt blocked - Admin ${adminId} already gave bonus to task ${taskId} on ${existingDate}`);
+      throw new ValidationError(`You have already given a bonus reward for this task on ${existingDate}`);
+    }
+
+    // Also check if there are too many bonus rewards for this task (safety limit)
+    const totalBonusQuery = `
+      SELECT COUNT(*) as count FROM bounty_transactions 
+      WHERE task_id = $1 AND type = 'extra_reward'
+    `;
+    const totalBonusResult = await pool.query(totalBonusQuery, [taskId]);
+    const totalBonusCount = parseInt(totalBonusResult.rows[0].count);
+    
+    if (totalBonusCount >= 5) {
+      console.log(`🚫 Maximum bonus limit reached - Task ${taskId} already has ${totalBonusCount} bonus rewards`);
+      throw new ValidationError('This task has already received the maximum number of bonus rewards');
+    }
+
+    console.log(`✅ Bonus validation passed - Admin ${adminId} can give bonus to task ${taskId}`);
+
+    // Update task bounty amount
+    const newBountyAmount = Number(task.bountyAmount || 0) + bonusAmount;
+    await this.updateTask(taskId, {
+      bountyAmount: newBountyAmount,
+    });
+
+    // Create bounty transaction record for the bonus
+    const transactionQuery = `
+      INSERT INTO bounty_transactions (
+        task_id, from_user_id, to_user_id, amount, type, description, status, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+      RETURNING *
+    `;
+
+    const description = reason 
+      ? `额外奖赏: ${reason}` 
+      : '额外奖赏';
+
+    const transactionResult = await pool.query(transactionQuery, [
+      taskId,
+      adminId, // from_user_id is the admin who gives the bonus
+      task.assigneeId, // to_user_id
+      bonusAmount,
+      'extra_reward', // type (must match the enum value)
+      description,
+      'completed', // status
+    ]);
+
+    // Update user balance
+    const updateBalanceQuery = `
+      UPDATE users 
+      SET balance = balance + $1 
+      WHERE id = $2
+    `;
+    await pool.query(updateBalanceQuery, [bonusAmount, task.assigneeId]);
+
+    // Send notification to assignee
+    await this.notificationService.createNotification({
+      userId: task.assigneeId,
+      type: NotificationType.BONUS_REWARD,
+      title: '您收到了额外奖赏',
+      message: `恭喜！您完成的任务"${task.name}"获得了 $${bonusAmount.toFixed(2)} 的额外奖赏${reason ? `：${reason}` : ''}`,
+      relatedTaskId: taskId,
+      senderId: adminId,
+    });
+
+    // Trigger ranking update asynchronously
+    rankingUpdateQueue.scheduleUpdate();
+
+    // Get updated task
+    const updatedTask = await this.getTask(taskId);
+
+    logger.info('Bonus reward added successfully', { 
+      taskId, 
+      assigneeId: task.assigneeId, 
+      bonusAmount, 
+      adminId,
+      reason 
+    });
+
+    return {
+      task: updatedTask!,
+      transaction: transactionResult.rows[0],
+    };
+  }
+
+  /**
    * Remove a dependency from a task
    */
   async removeDependency(taskId: string, dependsOnTaskId: string): Promise<void> {
     await this.dependencyService.removeDependency(taskId, dependsOnTaskId);
+  }
+
+  /**
+   * Get bonus reward records for a task
+   */
+  async getBonusRewards(taskId: string): Promise<any[]> {
+    const query = `
+      SELECT 
+        bt.*,
+        u.username as admin_username,
+        u.email as admin_email
+      FROM bounty_transactions bt
+      LEFT JOIN users u ON bt.from_user_id = u.id
+      WHERE bt.task_id = $1 AND bt.type = 'extra_reward'
+      ORDER BY bt.created_at DESC
+    `;
+    
+    const result = await pool.query(query, [taskId]);
+    return result.rows;
   }
 
   /**
@@ -1352,13 +1571,9 @@ export class TaskService {
     const page = pagination?.page || 1;
     const pageSize = Math.min(pagination?.pageSize || 50, 100); // Max 100
     
-    // Validate pagination parameters
-    if (page < 1) {
-      throw new ValidationError('Page must be >= 1');
-    }
-    if (pageSize < 1 || pageSize > 100) {
-      throw new ValidationError('Page size must be between 1 and 100');
-    }
+    // Validate pagination parameters using Validator
+    Validator.min(page, 1, 'Page');
+    Validator.range(pageSize, 1, 100, 'Page size');
     
     // Build cache key (include sort and search params)
     const cacheKey = `available_tasks:${userId}:${userRole || 'hunter'}:${page}:${pageSize}:${sortBy || 'createdAt'}:${sortOrder || 'desc'}:${searchKeyword || ''}`;
@@ -1384,7 +1599,7 @@ export class TaskService {
         }
       } catch (error) {
         // Log cache error but continue with database query
-        console.warn('Cache lookup failed, falling back to database', { error, cacheKey });
+        logger.warn('Cache lookup failed, falling back to database', { error, cacheKey });
       }
     }
     
@@ -1490,7 +1705,7 @@ export class TaskService {
       try {
         await this.cacheService.set(cacheKey, response, 60); // 60 seconds TTL
       } catch (error) {
-        console.warn('Failed to cache result', { error, cacheKey });
+        logger.warn('Failed to cache result', { error, cacheKey });
       }
     }
     
@@ -1506,62 +1721,6 @@ export class TaskService {
     });
     
     return response;
-  }
-
-  /**
-   * Abandon a task
-   * Requirement 11.1: Restore task to unassigned state and notify publisher
-   * 
-   * @param taskId - ID of the task to abandon
-   * @param userId - ID of the user abandoning the task
-   * @returns Updated task and publisher ID for notification
-   */
-  async abandonTask(taskId: string, userId: string): Promise<{ task: Task; publisherId: string }> {
-    const task = await this.getTask(taskId);
-    if (!task) {
-      throw new NotFoundError('Task not found');
-    }
-
-    // Check permission: only assignee can abandon tasks in in_progress status
-    const canAbandon = task.assigneeId === userId && task.status === TaskStatus.IN_PROGRESS;
-    
-    if (!canAbandon) {
-      throw new AuthorizationError('Only the assignee can abandon tasks in in_progress status');
-    }
-
-    // NEW: If this task has subtasks, set all subtasks to PRIVATE visibility and clear assignee
-    const subtasks = await this.getSubtasks(taskId);
-    if (subtasks.length > 0) {
-      await this.transactionManager.executeInTransaction(async (client) => {
-        // Set all subtasks to PRIVATE visibility and clear assignee
-        await client.query(
-          `UPDATE tasks 
-           SET visibility = $1, assignee_id = NULL, status = $2, updated_at = NOW()
-           WHERE parent_id = $3`,
-          [Visibility.PRIVATE, TaskStatus.NOT_STARTED, taskId]
-        );
-      });
-    }
-
-    // Restore task to unassigned state
-    const updatedTask = await this.updateTask(taskId, {
-      assigneeId: null,
-      status: TaskStatus.NOT_STARTED,
-      progress: 0,
-    });
-
-    // Invalidate available tasks cache after successful abandonment
-    try {
-      await this.cacheService.deletePattern('available_tasks:*');
-    } catch (error) {
-      console.warn('Failed to invalidate cache after task abandonment', { error, taskId });
-    }
-
-    // Return task and publisher ID for notification
-    return {
-      task: updatedTask,
-      publisherId: task.publisherId,
-    };
   }
 
   /**
@@ -1610,7 +1769,7 @@ export class TaskService {
     try {
       await this.cacheService.deletePattern('available_tasks:*');
     } catch (error) {
-      console.warn('Failed to invalidate cache after task transfer', { error, taskId });
+      logger.warn('Failed to invalidate cache after task transfer', { error, taskId });
     }
 
     // Return task and user IDs for notification
@@ -1638,16 +1797,20 @@ export class TaskService {
         t.publisher_id as "publisherId", t.assignee_id as "assigneeId",
         t.project_group_id as "projectGroupId", t.group_id as "groupId",
         t.updated_at as "updatedAt",
-        u_publisher.username as publisher_name,
-        u_assignee.username as assignee_name,
-        a_publisher.image_url as publisher_avatar_url,
-        a_assignee.image_url as assignee_avatar_url,
-        pg.name as project_group_name
+        p.id as "publisher.id", p.username as "publisher.username", p.email as "publisher.email",
+        p.avatar_id as "publisher.avatarId", p.role as "publisher.role",
+        p.created_at as "publisher.createdAt", p.last_login as "publisher.lastLogin",
+        pa.image_url as "publisher.avatarUrl",
+        a.id as "assignee.id", a.username as "assignee.username", a.email as "assignee.email",
+        a.avatar_id as "assignee.avatarId", a.role as "assignee.role",
+        a.created_at as "assignee.createdAt", a.last_login as "assignee.lastLogin",
+        aa.image_url as "assignee.avatarUrl",
+        pg.name as "projectGroupName"
       FROM tasks t
-      LEFT JOIN users u_publisher ON t.publisher_id = u_publisher.id
-      LEFT JOIN users u_assignee ON t.assignee_id = u_assignee.id
-      LEFT JOIN avatars a_publisher ON u_publisher.avatar_id = a_publisher.id
-      LEFT JOIN avatars a_assignee ON u_assignee.avatar_id = a_assignee.id
+      LEFT JOIN users p ON t.publisher_id = p.id
+      LEFT JOIN avatars pa ON p.avatar_id = pa.id
+      LEFT JOIN users a ON t.assignee_id = a.id
+      LEFT JOIN avatars aa ON a.avatar_id = aa.id
       LEFT JOIN project_groups pg ON t.project_group_id = pg.id
       ORDER BY t.created_at DESC
     `;
@@ -1709,10 +1872,8 @@ export class TaskService {
    * @returns Updated task and completion prompt flag
    */
   async updateProgress(taskId: string, progress: number): Promise<{ task: Task; completionPrompt: boolean }> {
-    // Requirement 27.1: Validate progress range (0-100)
-    if (progress < 0 || progress > 100) {
-      throw new ValidationError('Progress must be between 0 and 100');
-    }
+    // Requirement 27.1: Validate progress range (0-100) using Validator
+    Validator.range(progress, 0, 100, 'Progress');
 
     const task = await this.getTask(taskId);
     if (!task) {
@@ -1832,10 +1993,8 @@ export class TaskService {
       throw new NotFoundError('Task not found');
     }
 
-    // Verify permission: only publisher can assign
-    if (task.publisherId !== publisherId) {
-      throw new ValidationError('Only the publisher can assign this task');
-    }
+    // Verify permission: only publisher can assign using OwnershipValidator
+    await OwnershipValidator.validateTaskOwnership(taskId, publisherId);
 
     // Verify task is not already assigned
     if (task.assigneeId) {

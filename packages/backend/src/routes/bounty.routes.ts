@@ -1,11 +1,11 @@
-import { Router, Request, Response } from 'express';
+import type { Router as RouterType, Request, Response } from 'express';
+import { Router } from 'express';
 import { BountyDistributionService } from '../services/BountyDistributionService.js';
 import { BountyService } from '../services/BountyService.js';
 import { TaskReviewService } from '../services/TaskReviewService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/permission.middleware.js';
 import { UserRole } from '../models/User.js';
-import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = Router();
@@ -58,7 +58,7 @@ router.get('/algorithms/:version', authenticate, requireRole([UserRole.SUPER_ADM
  */
 router.post('/algorithms', authenticate, requireRole([UserRole.SUPER_ADMIN]), asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const { version, baseAmount, urgencyWeight, importanceWeight, durationWeight, formula, effectiveFrom } = req.body;
+  const { version, baseAmount, urgencyWeight, importanceWeight, durationWeight, remainingDaysWeight, formula, effectiveFrom } = req.body;
 
   const algorithm = await bountyAlgorithmService.createAlgorithm({
     version,
@@ -66,6 +66,7 @@ router.post('/algorithms', authenticate, requireRole([UserRole.SUPER_ADMIN]), as
     urgencyWeight,
     importanceWeight,
     durationWeight,
+    remainingDaysWeight: remainingDaysWeight ?? 0,
     formula,
     effectiveFrom: effectiveFrom ? new Date(effectiveFrom) : undefined,
     createdBy: userId,

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography,
-  Table,
   Button,
   Space,
   Tag,
@@ -25,7 +24,6 @@ import {
   CloseCircleOutlined,
   TeamOutlined,
   CheckCircleOutlined,
-  SyncOutlined,
   ClockCircleOutlined,
   FolderOutlined,
   MailOutlined,
@@ -131,17 +129,6 @@ export const AssignedTasksPage: React.FC = () => {
     } catch (error) {
       message.error('更新进度失败');
       console.error('Failed to update progress:', error);
-    }
-  };
-
-  const handleAbandonTask = async (taskId: string) => {
-    try {
-      await taskApi.abandonTask(taskId);
-      message.success('任务已放弃');
-      loadTasks();
-    } catch (error) {
-      message.error('放弃任务失败');
-      console.error('Failed to abandon task:', error);
     }
   };
 
@@ -295,7 +282,8 @@ export const AssignedTasksPage: React.FC = () => {
     invitations: invitations.length,
   };
 
-  const columns: ColumnsType<Task> = [
+  // @ts-expect-error - Unused columns definition kept for reference
+  const _columns: ColumnsType<Task> = [
     {
       title: '任务名称',
       dataIndex: 'name',
@@ -372,30 +360,13 @@ export const AssignedTasksPage: React.FC = () => {
       render: (_, record) => (
         <Space size="small">
           {record.status === TaskStatus.IN_PROGRESS && (
-            <>
-              <Button
-                type="link"
-                size="small"
-                onClick={() => handleUpdateProgress(record)}
-              >
-                更新进度
-              </Button>
-              <Button
-                type="link"
-                size="small"
-                danger
-                icon={<CloseCircleOutlined />}
-                onClick={() => {
-                  Modal.confirm({
-                    title: '确定要放弃这个任务吗？',
-                    content: '放弃后任务将恢复为未承接状态',
-                    onOk: () => handleAbandonTask(record.id),
-                  });
-                }}
-              >
-                放弃
-              </Button>
-            </>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => handleUpdateProgress(record)}
+            >
+              更新进度
+            </Button>
           )}
         </Space>
       ),
@@ -483,7 +454,6 @@ export const AssignedTasksPage: React.FC = () => {
                       hideFilters={true} 
                       onTaskUpdated={handleTaskUpdated}
                       onCompleteTask={handleCompleteTask}
-                      onAbandonTask={handleAbandonTask}
                       onJoinGroup={handleJoinGroup}
                       userGroups={userGroups}
                     />
@@ -566,7 +536,7 @@ export const AssignedTasksPage: React.FC = () => {
                         }
                         description={
                           <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                            <Text type="secondary">{task.description}</Text>
+                            <Text type="secondary">{task.description || '无描述'}</Text>
                             
                             <Space wrap>
                               <Space>
@@ -683,7 +653,6 @@ export const AssignedTasksPage: React.FC = () => {
         visible={taskDetailDrawerVisible}
         onClose={() => setTaskDetailDrawerVisible(false)}
         onUpdateProgress={handleUpdateProgress}
-        onAbandonTask={handleAbandonTask}
         onCompleteTask={handleCompleteTask}
         onTaskUpdated={handleTaskUpdated}
         onTaskClick={handleTaskClick}

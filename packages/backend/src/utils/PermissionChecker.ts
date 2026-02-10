@@ -1,7 +1,7 @@
-import { IUserRepository } from '../repositories/UserRepository.js';
-import { ITaskRepository } from '../repositories/TaskRepository.js';
-import { IGroupRepository } from '../repositories/GroupRepository.js';
-import { IPositionRepository } from '../repositories/PositionRepository.js';
+import type { IUserRepository } from '../repositories/UserRepository.js';
+import type { ITaskRepository } from '../repositories/TaskRepository.js';
+import type { IGroupRepository } from '../repositories/GroupRepository.js';
+import type { IPositionRepository } from '../repositories/PositionRepository.js';
 import { AuthorizationError } from './errors.js';
 import { UserRole } from '../models/User.js';
 
@@ -54,7 +54,11 @@ export class PermissionChecker {
 
       return false;
     } catch (error) {
-      console.error('Error checking task access:', error);
+      logger.error('Error checking task access', { 
+        error: error instanceof Error ? error.message : String(error),
+        userId, 
+        taskId 
+      });
       return false;
     }
   }
@@ -116,7 +120,11 @@ export class PermissionChecker {
       
       return isOwner;
     } catch (error) {
-      console.error('Error checking group access:', error);
+      logger.error('Error checking group access', { 
+        error: error instanceof Error ? error.message : String(error),
+        userId, 
+        groupId 
+      });
       return false;
     }
   }
@@ -199,7 +207,11 @@ export class PermissionChecker {
       
       return ownsTask;
     } catch (error) {
-      console.error('Error checking position access:', error);
+      logger.error('Error checking position access', { 
+        error: error instanceof Error ? error.message : String(error),
+        userId, 
+        positionId 
+      });
       return false;
     }
   }

@@ -13,7 +13,7 @@ export interface ApiResponse<T = any> {
 /**
  * CRUD操作配置
  */
-export interface CrudConfig<T = any> {
+export interface CrudConfig {
   basePath: string;
   client?: AxiosInstance;
 }
@@ -25,7 +25,7 @@ export interface CrudConfig<T = any> {
  * const positionApi = createCrudApi<Position>({ basePath: '/positions' });
  * // 自动生成: getAll, getOne, create, update, delete
  */
-export function createCrudApi<T = any>(config: CrudConfig<T>) {
+export function createCrudApi<T = any>(config: CrudConfig) {
   const { basePath, client = apiClient } = config;
 
   return {

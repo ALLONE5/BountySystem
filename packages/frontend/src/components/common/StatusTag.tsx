@@ -1,27 +1,21 @@
 import React from 'react';
 import { Tag } from 'antd';
-import { TaskStatus, UserRole } from '../../types';
+import { TaskStatus, UserRole, InvitationStatus } from '../../types';
+import { 
+  getTaskStatusConfig, 
+  getApplicationStatusConfig, 
+  getInvitationStatusConfig,
+  ApplicationStatus,
+  type StatusConfig 
+} from '../../utils/statusConfig';
 
-type StatusLike = TaskStatus | UserRole | string;
+type StatusLike = TaskStatus | UserRole | InvitationStatus | ApplicationStatus | string;
 
-const taskStatusMap: Record<TaskStatus, { color: string; text: string }> = {
-  [TaskStatus.NOT_STARTED]: { color: 'default', text: '未开始' },
-  [TaskStatus.AVAILABLE]: { color: 'green', text: '可承接' },
-  [TaskStatus.IN_PROGRESS]: { color: 'processing', text: '进行中' },
-  [TaskStatus.COMPLETED]: { color: 'success', text: '已完成' },
-  [TaskStatus.ABANDONED]: { color: 'error', text: '已放弃' },
-};
-
+// Keep role map for UserRole (not part of statusConfig utility)
 const roleMap: Record<UserRole, { color: string; text: string }> = {
   [UserRole.USER]: { color: 'default', text: '普通用户' },
   [UserRole.POSITION_ADMIN]: { color: 'blue', text: '职位管理员' },
   [UserRole.SUPER_ADMIN]: { color: 'red', text: '超级管理员' },
-};
-
-const applicationStatusMap: Record<string, { color: string; text: string }> = {
-  pending: { color: 'orange', text: '待审核' },
-  approved: { color: 'green', text: '已批准' },
-  rejected: { color: 'red', text: '已拒绝' },
 };
 
 const fallback = { color: 'default', text: '' } as const;
@@ -32,16 +26,37 @@ interface StatusTagProps {
   customMap?: Record<string, { color: string; text: string }>;
 }
 
+/**
+ * StatusTag component - displays status with appropriate color and text
+ * 
+ * Now uses centralized statusConfig utility for task, application, and invitation statuses.
+ * This eliminates duplication and ensures consistent status display across the application.
+ * 
+ * Requirements: 4.1, 4.2 - Use centralized status configuration
+ */
 export const StatusTag: React.FC<StatusTagProps> = ({ value, customMap }) => {
-  const map =
-    customMap ??
-    ((value as any) in taskStatusMap
-      ? (taskStatusMap as any)
-      : (value as any) in roleMap
-        ? (roleMap as any)
-        : applicationStatusMap);
+  let config: StatusConfig | { color: string; text: string };
 
-  const config = map[value as keyof typeof map] || fallback;
+  if (customMap) {
+    // Use custom map if provided
+    config = customMap[value as string] || fallback;
+  } else {
+    // Use centralized statusConfig for known status types
+    if (Object.values(TaskStatus).includes(value as TaskStatus)) {
+      config = getTaskStatusConfig(value as TaskStatus);
+    } else if (Object.values(InvitationStatus).includes(value as InvitationStatus)) {
+      config = getInvitationStatusConfig(value as InvitationStatus);
+    } else if (Object.values(ApplicationStatus).includes(value as ApplicationStatus)) {
+      config = getApplicationStatusConfig(value as ApplicationStatus);
+    } else if (Object.values(UserRole).includes(value as UserRole)) {
+      // Keep existing role mapping (not part of statusConfig)
+      config = roleMap[value as UserRole] || fallback;
+    } else {
+      // Fallback for unknown status types
+      config = fallback;
+    }
+  }
+
   if (!config.text) return null;
   return <Tag color={config.color}>{config.text}</Tag>;
 };

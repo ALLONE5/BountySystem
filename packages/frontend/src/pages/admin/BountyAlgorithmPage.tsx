@@ -43,6 +43,7 @@ export const BountyAlgorithmPage: React.FC = () => {
     urgencyWeight: toNumber(algo.urgencyWeight),
     importanceWeight: toNumber(algo.importanceWeight),
     durationWeight: toNumber(algo.durationWeight),
+    remainingDaysWeight: toNumber(algo.remainingDaysWeight, 0),
   });
 
   // 使用CRUD Hook管理数据操作
@@ -63,6 +64,7 @@ export const BountyAlgorithmPage: React.FC = () => {
         urgencyWeight: data.urgencyWeight as number,
         importanceWeight: data.importanceWeight as number,
         durationWeight: data.durationWeight as number,
+        remainingDaysWeight: data.remainingDaysWeight as number || 0,
         formula: data.formula as string,
         effectiveFrom: (data.effectiveFrom as any)?.toDate?.() || data.effectiveFrom as Date,
       };
@@ -100,8 +102,9 @@ export const BountyAlgorithmPage: React.FC = () => {
   const handleAdd = () => {
     form.resetFields();
     form.setFieldsValue({
-      formula: 'baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight)',
+      formula: 'baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight) + (remainingDays * remainingDaysWeight)',
       effectiveFrom: dayjs(),
+      remainingDaysWeight: 5.0,
     });
     createModal.open();
   };
@@ -165,6 +168,12 @@ export const BountyAlgorithmPage: React.FC = () => {
       render: (weight: number) => toNumber(weight).toFixed(4),
     },
     {
+      title: '剩余天数权重',
+      dataIndex: 'remainingDaysWeight',
+      key: 'remainingDaysWeight',
+      render: (weight: number) => toNumber(weight, 0).toFixed(4),
+    },
+    {
       title: '生效时间',
       dataIndex: 'effectiveFrom',
       key: 'effectiveFrom',
@@ -211,12 +220,26 @@ export const BountyAlgorithmPage: React.FC = () => {
               <li><strong>紧急度权重</strong>: 根据截止日期计算的紧急度系数（1-5）</li>
               <li><strong>重要度权重</strong>: 任务优先级系数（1-5）</li>
               <li><strong>工时权重</strong>: 预估工时系数</li>
+              <li><strong>剩余天数权重</strong>: 任务剩余天数系数</li>
             </ul>
-            <Paragraph>
-              <Text type="secondary">
-                公式: 赏金 = 基础金额 + (紧急度 × 紧急度权重) + (重要度 × 重要度权重) + (工时 × 工时权重)
-              </Text>
-            </Paragraph>
+            {currentAlgorithm && (
+              <Paragraph>
+                <Text type="secondary">
+                  当前生效算法 ({currentAlgorithm.version})：
+                </Text>
+                <br />
+                <Text code style={{ whiteSpace: 'pre-wrap', fontSize: '12px' }}>
+                  {currentAlgorithm.formula}
+                </Text>
+              </Paragraph>
+            )}
+            {!currentAlgorithm && (
+              <Paragraph>
+                <Text type="warning">
+                  暂无生效的算法，请创建新算法
+                </Text>
+              </Paragraph>
+            )}
           </div>
         }
         type="info"
@@ -272,67 +295,85 @@ export const BountyAlgorithmPage: React.FC = () => {
           />
         </Form.Item>
 
-        <Space style={{ width: '100%' }} size="large">
-          <Form.Item
-            name="urgencyWeight"
-            label="紧急度权重"
-            rules={[
-              formRules.required('请输入紧急度权重'),
-              formRules.min(0, '权重不能为负数'),
-            ]}
-            extra="紧急度系数（1-5）的权重"
-          >
-            <InputNumber
-              min={0}
-              step={0.1}
-              placeholder="10"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="importanceWeight"
-            label="重要度权重"
-            rules={[
-              formRules.required('请输入重要度权重'),
-              formRules.min(0, '权重不能为负数'),
-            ]}
-            extra="优先级（1-5）的权重"
-          >
-            <InputNumber
-              min={0}
-              step={0.1}
-              placeholder="20"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="durationWeight"
-            label="工时权重"
-            rules={[
-              formRules.required('请输入工时权重'),
-              formRules.min(0, '权重不能为负数'),
-            ]}
-            extra="预估工时的权重"
-          >
-            <InputNumber
-              min={0}
-              step={0.1}
-              placeholder="5"
-            />
-          </Form.Item>
-        </Space>
-
         <Form.Item
-          name="formula"
-          label="计算公式"
-          rules={[formRules.required('请输入计算公式')]}
-          extra="用于文档说明的公式描述"
+          name="urgencyWeight"
+          label="紧急度权重"
+          rules={[
+            formRules.required('请输入紧急度权重'),
+            formRules.min(0, '权重不能为负数'),
+          ]}
+          extra="紧急度系数（1-5）的权重"
         >
-          <TextArea
-            rows={3}
-            placeholder="baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight)"
+          <InputNumber
+            min={0}
+            step={0.1}
+            style={{ width: '100%' }}
+            placeholder="10"
           />
         </Form.Item>
+
+        <Form.Item
+          name="importanceWeight"
+          label="重要度权重"
+          rules={[
+            formRules.required('请输入重要度权重'),
+            formRules.min(0, '权重不能为负数'),
+          ]}
+          extra="优先级（1-5）的权重"
+        >
+          <InputNumber
+            min={0}
+            step={0.1}
+            style={{ width: '100%' }}
+            placeholder="20"
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="durationWeight"
+          label="工时权重"
+          rules={[
+            formRules.required('请输入工时权重'),
+            formRules.min(0, '权重不能为负数'),
+          ]}
+          extra="预估工时的权重"
+        >
+          <InputNumber
+            min={0}
+            step={0.1}
+            style={{ width: '100%' }}
+            placeholder="5"
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="remainingDaysWeight"
+          label="剩余天数权重"
+          rules={[
+            formRules.required('请输入剩余天数权重'),
+            formRules.min(0, '权重不能为负数'),
+          ]}
+          extra="剩余天数的权重"
+        >
+          <InputNumber
+            min={0}
+            step={0.1}
+            style={{ width: '100%' }}
+            placeholder="5"
+          />
+        </Form.Item>
+
+          <Form.Item
+            name="formula"
+            label="计算公式"
+            rules={[formRules.required('请输入计算公式')]}
+            extra="用于文档说明的公式描述"
+          >
+            <TextArea
+              rows={3}
+              placeholder="baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight) + (remainingDays * remainingDaysWeight)"
+            />
+          </Form.Item>
 
         <Form.Item
           name="effectiveFrom"
@@ -384,6 +425,9 @@ export const BountyAlgorithmPage: React.FC = () => {
               </Descriptions.Item>
               <Descriptions.Item label="工时权重">
                 {previewModal.data.durationWeight.toFixed(4)}
+              </Descriptions.Item>
+              <Descriptions.Item label="剩余天数权重">
+                {toNumber(previewModal.data.remainingDaysWeight, 0).toFixed(4)}
               </Descriptions.Item>
               <Descriptions.Item label="计算公式" span={2}>
                 <Text code style={{ whiteSpace: 'pre-wrap' }}>

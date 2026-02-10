@@ -21,6 +21,7 @@ import { Task, TaskStatus } from '../types';
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
 import dayjs from 'dayjs';
 import { useAuthStore } from '../store/authStore';
+import { getTaskStatusConfig } from '../utils/statusConfig';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -42,7 +43,6 @@ interface TaskListPageProps {
   showAcceptButton?: boolean;
   onAcceptTask?: (taskId: string) => void;
   onCompleteTask?: (taskId: string) => void;
-  onAbandonTask?: (taskId: string) => void;
   onPublishTask?: (task: Task) => void; // 新增发布回调
   onEditTask?: (task: Task) => void;
   onJoinGroup?: (task: Task) => void;
@@ -62,7 +62,6 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
   showAcceptButton = false,
   onAcceptTask,
   onCompleteTask,
-  onAbandonTask,
   onPublishTask, // 新增
   onEditTask,
   onJoinGroup,
@@ -174,7 +173,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       filtered = filtered.filter(
         task =>
           task.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          task.description.toLowerCase().includes(searchText.toLowerCase())
+          (task.description && task.description.toLowerCase().includes(searchText.toLowerCase()))
       );
     }
 
@@ -194,20 +193,6 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       console.log(`[TaskListPage] Task ${taskId} has ${count} subtasks:`, subtasks.map(st => ({ id: st.id, name: st.name, parentId: st.parentId })));
     }
     return count;
-  };
-
-  const handleAbandonTask = async (taskId: string) => {
-    try {
-      await taskApi.abandonTask(taskId);
-      message.success('任务已放弃');
-      setDrawerVisible(false);
-      if (!propTasks) {
-        loadTasks();
-      }
-    } catch (error) {
-      message.error('放弃任务失败');
-      console.error('Failed to abandon task:', error);
-    }
   };
 
   const handleCompleteTask = async (taskId: string) => {
@@ -237,40 +222,6 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
         }
       },
     });
-  };
-
-  const getStatusColor = (status: TaskStatus): string => {
-    switch (status) {
-      case TaskStatus.NOT_STARTED:
-        return 'default';
-      case TaskStatus.AVAILABLE:
-        return 'success';
-      case TaskStatus.IN_PROGRESS:
-        return 'processing';
-      case TaskStatus.COMPLETED:
-        return 'success';
-      case TaskStatus.ABANDONED:
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusText = (status: TaskStatus): string => {
-    switch (status) {
-      case TaskStatus.NOT_STARTED:
-        return '未开始';
-      case TaskStatus.AVAILABLE:
-        return '可承接';
-      case TaskStatus.IN_PROGRESS:
-        return '进行中';
-      case TaskStatus.COMPLETED:
-        return '已完成';
-      case TaskStatus.ABANDONED:
-        return '已放弃';
-      default:
-        return '未知';
-    }
   };
 
   const getPriorityColor = (priority: number): string => {
@@ -377,9 +328,9 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
               )}
             </div>
             <div style={{ fontSize: '12px', color: '#999' }}>
-              {record.description.length > 50
+              {record.description && record.description.length > 50
                 ? record.description.substring(0, 50) + '...'
-                : record.description}
+                : record.description || '无描述'}
             </div>
           </div>
         );
@@ -391,9 +342,12 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       key: 'status',
       width: 100,
       sorter: (a, b) => a.status.localeCompare(b.status),
-      render: (status: TaskStatus) => (
-        <Tag color={getStatusColor(status)}>{getStatusText(status)}</Tag>
-      ),
+      render: (status: TaskStatus) => {
+        const statusConfig = getTaskStatusConfig(status);
+        return (
+          <Tag color={statusConfig.color}>{statusConfig.text}</Tag>
+        );
+      },
     },
     {
       title: '赏金',
@@ -502,7 +456,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
   ];
 
   // Add unified action column
-  const hasActions = showAssignButton || showAcceptButton || onCompleteTask || onAbandonTask || onPublishTask || onEditTask || onJoinGroup || onDeleteTask;
+  const hasActions = showAssignButton || showAcceptButton || onCompleteTask || onPublishTask || onEditTask || onJoinGroup || onDeleteTask;
   
   if (hasActions) {
     columns.push({
@@ -638,35 +592,6 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
           }
         }
 
-        // 放弃任务按钮 - 在"我的悬赏"页面不显示
-        // 在组群任务页面，所有组群成员都可以放弃任务
-        if (!isPublishedTasksPage && onAbandonTask) {
-          const canAbandon = isGroupTasksPage 
-            ? isInProgress // 组群任务：任何成员都可以放弃进行中的任务
-            : (isAssignee && isInProgress); // 普通任务：只有承接者可以放弃
-          
-          if (canAbandon) {
-            buttons.push(
-              <Button
-                key="abandon"
-                danger
-                size="small"
-                icon={<CloseOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  Modal.confirm({
-                    title: '确定要放弃这个任务吗？',
-                    content: '放弃后任务将恢复为未承接状态',
-                    onOk: () => onAbandonTask(record.id),
-                  });
-                }}
-              >
-                放弃
-              </Button>
-            );
-          }
-        }
-
         // 群组按钮（承接者可以查看或加入群组）
         if (isAssignee && userGroups.length > 0 && onJoinGroup) {
           buttons.push(
@@ -763,9 +688,9 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
                   <Option value="all">所有状态</Option>
                   <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                   <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                  <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                   <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                   <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                  <Option value={TaskStatus.ABANDONED}>已放弃</Option>
                 </Select>
                 <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                   刷新
@@ -856,7 +781,6 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
             task={selectedTask}
             visible={drawerVisible}
             onClose={() => setDrawerVisible(false)}
-            onAbandonTask={handleAbandonTask}
             onCompleteTask={handleCompleteTask}
             onTaskUpdated={onTaskUpdated}
             onTaskClick={handleTaskClick}
@@ -902,9 +826,9 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
                 <Option value="all">所有状态</Option>
                 <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                 <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                 <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                 <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                <Option value={TaskStatus.ABANDONED}>已放弃</Option>
               </Select>
               <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                 刷新
@@ -994,7 +918,6 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
             task={selectedTask}
             visible={drawerVisible}
             onClose={() => setDrawerVisible(false)}
-            onAbandonTask={handleAbandonTask}
             onCompleteTask={handleCompleteTask}
             onTaskUpdated={onTaskUpdated}
             onTaskClick={handleTaskClick}

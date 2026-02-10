@@ -11,8 +11,7 @@ export enum TaskStatus {
   AVAILABLE = 'available',
   PENDING_ACCEPTANCE = 'pending_acceptance',
   IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  ABANDONED = 'abandoned'
+  COMPLETED = 'completed'
 }
 
 // 邀请状态
@@ -27,6 +26,14 @@ export enum Visibility {
   PUBLIC = 'public',
   POSITION_ONLY = 'position_only',
   PRIVATE = 'private'
+}
+
+// 交易类型
+export enum TransactionType {
+  TASK_COMPLETION = 'task_completion',
+  EXTRA_REWARD = 'extra_reward',
+  ASSISTANT_SHARE = 'assistant_share',
+  REFUND = 'refund'
 }
 
 // 用户接口
@@ -57,7 +64,7 @@ export interface Position {
 export interface Task {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   parentId: string | null;
   depth: number;
   isExecutable: boolean;

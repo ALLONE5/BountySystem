@@ -22,8 +22,9 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { taskApi } from '../api/task';
-import { Task } from '../types';
+import { Task, InvitationStatus } from '../types';
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
+import { getInvitationStatusConfig } from '../utils/statusConfig';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -179,12 +180,14 @@ export const TaskInvitationsPage: React.FC = () => {
                         <Text strong style={{ fontSize: '16px' }}>
                           {task.name}
                         </Text>
-                        <Tag color="orange">待接受</Tag>
+                        <Tag color={getInvitationStatusConfig(task.invitationStatus || InvitationStatus.PENDING).color}>
+                          {getInvitationStatusConfig(task.invitationStatus || InvitationStatus.PENDING).text}
+                        </Tag>
                       </Space>
                     }
                     description={
                       <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                        <Text type="secondary">{task.description}</Text>
+                        <Text type="secondary">{task.description || '无描述'}</Text>
                         
                         <Space wrap>
                           <Space>

@@ -2,6 +2,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { NotificationPushService } from './NotificationPushService.js';
 import { JWTService } from '../utils/jwt.js';
+import { logger } from '../config/logger.js';
 
 export class WebSocketService {
   private io: SocketIOServer;
@@ -33,7 +34,7 @@ export class WebSocketService {
 
   private setupSocketHandlers() {
     this.io.on('connection', (socket) => {
-      console.log('Client connected:', socket.id);
+      logger.info('Client connected', { socketId: socket.id });
 
       // Authenticate the socket connection
       socket.on('authenticate', async (token: string) => {
@@ -58,16 +59,16 @@ export class WebSocketService {
           }
 
           socket.emit('authenticated', { success: true, userId });
-          console.log(`User ${userId} authenticated on socket ${socket.id}`);
+          logger.info('User authenticated on socket', { userId, socketId: socket.id });
         } catch (error) {
-          console.error('Authentication error:', error);
+          logger.error('Authentication error', error as Error, { socketId: socket.id });
           socket.emit('authenticated', { success: false, error: 'Invalid token' });
           socket.disconnect();
         }
       });
 
       socket.on('disconnect', async () => {
-        console.log('Client disconnected:', socket.id);
+        logger.info('Client disconnected', { socketId: socket.id });
         // Remove socket from user mapping
         for (const [userId, sockets] of this.userSockets.entries()) {
           if (sockets.has(socket.id)) {
@@ -76,6 +77,7 @@ export class WebSocketService {
               this.userSockets.delete(userId);
               // Unsubscribe from Redis user channel when last socket disconnects
               await this.unsubscribeFromUserNotifications(userId);
+              logger.info('User fully disconnected, unsubscribed from notifications', { userId });
             }
             break;
           }

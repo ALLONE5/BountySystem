@@ -12,6 +12,7 @@ import {
   Select,
 } from 'antd';
 import { LockOutlined, GlobalOutlined } from '@ant-design/icons';
+import { userApi } from '../api/user';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -27,14 +28,21 @@ export const SettingsPage: React.FC = () => {
     systemNotifications: true,
   });
 
-  const handleChangePassword = async (_values: any) => {
+  const handleChangePassword = async (values: any) => {
     try {
       setLoading(true);
-      // TODO: Implement password change API
+      await userApi.changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      });
       message.success('密码修改成功');
       passwordForm.resetFields();
-    } catch (error) {
-      message.error('密码修改失败');
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        message.error(error.response.data.error);
+      } else {
+        message.error('密码修改失败');
+      }
       console.error('Failed to change password:', error);
     } finally {
       setLoading(false);
@@ -46,7 +54,11 @@ export const SettingsPage: React.FC = () => {
       ...prev,
       [key]: value,
     }));
-    // TODO: Save notification settings to backend
+    // TODO: [Future Enhancement] Save notification settings to backend
+    // Context: Backend API endpoint for user notification preferences does not exist yet.
+    // The User model needs to be extended with notification settings fields, and a new
+    // endpoint (PUT /users/me/notifications) should be created to persist these preferences.
+    // For now, settings are stored in local component state only.
     message.success('通知设置已更新');
   };
 

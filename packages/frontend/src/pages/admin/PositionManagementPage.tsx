@@ -122,13 +122,15 @@ export const PositionManagementPage: React.FC = () => {
     {
       title: '操作',
       key: 'actions',
-      width: 150,
+      width: 200,
+      fixed: 'right' as const,
       render: (_: any, record: Position) => (
-        <Space>
+        <Space size="middle">
           <Button
             type="link"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
+            style={{ padding: 0 }}
           >
             编辑
           </Button>
@@ -136,7 +138,7 @@ export const PositionManagementPage: React.FC = () => {
             buttonProps={{ type: 'link', danger: true, icon: undefined, style: { padding: 0 } }}
             onConfirm={() => deleteItem(record.id)}
             popconfirmProps={{ title: '确定要删除这个岗位吗？' }}
-            buttonText={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>删除</span>}
+            buttonText="删除"
           />
         </Space>
       ),

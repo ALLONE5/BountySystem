@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Typography,
   Card,
-  Table,
   Button,
   Space,
   Modal,
@@ -11,23 +10,21 @@ import {
   InputNumber,
   Select,
   DatePicker,
-  Tag,
   Drawer,
   Descriptions,
-  Progress,
   Avatar,
   Tooltip,
+  Tag,
+  Progress,
 } from 'antd';
 import {
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  SearchOutlined,
-  ReloadOutlined,
   PlusOutlined,
   UserOutlined,
+  DollarOutlined,
 } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { adminApi, UpdateTaskRequest } from '../../api/admin';
 import { taskApi } from '../../api/task';
@@ -36,6 +33,7 @@ import { Task, TaskStatus, Visibility, User } from '../../types';
 import { UserDetailsDrawer } from '../../components/admin/UserDetailsDrawer';
 import { useAuthStore } from '../../store/authStore';
 import { TaskViews } from '../../components/TaskViews';
+import { TaskListPage } from '../TaskListPage';
 import { ProgressEditor } from '../../components/common/ProgressEditor';
 import { AddAssistantModal } from '../../components/common/AddAssistantModal';
 import { useCrudOperations } from '../../hooks/useCrudOperations';
@@ -58,15 +56,17 @@ export const TaskManagementPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [assigneeFallback, setAssigneeFallback] = useState<{ username: string; avatarUrl?: string } | null>(null);
-  const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('list');
   const [progressValue, setProgressValue] = useState<number>(0);
   const [updatingProgress, setUpdatingProgress] = useState(false);
   const [addAssistantSubmitting, setAddAssistantSubmitting] = useState(false);
+  const [bonusModalVisible, setBonusModalVisible] = useState(false);
+  const [bonusAmount, setBonusAmount] = useState<number>(0);
+  const [addingBonus, setAddingBonus] = useState(false);
 
   const [form] = Form.useForm();
   const [addAssistantForm] = Form.useForm();
+  const [bonusForm] = Form.useForm();
 
   // 使用CRUD Hook管理任务数据
   const {
@@ -221,13 +221,39 @@ export const TaskManagementPage: React.FC = () => {
     }
   };
 
+  const handleAddBonus = () => {
+    setBonusAmount(0);
+    bonusForm.resetFields();
+    setBonusModalVisible(true);
+  };
+
+  const handleSubmitBonus = async (values: { amount: number; reason?: string }) => {
+    if (!selectedTask) return;
+    
+    setAddingBonus(true);
+    try {
+      await taskApi.addBonusReward(selectedTask.id, values.amount, values.reason);
+      
+      // Reload task details
+      const data = await adminApi.getTaskDetails(selectedTask.id);
+      setSelectedTask(data.task);
+      
+      // Reload task list
+      await loadTasks();
+      
+      setBonusModalVisible(false);
+      bonusForm.resetFields();
+    } finally {
+      setAddingBonus(false);
+    }
+  };
+
   const getStatusTag = (status: TaskStatus) => {
     const statusMap = {
       [TaskStatus.NOT_STARTED]: { color: 'default', text: '未开始' },
       [TaskStatus.AVAILABLE]: { color: 'green', text: '可承接' },
       [TaskStatus.IN_PROGRESS]: { color: 'processing', text: '进行中' },
       [TaskStatus.COMPLETED]: { color: 'success', text: '已完成' },
-      [TaskStatus.ABANDONED]: { color: 'error', text: '已放弃' },
     };
     const config = statusMap[status];
     return <Tag color={config.color}>{config.text}</Tag>;
@@ -243,134 +269,6 @@ export const TaskManagementPage: React.FC = () => {
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
-  const columns: ColumnsType<Task> = [
-    {
-      title: '任务名称',
-      dataIndex: 'name',
-      key: 'name',
-      width: 200,
-      ellipsis: true,
-      render: (name: string, record: Task) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => handleViewDetails(record)}
-          style={{ padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', display: 'inline-block', verticalAlign: 'middle' }}
-        >
-          {name}
-        </Button>
-      ),
-    },
-    {
-      title: '发布人',
-      dataIndex: ['publisher', 'username'],
-      key: 'publisher',
-      width: 120,
-      ellipsis: true,
-      render: (text: string, record: Task) => (
-        record.publisher ? (
-          <Button
-            type="link"
-            icon={<UserOutlined />}
-            onClick={() => handleViewUser(record.publisher!.id)}
-            style={{ padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', display: 'inline-block', verticalAlign: 'middle' }}
-          >
-            {text}
-          </Button>
-        ) : '-'
-      ),
-    },
-    {
-      title: '承接人',
-      dataIndex: ['assignee', 'username'],
-      key: 'assignee',
-      width: 120,
-      ellipsis: true,
-      render: (text: string, record: Task) => (
-        record.assignee ? (
-          <Button
-            type="link"
-            icon={<UserOutlined />}
-            onClick={() => handleViewUser(record.assignee!.id)}
-            style={{ padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', display: 'inline-block', verticalAlign: 'middle' }}
-          >
-            {text}
-          </Button>
-        ) : '-'
-      ),
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (status: TaskStatus) => getStatusTag(status),
-    },
-    {
-      title: '赏金',
-      dataIndex: 'bountyAmount',
-      key: 'bountyAmount',
-      width: 100,
-      render: (amount: number) => `¥${Number(amount || 0).toFixed(2)}`,
-    },
-    {
-      title: '进度',
-      dataIndex: 'progress',
-      key: 'progress',
-      width: 150,
-      render: (progress: number) => (
-        <Progress percent={progress} size="small" style={{ minWidth: 100 }} />
-      ),
-    },
-    {
-      title: '可见性',
-      dataIndex: 'visibility',
-      key: 'visibility',
-      width: 100,
-      render: (visibility: Visibility) => getVisibilityTag(visibility),
-    },
-    {
-      title: '截止日期',
-      dataIndex: 'plannedEndDate',
-      key: 'plannedEndDate',
-      width: 120,
-      render: (date: Date) => dayjs(date).format('YYYY-MM-DD'),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      fixed: 'right',
-      width: 150,
-      render: (_, record: Task) => (
-        <Space size="small">
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              Modal.confirm({
-                title: '确定要删除此任务吗？',
-                content: '此操作不可撤销',
-                onOk: () => handleDelete(record.id),
-              });
-            }}
-          >
-            删除
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
   return (
     <div style={{ padding: '24px' }}>
       <Title level={2}>任务管理</Title>
@@ -381,49 +279,13 @@ export const TaskManagementPage: React.FC = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         listView={
-          <Card>
-            <Space style={{ marginBottom: 16 }}>
-              <Input
-                placeholder="搜索任务名称或描述"
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-                style={{ width: 250 }}
-                allowClear
-              />
-              <Select
-                value={statusFilter}
-                onChange={setStatusFilter}
-                style={{ width: 120 }}
-              >
-                <Option value="all">所有状态</Option>
-                <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
-                <Option value={TaskStatus.AVAILABLE}>可承接</Option>
-                <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
-                <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                <Option value={TaskStatus.ABANDONED}>已放弃</Option>
-              </Select>
-              <Button icon={<ReloadOutlined />} onClick={loadTasks}>
-                刷新
-              </Button>
-            </Space>
-
-            <Table
-              columns={columns}
-              dataSource={tasks.filter(task => {
-                const matchesSearch = task.name.toLowerCase().includes(searchText.toLowerCase()) || 
-                                      task.description.toLowerCase().includes(searchText.toLowerCase());
-                const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-                return matchesSearch && matchesStatus;
-              })}
-              rowKey="id"
-              loading={loading}
-              pagination={{
-                showSizeChanger: true,
-                showTotal: (total) => `共 ${total} 条`,
-              }}
-            />
-          </Card>
+          <TaskListPage
+            tasks={tasks}
+            loading={loading}
+            hideFilters={false}
+            onTaskClick={handleViewDetails}
+            onTaskUpdated={loadTasks}
+          />
         }
       />
 
@@ -537,6 +399,16 @@ export const TaskManagementPage: React.FC = () => {
               }}>
                 编辑任务
               </Button>
+              {taskDrawer.data.status === TaskStatus.COMPLETED && (
+                <Button 
+                  type="default" 
+                  icon={<DollarOutlined />} 
+                  onClick={handleAddBonus}
+                  style={{ borderColor: '#faad14', color: '#faad14' }}
+                >
+                  额外奖赏
+                </Button>
+              )}
               <Button danger icon={<DeleteOutlined />} onClick={() => {
                 Modal.confirm({
                   title: '确定要删除此任务吗？',
@@ -664,6 +536,56 @@ export const TaskManagementPage: React.FC = () => {
               <DatePicker showTime format="YYYY-MM-DD HH:mm" />
             </Form.Item>
           </Space>
+        </Form>
+      </Modal>
+
+      {/* 额外奖赏模态框 */}
+      <Modal
+        title="添加额外奖赏"
+        open={bonusModalVisible}
+        onCancel={() => {
+          setBonusModalVisible(false);
+          bonusForm.resetFields();
+        }}
+        onOk={() => bonusForm.submit()}
+        okText="确认发放"
+        cancelText="取消"
+        confirmLoading={addingBonus}
+      >
+        <Form
+          form={bonusForm}
+          layout="vertical"
+          onFinish={handleSubmitBonus}
+        >
+          <Form.Item
+            name="amount"
+            label="额外奖赏金额"
+            rules={[
+              { required: true, message: '请输入奖赏金额' },
+              { type: 'number', min: 0.01, message: '金额必须大于0' },
+            ]}
+            extra={selectedTask && `当前任务赏金: $${Number(selectedTask.bountyAmount || 0).toFixed(2)}`}
+          >
+            <InputNumber
+              min={0.01}
+              step={10}
+              precision={2}
+              style={{ width: '100%' }}
+              prefix="$"
+              placeholder="请输入额外奖赏金额"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="reason"
+            label="奖赏原因"
+            extra="可选，说明发放额外奖赏的原因"
+          >
+            <TextArea
+              rows={3}
+              placeholder="例如：任务完成质量优秀，提前完成等"
+            />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

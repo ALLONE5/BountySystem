@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { logger } from '../config/logger.js';
 import {
   Ranking,
   RankingCreateDTO,
@@ -9,7 +10,6 @@ import {
 import { UserResponse } from '../models/User.js';
 import { AppError } from '../utils/errors.js';
 import { DatabaseOptimizationService } from './DatabaseOptimizationService.js';
-
 export class RankingService {
   constructor(private pool: Pool) {}
 
@@ -281,7 +281,7 @@ export class RankingService {
     try {
       await DatabaseOptimizationService.refreshCurrentMonthRankings();
     } catch (error) {
-      console.warn('Failed to refresh materialized view:', error);
+      logger.warn('Failed to refresh materialized view:', error);
     }
     
     return rankings;

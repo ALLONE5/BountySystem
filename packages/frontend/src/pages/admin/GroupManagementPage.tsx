@@ -70,10 +70,11 @@ export const GroupManagementPage: React.FC = () => {
   const handleDeleteGroup = async (groupId: string) => {
     try {
       await adminApi.deleteGroup(groupId);
-      message.success('组群已删除');
+      message.success('组群已解散');
       loadGroups();
-    } catch (error) {
-      message.error('删除组群失败');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || '解散组群失败';
+      message.error(errorMessage);
     }
   };
 
@@ -109,19 +110,31 @@ export const GroupManagementPage: React.FC = () => {
     {
       title: '操作',
       key: 'action',
+      width: 200,
+      fixed: 'right' as const,
       render: (_: any, record: TaskGroup) => (
         <Space size="middle">
-          <Button type="link" onClick={() => handleViewMembers(record)}>
+          <Button 
+            type="link" 
+            onClick={() => handleViewMembers(record)}
+            style={{ padding: 0 }}
+          >
             查看成员
           </Button>
           <Popconfirm
-            title="确定要删除这个组群吗？"
+            title="确定要解散这个组群吗？"
+            description="解散后组群将被永久删除，且无法恢复"
             onConfirm={() => handleDeleteGroup(record.id)}
             okText="确定"
             cancelText="取消"
           >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              删除
+            <Button 
+              type="link" 
+              danger 
+              icon={<DeleteOutlined />}
+              style={{ padding: 0 }}
+            >
+              解散
             </Button>
           </Popconfirm>
         </Space>

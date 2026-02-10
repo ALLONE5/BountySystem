@@ -1,4 +1,4 @@
-import { TaskGroup, TaskGroupWithMembers, GroupMemberDetail } from '../../models/TaskGroup.js';
+import type { TaskGroup, TaskGroupWithMembers, GroupMemberDetail } from '../../models/TaskGroup.js';
 import { UserMapper } from './UserMapper.js';
 
 /**
@@ -80,23 +80,6 @@ export class GroupMapper {
   }
 
   /**
-   * Extract group from joined query with prefix
-   */
-  static extractGroupFromJoin(row: any, prefix: string): any | undefined {
-    const idKey = `${prefix}.id`;
-    if (!row[idKey]) return undefined;
-
-    return {
-      id: row[idKey],
-      name: row[`${prefix}.name`],
-      description: row[`${prefix}.description`] ?? null,
-      creatorId: row[`${prefix}.creatorId`],
-      createdAt: row[`${prefix}.createdAt`],
-      updatedAt: row[`${prefix}.updatedAt`],
-    };
-  }
-
-  /**
    * Get SELECT fields for group query
    */
   static getSelectFields(alias: string = 'tg'): string[] {
@@ -107,20 +90,6 @@ export class GroupMapper {
       `${alias}.creator_id as "creatorId"`,
       `${alias}.created_at as "createdAt"`,
       `${alias}.updated_at as "updatedAt"`,
-    ];
-  }
-
-  /**
-   * Get SELECT fields for joined group (with prefix)
-   */
-  static getJoinedSelectFields(alias: string, prefix: string): string[] {
-    return [
-      `${alias}.id as "${prefix}.id"`,
-      `${alias}.name as "${prefix}.name"`,
-      `${alias}.description as "${prefix}.description"`,
-      `${alias}.creator_id as "${prefix}.creatorId"`,
-      `${alias}.created_at as "${prefix}.createdAt"`,
-      `${alias}.updated_at as "${prefix}.updatedAt"`,
     ];
   }
 }

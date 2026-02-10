@@ -11,7 +11,6 @@ import {
   Divider,
   Row,
   Col,
-  Statistic,
   Tag,
   Modal,
   Image,
@@ -21,30 +20,22 @@ import {
 import {
   UserOutlined,
   MailOutlined,
-  CheckCircleOutlined,
   CameraOutlined,
   LockOutlined,
   SwapOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store/authStore';
-import { taskApi } from '../api/task';
 import { avatarApi, Avatar as AvatarType } from '../api/avatar';
 import { positionApi, Position } from '../api/position';
+import { userApi } from '../api/user';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 export const ProfilePage: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({
-    publishedTotal: 0,
-    publishedCompleted: 0,
-    assignedTotal: 0,
-    assignedCompleted: 0,
-    totalBountyEarned: 0,
-  });
   const [form] = Form.useForm();
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [positionModalVisible, setPositionModalVisible] = useState(false);
@@ -61,7 +52,6 @@ export const ProfilePage: React.FC = () => {
         username: user.username,
         email: user.email,
       });
-      loadStats();
       loadAvatarData();
       loadPositionData();
     }
@@ -96,38 +86,21 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  const loadStats = async () => {
-    try {
-      const [publishedTasks, assignedTasks] = await Promise.all([
-        taskApi.getPublishedTasks(),
-        taskApi.getAssignedTasks(),
-      ]);
-
-      const publishedCompleted = publishedTasks.filter((t) => t.status === 'completed').length;
-      const assignedCompleted = assignedTasks.filter((t) => t.status === 'completed').length;
-      const totalBountyEarned = assignedTasks
-        .filter((t) => t.status === 'completed')
-        .reduce((sum, t) => sum + Number(t.bountyAmount || 0), 0);
-
-      setStats({
-        publishedTotal: publishedTasks.length,
-        publishedCompleted,
-        assignedTotal: assignedTasks.length,
-        assignedCompleted,
-        totalBountyEarned,
-      });
-    } catch (error) {
-      console.error('Failed to load stats:', error);
-    }
-  };
-
-  const handleUpdateProfile = async (_values: any) => {
+  const handleUpdateProfile = async (values: any) => {
     try {
       setLoading(true);
-      // TODO: Implement profile update API
-      message.success('个人信息更新成功');
-    } catch (error) {
-      message.error('更新失败');
+      const response = await userApi.updateProfile({ username: values.username });
+      message.success(response.message || '个人信息更新成功');
+      // Update the auth store with the new user data
+      if (response.user && token) {
+        useAuthStore.getState().setAuth(token, response.user);
+      }
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        message.error(error.response.data.error);
+      } else {
+        message.error('更新失败');
+      }
       console.error('Failed to update profile:', error);
     } finally {
       setLoading(false);
@@ -232,25 +205,20 @@ export const ProfilePage: React.FC = () => {
     return null;
   }
 
-  const completionRate =
-    stats.assignedTotal > 0
-      ? ((stats.assignedCompleted / stats.assignedTotal) * 100).toFixed(1)
-      : '0';
-
   return (
     <div className="page-container fade-in">
       {/* Page Header */}
       <div className="page-header">
         <div>
           <Title level={2} style={{ margin: 0 }}>个人信息</Title>
-          <Text type="secondary">管理您的个人资料和统计数据</Text>
+          <Text type="secondary">管理您的个人资料</Text>
         </div>
       </div>
 
       {/* 用户信息卡片 */}
       <Card style={{ marginBottom: 24 }}>
         <Row gutter={24}>
-          <Col xs={24} md={8} style={{ textAlign: 'center' }}>
+          <Col xs={24} md={12} style={{ textAlign: 'center' }}>
             <div style={{ position: 'relative', display: 'inline-block' }}>
               {currentAvatar ? (
                 <Avatar size={120} src={currentAvatar.imageUrl} style={{ marginBottom: 16 }} />
@@ -273,22 +241,52 @@ export const ProfilePage: React.FC = () => {
             <div>
               <Title level={4}>{user.username}</Title>
               <Text type="secondary">{user.email}</Text>
-              <div style={{ marginTop: 8 }}>
-                <Tag color="blue">{user.role}</Tag>
-              </div>
-              {userPositions.length > 0 && (
-                <div style={{ marginTop: 8 }}>
-                  <Text strong>岗位: </Text>
-                  {userPositions.map((pos) => (
-                    <Tag key={pos.id} color="green">
-                      {pos.name}
-                    </Tag>
-                  ))}
+            </div>
+          </Col>
+
+          <Col xs={24} md={12}>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              {/* 角色和注册时间 */}
+              <div>
+                <div style={{ marginBottom: 8 }}>
+                  <Text strong>角色: </Text>
+                  <Tag color="blue">{user.role}</Tag>
                 </div>
-              )}
-              <div style={{ marginTop: 8 }}>
+                <div>
+                  <Text strong>注册时间: </Text>
+                  <Text type="secondary">{dayjs(user.createdAt).format('YYYY-MM-DD')}</Text>
+                </div>
+              </div>
+
+              <Divider style={{ margin: '8px 0' }} />
+
+              {/* 岗位信息 */}
+              <div>
+                <div style={{ marginBottom: 12 }}>
+                  <Title level={5} style={{ margin: 0 }}>岗位信息</Title>
+                </div>
+                {userPositions.length > 0 ? (
+                  <div style={{ marginBottom: 16 }}>
+                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                      {userPositions.map((pos) => (
+                        <Card key={pos.id} size="small" style={{ borderLeft: '4px solid #52c41a' }}>
+                          <Space direction="vertical" size={0}>
+                            <Text strong style={{ fontSize: 16 }}>{pos.name}</Text>
+                            {pos.description && (
+                              <Text type="secondary" style={{ fontSize: 12 }}>{pos.description}</Text>
+                            )}
+                          </Space>
+                        </Card>
+                      ))}
+                    </Space>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: 16 }}>
+                    <Text type="secondary">暂无岗位</Text>
+                  </div>
+                )}
                 <Button
-                  type="link"
+                  type="primary"
                   icon={<SwapOutlined />}
                   onClick={() => {
                     // Pre-populate with current positions
@@ -299,81 +297,7 @@ export const ProfilePage: React.FC = () => {
                   申请岗位变更
                 </Button>
               </div>
-              <div style={{ marginTop: 8 }}>
-                <Text type="secondary">
-                  注册时间: {dayjs(user.createdAt).format('YYYY-MM-DD')}
-                </Text>
-              </div>
-            </div>
-          </Col>
-
-          <Col xs={24} md={16}>
-            <div style={{ marginBottom: 16 }}>
-              <Title level={5} style={{ margin: 0 }}>统计数据</Title>
-            </div>
-            <Row gutter={[16, 16]}>
-              <Col xs={12} sm={8}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #1890ff' }}>
-                  <Statistic
-                    title="发布任务"
-                    value={stats.publishedTotal}
-                    prefix={<UserOutlined style={{ color: '#1890ff', fontSize: 18 }} />}
-                    valueStyle={{ fontSize: 24, fontWeight: 600 }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={12} sm={8}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #52c41a' }}>
-                  <Statistic
-                    title="完成发布"
-                    value={stats.publishedCompleted}
-                    prefix={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: 18 }} />}
-                    valueStyle={{ fontSize: 24, fontWeight: 600 }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={12} sm={8}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #faad14' }}>
-                  <Statistic
-                    title="承接任务"
-                    value={stats.assignedTotal}
-                    prefix={<UserOutlined style={{ color: '#faad14', fontSize: 18 }} />}
-                    valueStyle={{ fontSize: 24, fontWeight: 600 }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={12} sm={8}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #52c41a' }}>
-                  <Statistic
-                    title="完成承接"
-                    value={stats.assignedCompleted}
-                    prefix={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: 18 }} />}
-                    valueStyle={{ fontSize: 24, fontWeight: 600 }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={12} sm={8}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #f5222d' }}>
-                  <Statistic
-                    title="累计赏金"
-                    value={stats.totalBountyEarned}
-                    prefix="$"
-                    precision={2}
-                    valueStyle={{ fontSize: 24, fontWeight: 600, color: '#f5222d' }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={12} sm={8}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #722ed1' }}>
-                  <Statistic 
-                    title="完成率" 
-                    value={completionRate} 
-                    suffix="%" 
-                    valueStyle={{ fontSize: 24, fontWeight: 600, color: '#722ed1' }}
-                  />
-                </Card>
-              </Col>
-            </Row>
+            </Space>
           </Col>
         </Row>
       </Card>

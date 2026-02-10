@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import { Router } from 'express';
 import { SchedulerService } from '../services/SchedulerService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/permission.middleware.js';

@@ -3,7 +3,7 @@
  * Provides automatic caching for API responses
  */
 
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { CacheService } from '../services/CacheService';
 
 export interface CacheMiddlewareOptions {

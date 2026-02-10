@@ -11,8 +11,10 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { useAuthStore } from '../store/authStore';
 import { taskApi } from '../api/task';
+import { rankingApi } from '../api/ranking';
 import { TaskStats, Task } from '../types';
 import { colors, spacing } from '../styles/design-tokens';
+import { BountyHistoryDrawer } from '../components/BountyHistoryDrawer';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -27,6 +29,10 @@ export const DashboardPage: React.FC = () => {
   const [publishedTasksList, setPublishedTasksList] = useState<Task[]>([]);
   const [assignedTasksList, setAssignedTasksList] = useState<Task[]>([]);
   const [reportContent, setReportContent] = useState<string>('');
+  const [historyDrawerVisible, setHistoryDrawerVisible] = useState(false);
+  const [monthlyBounty, setMonthlyBounty] = useState(0);
+  const [quarterlyBounty, setQuarterlyBounty] = useState(0);
+  const [allTimeBounty, setAllTimeBounty] = useState(0);
 
   useEffect(() => {
     loadStats();
@@ -35,14 +41,39 @@ export const DashboardPage: React.FC = () => {
   const loadStats = async () => {
     try {
       setLoading(true);
+      
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+      const currentQuarter = Math.ceil(currentMonth / 3);
+
       // Load both published and assigned tasks to calculate stats
-      const [publishedTasks, assignedTasks] = await Promise.all([
+      const [publishedTasks, assignedTasks, monthlyRanking, quarterlyRanking, allTimeRanking] = await Promise.all([
         taskApi.getPublishedTasks(),
         taskApi.getAssignedTasks(),
+        user ? rankingApi.getMyRanking(user.id, { 
+          period: 'monthly', 
+          year: currentYear, 
+          month: currentMonth 
+        }).catch(() => null) : Promise.resolve(null),
+        user ? rankingApi.getMyRanking(user.id, { 
+          period: 'quarterly', 
+          year: currentYear, 
+          quarter: currentQuarter 
+        }).catch(() => null) : Promise.resolve(null),
+        user ? rankingApi.getMyRanking(user.id, { 
+          period: 'all_time', 
+          year: currentYear 
+        }).catch(() => null) : Promise.resolve(null),
       ]);
 
       setPublishedTasksList(publishedTasks);
       setAssignedTasksList(assignedTasks);
+
+      // Set bounty data from rankings
+      setMonthlyBounty(monthlyRanking?.totalBounty || 0);
+      setQuarterlyBounty(quarterlyRanking?.totalBounty || 0);
+      setAllTimeBounty(allTimeRanking?.totalBounty || 0);
 
       // Calculate stats from tasks
       const publishedCompleted = publishedTasks.filter(t => t.status === 'completed').length;
@@ -264,14 +295,35 @@ export const DashboardPage: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card
+            hoverable
+            onClick={() => {
+              if (!historyDrawerVisible && user?.id) {
+                setHistoryDrawerVisible(true);
+              }
+            }}
+            style={{ 
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+            }}
+          >
             <Statistic
-              title="累计赏金"
-              value={stats?.totalBountyEarned || 0}
+              title="当月赏金"
+              value={monthlyBounty}
               prefix="$"
               precision={2}
               valueStyle={{ color: colors.warning }}
             />
+            <div style={{ 
+              marginTop: spacing.sm, 
+              fontSize: 12, 
+              color: colors.text.secondary,
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}>
+              <span>当季赏金: ${quarterlyBounty.toFixed(2)}</span>
+              <span>累积赏金: ${allTimeBounty.toFixed(2)}</span>
+            </div>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
@@ -283,12 +335,9 @@ export const DashboardPage: React.FC = () => {
                   ? ((stats.assignedCompleted / stats.assignedTotal) * 100).toFixed(1)
                   : 0
               }
-              prefix={<PercentageOutlined style={{ color: colors.success }} />}
               suffix="%"
               valueStyle={{ 
-                color: stats?.assignedTotal && (stats.assignedCompleted / stats.assignedTotal) >= 0.8 
-                  ? colors.success 
-                  : colors.warning 
+                color: '#eb2f96'
               }}
             />
           </Card>
@@ -368,6 +417,15 @@ export const DashboardPage: React.FC = () => {
           </Button>
         </Space>
       </Card>
+
+      {/* Bounty History Drawer */}
+      {user?.id && (
+        <BountyHistoryDrawer
+          visible={historyDrawerVisible}
+          userId={user.id}
+          onClose={() => setHistoryDrawerVisible(false)}
+        />
+      )}
     </div>
   );
 };

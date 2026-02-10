@@ -149,8 +149,8 @@ export const formRules = {
   /**
    * 确认密码验证
    */
-  confirmPassword: (passwordField: string = 'password'): Rule => ({
-    validator: (_, value) => {
+  confirmPassword: (_passwordField: string = 'password'): Rule => ({
+    validator: (_, _value) => {
       return Promise.resolve();
     },
     message: '两次输入的密码不一致',
@@ -169,23 +169,16 @@ export const formRules = {
    * 日期范围验证
    */
   dateRange: (
-    startField: string,
-    endField: string,
+    _startField: string,
+    _endField: string,
     message?: string
   ): Rule => ({
-    validator: (_, value) => {
+    validator: (_, _value) => {
       return Promise.resolve();
     },
     message: message || '结束日期必须晚于开始日期',
   }),
 };
-
-/**
- * 组合多个验证规则
- */
-export function combineRules(...rules: Rule[]): Rule[] {
-  return rules;
-}
 
 /**
  * 常用的规则组合

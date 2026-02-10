@@ -8,6 +8,7 @@ import { taskApi } from '../api/task';
 import { Task, TaskStatus } from '../types';
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { getTaskStatusConfig } from '../utils/statusConfig';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
@@ -101,7 +102,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ tasks: propTasks, lo
       filtered = filtered.filter(
         task =>
           task.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          task.description.toLowerCase().includes(searchText.toLowerCase())
+          (task.description && task.description.toLowerCase().includes(searchText.toLowerCase()))
       );
     }
 
@@ -151,20 +152,15 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ tasks: propTasks, lo
   };
 
   const getStatusColor = (status: TaskStatus): string => {
-    switch (status) {
-      case TaskStatus.NOT_STARTED:
-        return '#d9d9d9';
-      case TaskStatus.AVAILABLE:
-        return '#52c41a';
-      case TaskStatus.IN_PROGRESS:
-        return '#1890ff';
-      case TaskStatus.COMPLETED:
-        return '#52c41a';
-      case TaskStatus.ABANDONED:
-        return '#ff4d4f';
-      default:
-        return '#d9d9d9';
-    }
+    const colorMap: Record<string, string> = {
+      'default': '#d9d9d9',
+      'success': '#52c41a',
+      'processing': '#1890ff',
+      'error': '#ff4d4f',
+      'orange': '#fa8c16',
+    };
+    const config = getTaskStatusConfig(status);
+    return colorMap[config.color] || config.color;
   };
 
   const convertTasksToEvents = (): CalendarEvent[] => {
@@ -343,9 +339,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ tasks: propTasks, lo
                   <Option value="all">所有状态</Option>
                   <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                   <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                  <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                   <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                   <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                  <Option value={TaskStatus.ABANDONED}>已放弃</Option>
                 </Select>
                 <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                   刷新
@@ -429,9 +425,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ tasks: propTasks, lo
                 <Option value="all">所有状态</Option>
                 <Option value={TaskStatus.NOT_STARTED}>未开始</Option>
                 <Option value={TaskStatus.AVAILABLE}>可承接</Option>
+                <Option value={TaskStatus.PENDING_ACCEPTANCE}>待接受</Option>
                 <Option value={TaskStatus.IN_PROGRESS}>进行中</Option>
                 <Option value={TaskStatus.COMPLETED}>已完成</Option>
-                <Option value={TaskStatus.ABANDONED}>已放弃</Option>
               </Select>
               <Button icon={<ReloadOutlined />} onClick={loadTasks}>
                 刷新

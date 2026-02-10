@@ -18,10 +18,11 @@ import metricsRoutes from './routes/metrics.routes.js';
 import { createRankingRouter } from './routes/ranking.routes.js';
 import { createAvatarRouter } from './routes/avatar.routes.js';
 import { createProjectGroupRouter } from './routes/projectGroup.routes.js';
+import { createBountyHistoryRouter } from './routes/bountyHistory.routes.js';
 import { pool } from './config/database.js';
 import { AppError } from './utils/errors.js';
 import { WebSocketService } from './services/WebSocketService.js';
-import { apiRateLimiter, ipRateLimiter } from './middleware/rateLimit.middleware.js';
+import { ipRateLimiter } from './middleware/rateLimit.middleware.js';
 
 const app = express();
 
@@ -116,6 +117,9 @@ app.use('/api/avatars', createAvatarRouter(pool));
 
 // Project Group routes
 app.use('/api/project-groups', createProjectGroupRouter(pool));
+
+// Bounty History routes
+app.use('/api/bounty-history', createBountyHistoryRouter(pool));
 
 // 404 handler
 app.use((req, res) => {

@@ -1,4 +1,5 @@
 import { pool } from '../config/database.js';
+import { logger } from '../config/logger.js';
 import {
   Position,
   PositionCreateDTO,
@@ -14,7 +15,8 @@ import { NotificationService } from './NotificationService.js';
 import { IPositionRepository } from '../repositories/PositionRepository.js';
 import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { PositionMapper } from '../utils/mappers/PositionMapper.js';
-
+import { Validator } from '../utils/Validator.js';
+import { OwnershipValidator } from '../utils/OwnershipValidator.js';
 export class PositionService {
   private readonly notificationService: NotificationService;
   private readonly applicationSelect = `
@@ -187,7 +189,7 @@ export class PositionService {
         throw new AppError('NOT_FOUND', 'Position not found', 404);
       }
       
-      console.warn('updateRanking: positions table does not have a ranking column');
+      logger.warn('updateRanking: positions table does not have a ranking column');
       // Return the raw position since getPositionById already returns a DTO
       return pos;
     }
@@ -284,9 +286,13 @@ export class PositionService {
 
     // Check position count (will be enforced by trigger, but we check early for better error message)
     const positionCount = await this.getUserPositionCount(userId);
-    if (positionCount >= 3) {
-      throw new AppError('VALIDATION_ERROR', 'User cannot have more than 3 positions', 400);
-    }
+    // Use Validator to check position limit
+    Validator.custom(
+      positionCount,
+      (count) => count < 3,
+      'Position count',
+      'User cannot have more than 3 positions'
+    );
 
     // Verify position exists - this now returns a DTO
     const position = await this.getPositionById(positionId);
@@ -333,21 +339,21 @@ export class PositionService {
     );
     const finalCount = remainingPositions.length + positionsToAdd.length;
     
-    if (finalCount > 3) {
-      throw new AppError(
-        'VALIDATION_ERROR',
-        `Final position count (${finalCount}) would exceed the limit of 3 positions`,
-        400
-      );
-    }
+    // Use Validator to check final count doesn't exceed 3
+    Validator.custom(
+      finalCount,
+      (count) => count <= 3,
+      'Final position count',
+      `Final position count (${finalCount}) would exceed the limit of 3 positions`
+    );
     
-    if (finalCount === 0) {
-      throw new AppError(
-        'VALIDATION_ERROR',
-        'Cannot remove all positions. At least one position must remain.',
-        400
-      );
-    }
+    // Use Validator to check at least one position remains
+    Validator.custom(
+      finalCount,
+      (count) => count > 0,
+      'Final position count',
+      'Cannot remove all positions. At least one position must remain.'
+    );
 
     // Get position names for better display
     const positionsToRemoveNames: string[] = [];
@@ -543,9 +549,13 @@ export class PositionService {
 
       const application = appResult.rows[0];
 
-      if (application.status !== ApplicationStatus.PENDING) {
-        throw new AppError('VALIDATION_ERROR', 'Application has already been reviewed', 400);
-      }
+      // Use Validator to check application status
+      Validator.custom(
+        application.status,
+        (status) => status === ApplicationStatus.PENDING,
+        'Application status',
+        'Application has already been reviewed'
+      );
 
       const newStatus = approved ? ApplicationStatus.APPROVED : ApplicationStatus.REJECTED;
 
@@ -703,6 +713,21 @@ export class PositionService {
   }
 
   /**
+   * Get all applications (all statuses, for super admin)
+   * Requirements: 6.4, 17.1
+   */
+  async getAllApplications(): Promise<any[]> {
+    const query = `
+      ${this.applicationSelect}
+      ORDER BY pa.created_at DESC
+    `;
+
+    const result = await pool.query(query);
+    const applications = result.rows.map((row) => this.mapApplicationRow(row));
+    return PositionMapper.toApplicationDTOList(applications);
+  }
+
+  /**
    * Get pending applications by position IDs (for position admin)
    * Requirements: 6.4, 17.1
    */
@@ -718,6 +743,26 @@ export class PositionService {
     `;
 
     const result = await pool.query(query, [ApplicationStatus.PENDING, positionIds]);
+    const applications = result.rows.map((row) => this.mapApplicationRow(row));
+    return PositionMapper.toApplicationDTOList(applications);
+  }
+
+  /**
+   * Get applications by position IDs (all statuses, for position admin)
+   * Requirements: 6.4, 17.1
+   */
+  async getApplicationsByPositions(positionIds: string[]): Promise<any[]> {
+    if (positionIds.length === 0) {
+      return [];
+    }
+
+    const query = `
+      ${this.applicationSelect}
+      WHERE pa.position_id = ANY($1)
+      ORDER BY pa.created_at DESC
+    `;
+
+    const result = await pool.query(query, [positionIds]);
     const applications = result.rows.map((row) => this.mapApplicationRow(row));
     return PositionMapper.toApplicationDTOList(applications);
   }

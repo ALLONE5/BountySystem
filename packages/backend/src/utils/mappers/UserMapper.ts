@@ -1,4 +1,4 @@
-import { User, UserResponse } from '../../models/User.js';
+import type { User, UserResponse } from '../../models/User.js';
 
 /**
  * User data mapper
@@ -64,13 +64,6 @@ export class UserMapper {
   }
 
   /**
-   * Map array of rows to User array
-   */
-  static toUserArray(rows: any[]): User[] {
-    return rows.map(row => this.toUser(row));
-  }
-
-  /**
    * Get SELECT fields for user query
    */
   static getSelectFields(alias: string = 'u', includePasswordHash: boolean = false): string[] {
@@ -90,38 +83,5 @@ export class UserMapper {
     }
 
     return fields;
-  }
-
-  /**
-   * Get SELECT fields for user with avatar join
-   */
-  static getSelectFieldsWithAvatar(
-    userAlias: string = 'u',
-    avatarAlias: string = 'a',
-    includePasswordHash: boolean = false
-  ): string[] {
-    const fields = this.getSelectFields(userAlias, includePasswordHash);
-    fields.push(`${avatarAlias}.image_url as "avatarUrl"`);
-    return fields;
-  }
-
-  /**
-   * Get SELECT fields for joined user (with prefix)
-   */
-  static getJoinedSelectFields(
-    userAlias: string,
-    avatarAlias: string,
-    prefix: string
-  ): string[] {
-    return [
-      `${userAlias}.id as "${prefix}.id"`,
-      `${userAlias}.username as "${prefix}.username"`,
-      `${userAlias}.email as "${prefix}.email"`,
-      `${userAlias}.avatar_id as "${prefix}.avatarId"`,
-      `${avatarAlias}.image_url as "${prefix}.avatarUrl"`,
-      `${userAlias}.role as "${prefix}.role"`,
-      `${userAlias}.created_at as "${prefix}.createdAt"`,
-      `${userAlias}.last_login as "${prefix}.lastLogin"`,
-    ];
   }
 }

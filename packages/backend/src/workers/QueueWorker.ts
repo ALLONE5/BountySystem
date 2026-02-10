@@ -3,8 +3,10 @@
  * Processes jobs from message queues
  */
 
-import { Pool } from 'pg';
-import { QueueService, QueueName, QueueJob } from '../services/QueueService';
+import type { Pool } from 'pg';
+import { logger } from '../config/logger.js';
+import type { QueueName, QueueJob } from '../services/QueueService';
+import { QueueService } from '../services/QueueService';
 import { NotificationService } from '../services/NotificationService';
 import { RankingService } from '../services/RankingService';
 import { BountyService } from '../services/BountyService';
@@ -27,12 +29,12 @@ export class QueueWorker {
    */
   async start(): Promise<void> {
     if (this.running) {
-      console.log('Queue workers already running');
+      logger.warn('Queue workers already running');
       return;
     }
 
     this.running = true;
-    console.log('Starting queue workers...');
+    logger.info('Starting queue workers...');
 
     // Start workers for each queue
     this.workers.set(
@@ -60,7 +62,7 @@ export class QueueWorker {
       this.startWorker(QueueName.BOUNTY_CALCULATIONS, this.processBountyJob.bind(this))
     );
 
-    console.log('All queue workers started');
+    logger.info('All queue workers started');
   }
 
   /**
@@ -68,18 +70,18 @@ export class QueueWorker {
    */
   async stop(): Promise<void> {
     if (!this.running) {
-      console.log('Queue workers not running');
+      logger.warn('Queue workers not running');
       return;
     }
 
     this.running = false;
-    console.log('Stopping queue workers...');
+    logger.info('Stopping queue workers...');
 
     // Wait for all workers to finish current jobs
     await Promise.all(this.workers.values());
     this.workers.clear();
 
-    console.log('All queue workers stopped');
+    logger.info('All queue workers stopped');
   }
 
   /**
@@ -89,7 +91,7 @@ export class QueueWorker {
     queueName: QueueName,
     processor: (job: QueueJob) => Promise<void>
   ): Promise<void> {
-    console.log(`Worker started for queue: ${queueName}`);
+    logger.info('Worker started for queue', { queueName });
 
     while (this.running) {
       try {
@@ -100,20 +102,20 @@ export class QueueWorker {
 
         try {
           await processor(job);
-          console.log(`Job ${job.id} processed successfully`);
+          logger.info('Job processed successfully', { jobId: job.id, queueName });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
-          console.error(`Error processing job ${job.id}:`, errorMessage);
+          logger.error('Error processing job', error as Error, { jobId: job.id, queueName });
           await QueueService.retry(queueName, job, errorMessage);
         }
       } catch (error) {
-        console.error(`Worker error for ${queueName}:`, error);
+        logger.error('Worker error', error as Error, { queueName });
         // Wait before retrying to avoid tight loop on persistent errors
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }
     }
 
-    console.log(`Worker stopped for queue: ${queueName}`);
+    logger.info('Worker stopped for queue', { queueName });
   }
 
   // ============================================================================
@@ -157,19 +159,20 @@ export class QueueWorker {
     const { type, data } = job;
 
     if (type === 'generate_report') {
-      console.log(`Generating ${data.reportType} report for user ${data.userId}`);
+      logger.info('Generating report', { reportType: data.reportType, userId: data.userId });
       
-      // TODO: Implement actual report generation logic
-      // This would involve:
+      // TODO: [Future Enhancement] Implement actual report generation logic
+      // Context: Currently a placeholder. Full implementation requires:
       // 1. Query tasks for the specified period
-      // 2. Calculate statistics
-      // 3. Generate report document (PDF/CSV)
-      // 4. Store report or send to user
-      // 5. Notify user that report is ready
+      // 2. Calculate statistics (completion rates, bounty totals, etc.)
+      // 3. Generate report document (PDF/CSV format)
+      // 4. Store report in file storage or database
+      // 5. Notify user that report is ready via notification system
+      // Dependencies: Requires report template system and file storage service
 
-      // Placeholder implementation
+      // Placeholder implementation - simulates processing time
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log(`Report generated for user ${data.userId}`);
+      logger.info('Report generated (placeholder)', { userId: data.userId });
     } else {
       throw new Error(`Unknown report job type: ${type}`);
     }
@@ -182,18 +185,19 @@ export class QueueWorker {
     const { type, data } = job;
 
     if (type === 'send_email') {
-      console.log(`Sending email to ${data.to}: ${data.subject}`);
+      logger.info('Sending email', { to: data.to, subject: data.subject });
       
-      // TODO: Implement actual email sending logic
-      // This would involve:
-      // 1. Connect to email service (SendGrid, AWS SES, etc.)
-      // 2. Render email template if provided
-      // 3. Send email
-      // 4. Handle delivery status
+      // TODO: [Future Enhancement] Implement actual email sending logic
+      // Context: Currently a placeholder. Full implementation requires:
+      // 1. Connect to email service provider (SendGrid, AWS SES, Mailgun, etc.)
+      // 2. Render email template with provided data if template ID is specified
+      // 3. Send email with proper error handling and retry logic
+      // 4. Handle delivery status callbacks and track email metrics
+      // Dependencies: Requires email service configuration and template system
 
-      // Placeholder implementation
+      // Placeholder implementation - simulates email sending time
       await new Promise((resolve) => setTimeout(resolve, 500));
-      console.log(`Email sent to ${data.to}`);
+      logger.info('Email sent (placeholder)', { to: data.to });
     } else {
       throw new Error(`Unknown email job type: ${type}`);
     }
@@ -206,7 +210,7 @@ export class QueueWorker {
     const { type, data } = job;
 
     if (type === 'calculate_ranking') {
-      console.log(`Calculating ${data.period} rankings for ${data.year}`);
+      logger.info('Calculating rankings', { period: data.period, year: data.year });
       
       await this.rankingService.calculateRankings(
         data.period,
@@ -215,7 +219,7 @@ export class QueueWorker {
         data.quarter
       );
 
-      console.log(`Rankings calculated for ${data.period}`);
+      logger.info('Rankings calculated', { period: data.period });
     } else {
       throw new Error(`Unknown ranking job type: ${type}`);
     }
@@ -228,7 +232,7 @@ export class QueueWorker {
     const { type, data } = job;
 
     if (type === 'calculate_bounty') {
-      console.log(`Calculating bounty for task ${data.taskId}`);
+      logger.info('Calculating bounty for task', { taskId: data.taskId });
       
       // Get task details
       const taskResult = await this.pool.query(
@@ -251,7 +255,7 @@ export class QueueWorker {
         [bountyAmount, data.taskId]
       );
 
-      console.log(`Bounty calculated for task ${data.taskId}: ${bountyAmount}`);
+      logger.info('Bounty calculated for task', { taskId: data.taskId, bountyAmount });
     } else {
       throw new Error(`Unknown bounty job type: ${type}`);
     }

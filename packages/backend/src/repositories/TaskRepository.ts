@@ -3,6 +3,7 @@ import { BaseRepository, IRepository } from './BaseRepository.js';
 import { Task, TaskStatus, Visibility } from '../models/Task.js';
 import { Position } from '../models/Position.js';
 import { Validator } from '../utils/Validator.js';
+import { logger } from '../config/logger.js';
 
 /**
  * Task Filters Interface
@@ -185,7 +186,10 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
       const rows = await this.executeQuery<any>(query, [creatorId]);
       return rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding tasks by creator:', error);
+      logger.error('Error finding tasks by creator', { 
+        error: error instanceof Error ? error.message : String(error),
+        creatorId 
+      });
       throw error;
     }
   }
@@ -207,7 +211,10 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
       const rows = await this.executeQuery<any>(query, [groupId]);
       return rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding tasks by group:', error);
+      logger.error('Error finding tasks by group', { 
+        error: error instanceof Error ? error.message : String(error),
+        groupId 
+      });
       throw error;
     }
   }
@@ -234,7 +241,10 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
         positions: []
       };
     } catch (error) {
-      console.error('Error finding task with positions:', error);
+      logger.error('Error finding task with positions', { 
+        error: error instanceof Error ? error.message : String(error),
+        taskId 
+      });
       throw error;
     }
   }
@@ -302,7 +312,10 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
       const rows = await this.executeQuery<any>(query, params);
       return rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding public tasks:', error);
+      logger.error('Error finding public tasks', { 
+        error: error instanceof Error ? error.message : String(error),
+        filters 
+      });
       throw error;
     }
   }
@@ -335,7 +348,11 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
 
       return this.mapRowToModel(rows[0]);
     } catch (error) {
-      console.error('Error updating task status:', error);
+      logger.error('Error updating task status', { 
+        error: error instanceof Error ? error.message : String(error),
+        taskId,
+        status 
+      });
       throw error;
     }
   }
@@ -460,7 +477,10 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
 
       return task;
     } catch (error) {
-      console.error('Error finding task by ID with relations:', error);
+      logger.error('Error finding task by ID with relations', { 
+        error: error instanceof Error ? error.message : String(error),
+        taskId 
+      });
       throw error;
     }
   }
@@ -572,7 +592,10 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
         return task;
       });
     } catch (error) {
-      console.error('Error finding subtasks:', error);
+      logger.error('Error finding subtasks', { 
+        error: error instanceof Error ? error.message : String(error),
+        parentId 
+      });
       throw error;
     }
   }

@@ -4,6 +4,8 @@ import { AdminBudget, AdminBudgetCreateDTO } from '../models/AdminBudget.js';
 import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { UserRole } from '../models/User.js';
 import { TaskStatus } from '../models/Task.js';
+import { logger } from '../config/logger.js';
+import { Validator } from '../utils/Validator.js';
 
 /**
  * Helper function to convert numeric fields from PostgreSQL to numbers
@@ -24,14 +26,12 @@ export class TaskReviewService {
     const { taskId, reviewerId, rating, comment, extraBounty = 0 } = reviewData;
 
     // Validate rating if provided
-    if (rating !== undefined && (rating < 1 || rating > 5)) {
-      throw new ValidationError('Rating must be between 1 and 5');
+    if (rating !== undefined) {
+      Validator.taskRating(rating, 'Rating');
     }
 
     // Validate extra bounty is non-negative
-    if (extraBounty < 0) {
-      throw new ValidationError('Extra bounty must be non-negative');
-    }
+    Validator.bountyAmount(extraBounty, 'Extra bounty');
 
     // Get task information
     const taskQuery = `
@@ -64,7 +64,7 @@ export class TaskReviewService {
 
     // Verify reviewer is task publisher or admin
     const isPublisher = task.publisher_id === reviewerId;
-    const isAdmin = reviewerRole === UserRole.POSITION_ADMIN || reviewerRole === UserRole.SUPER_ADMIN;
+    const isAdmin = Validator.isAdmin(reviewerRole);
 
     if (!isPublisher && !isAdmin) {
       throw new ForbiddenError('Only task publisher or administrators can review tasks');
@@ -230,19 +230,13 @@ export class TaskReviewService {
     const { adminId, year, month, totalBudget } = budgetData;
 
     // Validate month
-    if (month < 1 || month > 12) {
-      throw new ValidationError('Month must be between 1 and 12');
-    }
+    Validator.range(month, 1, 12, 'Month');
 
     // Validate year
-    if (year < 2000) {
-      throw new ValidationError('Year must be 2000 or later');
-    }
+    Validator.min(year, 2000, 'Year');
 
     // Validate total budget
-    if (totalBudget < 0) {
-      throw new ValidationError('Total budget must be non-negative');
-    }
+    Validator.bountyAmount(totalBudget, 'Total budget');
 
     // Verify user is admin
     const userQuery = 'SELECT role FROM users WHERE id = $1';
@@ -253,7 +247,7 @@ export class TaskReviewService {
     }
 
     const userRole = userResult.rows[0].role;
-    if (userRole !== UserRole.POSITION_ADMIN && userRole !== UserRole.SUPER_ADMIN) {
+    if (!Validator.isAdmin(userRole)) {
       throw new ValidationError('Only administrators can have budgets');
     }
 
@@ -328,7 +322,7 @@ export class TaskReviewService {
         });
         count++;
       } catch (error) {
-        console.error(`Failed to initialize budget for admin ${admin.id}:`, error);
+        logger.error('Failed to initialize budget for admin', error as Error, { adminId: admin.id });
       }
     }
 

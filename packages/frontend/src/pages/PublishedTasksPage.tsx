@@ -35,6 +35,7 @@ import { userApi } from '../api/user';
 import { Task, TaskStatus, Visibility, User } from '../types';
 import { TaskViews } from '../components/TaskViews';
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
+// TaskListPage uses statusConfig for consistent status display
 import { TaskListPage } from './TaskListPage';
 
 const { Text } = Typography;
@@ -266,17 +267,6 @@ export const PublishedTasksPage: React.FC = () => {
     }
   };
 
-  const handleAbandonTask = async (taskId: string) => {
-    try {
-      await taskApi.abandonTask(taskId);
-      message.success('已放弃任务');
-      loadTasks();
-    } catch (error: any) {
-      message.error(error.response?.data?.error || '放弃任务失败');
-      console.error('Failed to abandon task:', error);
-    }
-  };
-
   const handleDeleteTask = async (taskId: string) => {
     try {
       await taskApi.deleteTask(taskId);
@@ -452,7 +442,6 @@ export const PublishedTasksPage: React.FC = () => {
             onAssignTask={handleAssignTask}
             onPublishTask={handlePublishTask}
             onCompleteTask={handleCompleteTask}
-            onAbandonTask={handleAbandonTask}
             onEditTask={handleEdit}
             onDeleteTask={handleDeleteTask}
             isPublishedTasksPage={true}
