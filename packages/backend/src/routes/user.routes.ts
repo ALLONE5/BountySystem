@@ -137,4 +137,53 @@ router.post('/me/email/request', asyncHandler(async (req: Request, res: Response
   });
 }));
 
+// Notification preferences validation schema
+const notificationPreferencesSchema = z.object({
+  taskAssigned: z.boolean(),
+  taskCompleted: z.boolean(),
+  taskAbandoned: z.boolean(),
+  bountyReceived: z.boolean(),
+  systemNotifications: z.boolean(),
+});
+
+/**
+ * GET /api/users/me/notifications
+ * Get current user's notification preferences
+ */
+router.get('/me/notifications', asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.userId;
+  if (!userId) {
+    throw new AuthenticationError('Not authenticated');
+  }
+
+  const preferences = await userService.getNotificationPreferences(userId);
+  res.status(200).json({ preferences });
+}));
+
+/**
+ * PUT /api/users/me/notifications
+ * Update current user's notification preferences
+ */
+router.put('/me/notifications', asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req as any).user?.userId;
+  if (!userId) {
+    throw new AuthenticationError('Not authenticated');
+  }
+
+  try {
+    const validatedData = notificationPreferencesSchema.parse(req.body);
+    const updatedUser = await userService.updateNotificationPreferences(userId, validatedData);
+    
+    res.status(200).json({
+      message: 'Notification preferences updated successfully',
+      user: updatedUser,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('Invalid notification preferences data', error.errors);
+    }
+    throw error;
+  }
+}));
+
 export default router;

@@ -557,4 +557,51 @@ export class UserService {
       client.release();
     }
   }
+
+  /**
+   * Update user notification preferences
+   */
+  async updateNotificationPreferences(userId: string, preferences: any): Promise<UserResponse> {
+    const query = `
+      UPDATE users
+      SET notification_preferences = $1, updated_at = NOW()
+      WHERE id = $2
+      RETURNING id, username, email, password_hash as "passwordHash", 
+                avatar_id as "avatarId", role, balance,
+                notification_preferences as "notificationPreferences",
+                created_at as "createdAt", last_login as "lastLogin", 
+                updated_at as "updatedAt"
+    `;
+
+    const result = await pool.query(query, [JSON.stringify(preferences), userId]);
+    if (result.rows.length === 0) {
+      throw new NotFoundError('User not found');
+    }
+
+    return UserMapper.toUserResponse(result.rows[0]);
+  }
+
+  /**
+   * Get user notification preferences
+   */
+  async getNotificationPreferences(userId: string): Promise<any> {
+    const query = `
+      SELECT notification_preferences
+      FROM users
+      WHERE id = $1
+    `;
+
+    const result = await pool.query(query, [userId]);
+    if (result.rows.length === 0) {
+      throw new NotFoundError('User not found');
+    }
+
+    return result.rows[0].notification_preferences || {
+      taskAssigned: true,
+      taskCompleted: true,
+      taskAbandoned: true,
+      bountyReceived: true,
+      systemNotifications: true,
+    };
+  }
 }

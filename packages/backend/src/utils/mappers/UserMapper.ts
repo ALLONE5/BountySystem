@@ -18,6 +18,8 @@ export class UserMapper {
       avatarId: row.avatarId || row.avatar_id,
       avatarUrl: row.avatarUrl || row.avatar_url,
       role: row.role,
+      balance: row.balance || 0,
+      notificationPreferences: row.notificationPreferences || row.notification_preferences || null,
       createdAt: row.createdAt || row.created_at,
       lastLogin: row.lastLogin || row.last_login,
     };
@@ -51,6 +53,8 @@ export class UserMapper {
       avatarId: row[`${prefix}.avatarId`],
       avatarUrl: row[`${prefix}.avatarUrl`],
       role: row[`${prefix}.role`],
+      balance: row[`${prefix}.balance`] || 0,
+      notificationPreferences: row[`${prefix}.notificationPreferences`] || null,
       createdAt: row[`${prefix}.createdAt`],
       lastLogin: row[`${prefix}.lastLogin`],
     };
@@ -73,6 +77,8 @@ export class UserMapper {
       `${alias}.email`,
       `${alias}.avatar_id as "avatarId"`,
       `${alias}.role`,
+      `${alias}.balance`,
+      `${alias}.notification_preferences as "notificationPreferences"`,
       `${alias}.created_at as "createdAt"`,
       `${alias}.last_login as "lastLogin"`,
       `${alias}.updated_at as "updatedAt"`,

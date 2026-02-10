@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Card,
@@ -10,23 +10,43 @@ import {
   message,
   Divider,
   Select,
+  Spin,
 } from 'antd';
 import { LockOutlined, GlobalOutlined } from '@ant-design/icons';
-import { userApi } from '../api/user';
+import { userApi, NotificationPreferences } from '../api/user';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 export const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [notificationLoading, setNotificationLoading] = useState(false);
   const [passwordForm] = Form.useForm();
-  const [notificationSettings, setNotificationSettings] = useState({
+  const [notificationSettings, setNotificationSettings] = useState<NotificationPreferences>({
     taskAssigned: true,
     taskCompleted: true,
     taskAbandoned: true,
     bountyReceived: true,
     systemNotifications: true,
   });
+
+  // Load notification preferences on component mount
+  useEffect(() => {
+    loadNotificationPreferences();
+  }, []);
+
+  const loadNotificationPreferences = async () => {
+    try {
+      setNotificationLoading(true);
+      const data = await userApi.getNotificationPreferences();
+      setNotificationSettings(data.preferences);
+    } catch (error: any) {
+      console.error('Failed to load notification preferences:', error);
+      message.error('加载通知设置失败');
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
 
   const handleChangePassword = async (values: any) => {
     try {
@@ -49,17 +69,22 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleNotificationChange = (key: string, value: boolean) => {
-    setNotificationSettings((prev) => ({
-      ...prev,
+  const handleNotificationChange = async (key: keyof NotificationPreferences, value: boolean) => {
+    const newSettings = {
+      ...notificationSettings,
       [key]: value,
-    }));
-    // TODO: [Future Enhancement] Save notification settings to backend
-    // Context: Backend API endpoint for user notification preferences does not exist yet.
-    // The User model needs to be extended with notification settings fields, and a new
-    // endpoint (PUT /users/me/notifications) should be created to persist these preferences.
-    // For now, settings are stored in local component state only.
-    message.success('通知设置已更新');
+    };
+
+    try {
+      setNotificationSettings(newSettings);
+      await userApi.updateNotificationPreferences(newSettings);
+      message.success('通知设置已更新');
+    } catch (error: any) {
+      // Revert the change if API call fails
+      setNotificationSettings(notificationSettings);
+      console.error('Failed to update notification preferences:', error);
+      message.error('更新通知设置失败');
+    }
   };
 
   return (
@@ -131,75 +156,84 @@ export const SettingsPage: React.FC = () => {
 
       {/* 通知设置 */}
       <Card title={<Text strong style={{ fontSize: 16 }}>🔔 通知设置</Text>} style={{ marginBottom: 24 }}>
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-            <div>
-              <Text strong style={{ fontSize: 15 }}>任务被承接</Text>
-              <br />
-              <Text type="secondary" style={{ fontSize: 13 }}>当您发布的任务被他人承接时通知您</Text>
+        {notificationLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 16 }}>
+              <Text type="secondary">加载通知设置中...</Text>
             </div>
-            <Switch
-              checked={notificationSettings.taskAssigned}
-              onChange={(checked) => handleNotificationChange('taskAssigned', checked)}
-            />
           </div>
-
-          <Divider style={{ margin: '0' }} />
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-            <div>
-              <Text strong style={{ fontSize: 15 }}>任务完成</Text>
-              <br />
-              <Text type="secondary" style={{ fontSize: 13 }}>当您承接的任务完成时通知您</Text>
+        ) : (
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+              <div>
+                <Text strong style={{ fontSize: 15 }}>任务被承接</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: 13 }}>当您发布的任务被他人承接时通知您</Text>
+              </div>
+              <Switch
+                checked={notificationSettings.taskAssigned}
+                onChange={(checked) => handleNotificationChange('taskAssigned', checked)}
+              />
             </div>
-            <Switch
-              checked={notificationSettings.taskCompleted}
-              onChange={(checked) => handleNotificationChange('taskCompleted', checked)}
-            />
-          </div>
 
-          <Divider style={{ margin: '0' }} />
+            <Divider style={{ margin: '0' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-            <div>
-              <Text strong style={{ fontSize: 15 }}>任务被放弃</Text>
-              <br />
-              <Text type="secondary" style={{ fontSize: 13 }}>当您发布的任务被承接者放弃时通知您</Text>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+              <div>
+                <Text strong style={{ fontSize: 15 }}>任务完成</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: 13 }}>当您承接的任务完成时通知您</Text>
+              </div>
+              <Switch
+                checked={notificationSettings.taskCompleted}
+                onChange={(checked) => handleNotificationChange('taskCompleted', checked)}
+              />
             </div>
-            <Switch
-              checked={notificationSettings.taskAbandoned}
-              onChange={(checked) => handleNotificationChange('taskAbandoned', checked)}
-            />
-          </div>
 
-          <Divider style={{ margin: '0' }} />
+            <Divider style={{ margin: '0' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-            <div>
-              <Text strong style={{ fontSize: 15 }}>赏金到账</Text>
-              <br />
-              <Text type="secondary" style={{ fontSize: 13 }}>当您获得赏金时通知您</Text>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+              <div>
+                <Text strong style={{ fontSize: 15 }}>任务被放弃</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: 13 }}>当您发布的任务被承接者放弃时通知您</Text>
+              </div>
+              <Switch
+                checked={notificationSettings.taskAbandoned}
+                onChange={(checked) => handleNotificationChange('taskAbandoned', checked)}
+              />
             </div>
-            <Switch
-              checked={notificationSettings.bountyReceived}
-              onChange={(checked) => handleNotificationChange('bountyReceived', checked)}
-            />
-          </div>
 
-          <Divider style={{ margin: '0' }} />
+            <Divider style={{ margin: '0' }} />
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
-            <div>
-              <Text strong style={{ fontSize: 15 }}>系统通知</Text>
-              <br />
-              <Text type="secondary" style={{ fontSize: 13 }}>接收系统重要通知和公告</Text>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+              <div>
+                <Text strong style={{ fontSize: 15 }}>赏金到账</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: 13 }}>当您获得赏金时通知您</Text>
+              </div>
+              <Switch
+                checked={notificationSettings.bountyReceived}
+                onChange={(checked) => handleNotificationChange('bountyReceived', checked)}
+              />
             </div>
-            <Switch
-              checked={notificationSettings.systemNotifications}
-              onChange={(checked) => handleNotificationChange('systemNotifications', checked)}
-            />
-          </div>
-        </Space>
+
+            <Divider style={{ margin: '0' }} />
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
+              <div>
+                <Text strong style={{ fontSize: 15 }}>系统通知</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: 13 }}>接收系统重要通知和公告</Text>
+              </div>
+              <Switch
+                checked={notificationSettings.systemNotifications}
+                onChange={(checked) => handleNotificationChange('systemNotifications', checked)}
+              />
+            </div>
+          </Space>
+        )}
       </Card>
 
       {/* 语言和地区 */}

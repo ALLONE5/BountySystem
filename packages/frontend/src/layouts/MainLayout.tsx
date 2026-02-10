@@ -294,6 +294,18 @@ export const MainLayout: React.FC = () => {
       onClick: () => navigate('/admin/notifications'),
       roles: [UserRole.SUPER_ADMIN, UserRole.POSITION_ADMIN],
     },
+    {
+      key: 'system-config',
+      label: '系统配置',
+      onClick: () => navigate('/admin/system-config'),
+      roles: [UserRole.SUPER_ADMIN],
+    },
+    {
+      key: 'audit-logs',
+      label: '审计日志',
+      onClick: () => navigate('/admin/audit-logs'),
+      roles: [UserRole.SUPER_ADMIN],
+    },
   ];
 
   const adminMenuItems = canAccessAdminPanel()

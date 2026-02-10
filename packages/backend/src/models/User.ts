@@ -4,6 +4,14 @@ export enum UserRole {
   SUPER_ADMIN = 'super_admin',
 }
 
+export interface NotificationPreferences {
+  taskAssigned: boolean;
+  taskCompleted: boolean;
+  taskAbandoned: boolean;
+  bountyReceived: boolean;
+  systemNotifications: boolean;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -12,6 +20,7 @@ export interface User {
   avatarId: string | null;
   role: UserRole;
   balance: number;
+  notificationPreferences: NotificationPreferences | null;
   createdAt: Date;
   lastLogin: Date | null;
   updatedAt: Date;
@@ -29,6 +38,7 @@ export interface UserUpdateDTO {
   email?: string;
   avatarId?: string;
   lastLogin?: Date;
+  notificationPreferences?: NotificationPreferences;
 }
 
 export interface UserLoginDTO {
@@ -44,6 +54,7 @@ export interface UserResponse {
   avatarUrl?: string;
   role: UserRole;
   balance: number;
+  notificationPreferences: NotificationPreferences | null;
   createdAt: Date;
   lastLogin: Date | null;
   positions?: { id: string; name: string }[];

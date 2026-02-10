@@ -20,6 +20,8 @@ import { AvatarManagementPage } from '../pages/admin/AvatarManagementPage';
 import { PositionManagementPage } from '../pages/admin/PositionManagementPage';
 import { BountyAlgorithmPage } from '../pages/admin/BountyAlgorithmPage';
 import { NotificationBroadcastPage } from '../pages/admin/NotificationBroadcastPage';
+import { SystemConfigPage } from '../pages/admin/SystemConfigPage';
+import { AuditLogPage } from '../pages/admin/AuditLogPage';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Result, Button } from 'antd';
 
@@ -133,6 +135,14 @@ export const router = createBrowserRouter([
       {
         path: 'admin/notifications',
         element: <NotificationBroadcastPage />,
+      },
+      {
+        path: 'admin/system-config',
+        element: <SystemConfigPage />,
+      },
+      {
+        path: 'admin/audit-logs',
+        element: <AuditLogPage />,
       },
     ],
   },
