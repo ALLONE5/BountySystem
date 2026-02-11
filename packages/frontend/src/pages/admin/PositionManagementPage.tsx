@@ -35,7 +35,9 @@ export const PositionManagementPage: React.FC = () => {
       const formattedData = {
         ...data,
         requiredSkills: data.requiredSkills
-          ? (data.requiredSkills as string).split(',').map((s: string) => s.trim()).filter((s: string) => s)
+          ? Array.isArray(data.requiredSkills) 
+            ? data.requiredSkills 
+            : (data.requiredSkills as unknown as string).split(',').map((s: string) => s.trim()).filter((s: string) => s)
           : [],
       };
       return positionApi.createPosition(formattedData);
@@ -44,7 +46,9 @@ export const PositionManagementPage: React.FC = () => {
       const formattedData = {
         ...data,
         requiredSkills: data.requiredSkills
-          ? (data.requiredSkills as string).split(',').map((s: string) => s.trim()).filter((s: string) => s)
+          ? Array.isArray(data.requiredSkills) 
+            ? data.requiredSkills 
+            : (data.requiredSkills as unknown as string).split(',').map((s: string) => s.trim()).filter((s: string) => s)
           : [],
       };
       return positionApi.updatePosition(id, formattedData);
@@ -136,7 +140,9 @@ export const PositionManagementPage: React.FC = () => {
           </Button>
           <ConfirmDeleteButton
             buttonProps={{ type: 'link', danger: true, icon: undefined, style: { padding: 0 } }}
-            onConfirm={() => deleteItem(record.id)}
+            onConfirm={async () => {
+              await deleteItem(record.id);
+            }}
             popconfirmProps={{ title: '确定要删除这个岗位吗？' }}
             buttonText="删除"
           />

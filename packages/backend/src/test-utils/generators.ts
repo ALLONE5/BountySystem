@@ -34,7 +34,8 @@ export const usernameArbitrary = fc
 export const userRoleArbitrary = fc.constantFrom(
   UserRole.USER,
   UserRole.POSITION_ADMIN,
-  UserRole.SUPER_ADMIN
+  UserRole.SUPER_ADMIN,
+  UserRole.DEVELOPER
 );
 
 /**

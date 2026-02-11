@@ -2,6 +2,7 @@ export enum UserRole {
   USER = 'user',
   POSITION_ADMIN = 'position_admin',
   SUPER_ADMIN = 'super_admin',
+  DEVELOPER = 'developer',
 }
 
 export interface NotificationPreferences {

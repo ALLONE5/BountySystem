@@ -16,6 +16,7 @@ const roleMap: Record<UserRole, { color: string; text: string }> = {
   [UserRole.USER]: { color: 'default', text: '普通用户' },
   [UserRole.POSITION_ADMIN]: { color: 'blue', text: '职位管理员' },
   [UserRole.SUPER_ADMIN]: { color: 'red', text: '超级管理员' },
+  [UserRole.DEVELOPER]: { color: 'purple', text: '开发者' },
 };
 
 const fallback = { color: 'default', text: '' } as const;

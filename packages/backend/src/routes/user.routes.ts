@@ -65,16 +65,23 @@ router.put('/me', asyncHandler(async (req: Request, res: Response) => {
     throw new AuthenticationError('Not authenticated');
   }
 
-  // Validate input
-  const validatedData = updateProfileSchema.parse(req.body);
+  try {
+    // Validate input
+    const validatedData = updateProfileSchema.parse(req.body);
 
-  // Update profile
-  const updatedUser = await userService.updateUser(userId, userId, validatedData);
+    // Update profile
+    const updatedUser = await userService.updateUser(userId, userId, validatedData);
 
-  res.status(200).json({
-    message: 'Profile updated successfully',
-    user: updatedUser,
-  });
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: updatedUser,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('Invalid profile data', error.errors);
+    }
+    throw error;
+  }
 }));
 
 router.put('/me/password', asyncHandler(async (req: Request, res: Response) => {
@@ -85,17 +92,24 @@ router.put('/me/password', asyncHandler(async (req: Request, res: Response) => {
     throw new AuthenticationError('Not authenticated');
   }
 
-  // Validate input
-  const validatedData = changePasswordSchema.parse(req.body);
+  try {
+    // Validate input
+    const validatedData = changePasswordSchema.parse(req.body);
 
-  // Change password
-  await userService.changePassword(
-    userId,
-    validatedData.currentPassword,
-    validatedData.newPassword
-  );
+    // Change password
+    await userService.changePassword(
+      userId,
+      validatedData.currentPassword,
+      validatedData.newPassword
+    );
 
-  res.status(200).json({ message: 'Password changed successfully' });
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ValidationError('Invalid password data', error.errors);
+    }
+    throw error;
+  }
 }));
 
 router.put('/me/email', asyncHandler(async (req: Request, res: Response) => {

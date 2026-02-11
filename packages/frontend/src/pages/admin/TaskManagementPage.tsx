@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography,
-  Card,
   Button,
   Space,
   Modal,
@@ -15,12 +14,10 @@ import {
   Avatar,
   Tooltip,
   Tag,
-  Progress,
 } from 'antd';
 import {
   EditOutlined,
   DeleteOutlined,
-  EyeOutlined,
   PlusOutlined,
   UserOutlined,
   DollarOutlined,
@@ -55,13 +52,11 @@ interface Assistant {
 export const TaskManagementPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
   const [assistants, setAssistants] = useState<Assistant[]>([]);
-  const [assigneeFallback, setAssigneeFallback] = useState<{ username: string; avatarUrl?: string } | null>(null);
   const [activeTab, setActiveTab] = useState('list');
   const [progressValue, setProgressValue] = useState<number>(0);
   const [updatingProgress, setUpdatingProgress] = useState(false);
   const [addAssistantSubmitting, setAddAssistantSubmitting] = useState(false);
   const [bonusModalVisible, setBonusModalVisible] = useState(false);
-  const [bonusAmount, setBonusAmount] = useState<number>(0);
   const [addingBonus, setAddingBonus] = useState(false);
 
   const [form] = Form.useForm();
@@ -77,12 +72,20 @@ export const TaskManagementPage: React.FC = () => {
     loadAll: loadTasks,
     selectedItem: selectedTask,
     setSelectedItem: setSelectedTask,
+  }: {
+    data: Task[];
+    loading: boolean;
+    update: (id: string, data: Partial<Task>) => Promise<Task | null>;
+    deleteItem: (id: string) => Promise<boolean>;
+    loadAll: () => Promise<void>;
+    selectedItem: Task | null;
+    setSelectedItem: (item: Task | null) => void;
   } = useCrudOperations<Task>({
     fetchAll: async () => {
       const data = await adminApi.getTasks();
       return data.tasks;
     },
-    update: async (id, data) => {
+    update: async (id, data): Promise<Task> => {
       const updateData: UpdateTaskRequest = {
         name: data.name as string,
         description: data.description as string,
@@ -97,7 +100,9 @@ export const TaskManagementPage: React.FC = () => {
       await adminApi.updateTask(id, updateData);
       return { ...selectedTask!, ...data } as Task;
     },
-    delete: adminApi.deleteTask,
+    delete: async (id: string) => {
+      await adminApi.deleteTask(id);
+    },
     successMessages: {
       update: '任务信息更新成功',
       delete: '任务删除成功',
@@ -119,35 +124,6 @@ export const TaskManagementPage: React.FC = () => {
     loadTasks();
   }, [loadTasks]);
 
-
-  const handleViewDetails = async (task: Task) => {
-    const data = await adminApi.getTaskDetails(task.id);
-    setSelectedTask(data.task);
-    setProgressValue(data.task.progress || 0);
-    
-    // Fetch assistants
-    try {
-      const assistantsData = await taskApi.getAssistants(task.id);
-      setAssistants(assistantsData);
-    } catch (err) {
-      console.error('Failed to load assistants:', err);
-      setAssistants([]);
-    }
-
-    // Fallback: fetch assignee user if missing
-    if (!data.task.assignee && data.task.assigneeId) {
-      try {
-        const user = await userApi.getUser(data.task.assigneeId);
-        setAssigneeFallback({ username: user.username, avatarUrl: user.avatarUrl });
-      } catch {
-        setAssigneeFallback(null);
-      }
-    } else {
-      setAssigneeFallback(null);
-    }
-
-    taskDrawer.open(data.task);
-  };
 
   const handleAddAssistant = async (values: { assistantId: string; bountyAllocation: number }) => {
     if (!selectedTask) return;
@@ -173,11 +149,6 @@ export const TaskManagementPage: React.FC = () => {
     } finally {
       setUpdatingProgress(false);
     }
-  };
-
-  const handleViewUser = async (userId: string) => {
-    const data = await adminApi.getUserDetails(userId);
-    userDrawer.open(data.user);
   };
 
   const handleEdit = (task: Task) => {
@@ -222,7 +193,6 @@ export const TaskManagementPage: React.FC = () => {
   };
 
   const handleAddBonus = () => {
-    setBonusAmount(0);
     bonusForm.resetFields();
     setBonusModalVisible(true);
   };
@@ -252,6 +222,7 @@ export const TaskManagementPage: React.FC = () => {
     const statusMap = {
       [TaskStatus.NOT_STARTED]: { color: 'default', text: '未开始' },
       [TaskStatus.AVAILABLE]: { color: 'green', text: '可承接' },
+      [TaskStatus.PENDING_ACCEPTANCE]: { color: 'warning', text: '待接受' },
       [TaskStatus.IN_PROGRESS]: { color: 'processing', text: '进行中' },
       [TaskStatus.COMPLETED]: { color: 'success', text: '已完成' },
     };
@@ -283,7 +254,6 @@ export const TaskManagementPage: React.FC = () => {
             tasks={tasks}
             loading={loading}
             hideFilters={false}
-            onTaskClick={handleViewDetails}
             onTaskUpdated={loadTasks}
           />
         }
@@ -293,7 +263,7 @@ export const TaskManagementPage: React.FC = () => {
       <Drawer
         title="任务详情"
         placement="right"
-        width={700}
+        size="large"
         onClose={taskDrawer.close}
         open={taskDrawer.visible}
       >
@@ -312,13 +282,6 @@ export const TaskManagementPage: React.FC = () => {
                         <Avatar src={taskDrawer.data.assignee.avatarUrl} icon={<UserOutlined />} style={{ border: '2px solid #1890ff' }} />
                       </Tooltip>
                       <span style={{ marginLeft: 8 }}>{taskDrawer.data.assignee.username}</span>
-                    </div>
-                  ) : assigneeFallback ? (
-                    <div style={{ display: 'flex', alignItems: 'center', marginRight: 16 }}>
-                      <Tooltip title="Assignee">
-                        <Avatar src={assigneeFallback.avatarUrl} icon={<UserOutlined />} style={{ border: '2px solid #1890ff' }} />
-                      </Tooltip>
-                      <span style={{ marginLeft: 8 }}>{assigneeFallback.username}</span>
                     </div>
                   ) : (
                     taskDrawer.data.assigneeId ? taskDrawer.data.assigneeId : <span style={{ color: '#999' }}>未分配</span>

@@ -21,7 +21,13 @@ const { Option } = Select;
 export const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [notificationLoading, setNotificationLoading] = useState(false);
+  const [timezoneLoading, setTimezoneLoading] = useState(false);
   const [passwordForm] = Form.useForm();
+  const [timezoneForm] = Form.useForm();
+  const [passwordErrors, setPasswordErrors] = useState<{[key: string]: string}>({});
+  const [timezoneSettings, setTimezoneSettings] = useState({
+    timezone: 'Asia/Shanghai'
+  });
   const [notificationSettings, setNotificationSettings] = useState<NotificationPreferences>({
     taskAssigned: true,
     taskCompleted: true,
@@ -33,7 +39,21 @@ export const SettingsPage: React.FC = () => {
   // Load notification preferences on component mount
   useEffect(() => {
     loadNotificationPreferences();
+    loadTimezoneSettings();
   }, []);
+
+  const loadTimezoneSettings = () => {
+    // Load from localStorage
+    const savedTimezone = localStorage.getItem('user-timezone') || 'Asia/Shanghai';
+    
+    setTimezoneSettings({
+      timezone: savedTimezone
+    });
+    
+    timezoneForm.setFieldsValue({
+      timezone: savedTimezone
+    });
+  };
 
   const loadNotificationPreferences = async () => {
     try {
@@ -51,6 +71,7 @@ export const SettingsPage: React.FC = () => {
   const handleChangePassword = async (values: any) => {
     try {
       setLoading(true);
+      setPasswordErrors({}); // Clear previous errors
       await userApi.changePassword({
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
@@ -58,8 +79,34 @@ export const SettingsPage: React.FC = () => {
       message.success('密码修改成功');
       passwordForm.resetFields();
     } catch (error: any) {
-      if (error.response?.data?.error) {
-        message.error(error.response.data.error);
+      if (error.response?.data) {
+        const responseData = error.response.data;
+        
+        // Check if it's a validation error with details (new format)
+        if (responseData.code === 'VALIDATION_ERROR' && responseData.details) {
+          const newErrors: {[key: string]: string} = {};
+          responseData.details.forEach((detail: any) => {
+            if (detail.path && detail.path.length > 0) {
+              newErrors[detail.path[0]] = detail.message;
+            }
+          });
+          setPasswordErrors(newErrors);
+        } 
+        // Check for other error formats and map to appropriate fields
+        else {
+          const errorMessage = responseData.error || responseData.message;
+          if (errorMessage.includes('当前密码') || errorMessage.includes('current password') || errorMessage.includes('密码错误')) {
+            setPasswordErrors({ currentPassword: errorMessage });
+          } else if (errorMessage.includes('新密码') || errorMessage.includes('new password')) {
+            setPasswordErrors({ newPassword: errorMessage });
+          } else if (errorMessage.includes('密码') || errorMessage.includes('password')) {
+            // Generic password error, show on current password field
+            setPasswordErrors({ currentPassword: errorMessage });
+          } else {
+            // Non-field specific error, still show at top
+            message.error(errorMessage);
+          }
+        }
       } else {
         message.error('密码修改失败');
       }
@@ -87,6 +134,28 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const handleTimezoneSettingsChange = async (values: any) => {
+    try {
+      setTimezoneLoading(true);
+      
+      // Save to localStorage
+      localStorage.setItem('user-timezone', values.timezone);
+      
+      // Update state
+      setTimezoneSettings({
+        timezone: values.timezone
+      });
+      
+      message.success('时区设置已保存');
+      
+    } catch (error: any) {
+      console.error('Failed to update timezone settings:', error);
+      message.error('保存设置失败');
+    } finally {
+      setTimezoneLoading(false);
+    }
+  };
+
   return (
     <div className="page-container fade-in">
       {/* Page Header */}
@@ -109,8 +178,18 @@ export const SettingsPage: React.FC = () => {
             name="currentPassword"
             label="当前密码"
             rules={[{ required: true, message: '请输入当前密码' }]}
+            validateStatus={passwordErrors.currentPassword ? 'error' : ''}
+            help={passwordErrors.currentPassword || ''}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="当前密码" />
+            <Input.Password 
+              prefix={<LockOutlined />} 
+              placeholder="当前密码" 
+              onChange={() => {
+                if (passwordErrors.currentPassword) {
+                  setPasswordErrors(prev => ({ ...prev, currentPassword: '' }));
+                }
+              }}
+            />
           </Form.Item>
 
           <Form.Item
@@ -118,10 +197,20 @@ export const SettingsPage: React.FC = () => {
             label="新密码"
             rules={[
               { required: true, message: '请输入新密码' },
-              { min: 6, message: '密码至少6个字符' },
+              { min: 8, message: '密码至少8个字符' },
             ]}
+            validateStatus={passwordErrors.newPassword ? 'error' : ''}
+            help={passwordErrors.newPassword || ''}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="新密码" />
+            <Input.Password 
+              prefix={<LockOutlined />} 
+              placeholder="新密码" 
+              onChange={() => {
+                if (passwordErrors.newPassword) {
+                  setPasswordErrors(prev => ({ ...prev, newPassword: '' }));
+                }
+              }}
+            />
           </Form.Item>
 
           <Form.Item
@@ -139,16 +228,33 @@ export const SettingsPage: React.FC = () => {
                 },
               }),
             ]}
+            validateStatus={passwordErrors.confirmPassword ? 'error' : ''}
+            help={passwordErrors.confirmPassword || ''}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="确认新密码" />
+            <Input.Password 
+              prefix={<LockOutlined />} 
+              placeholder="确认新密码" 
+              onChange={() => {
+                if (passwordErrors.confirmPassword) {
+                  setPasswordErrors(prev => ({ ...prev, confirmPassword: '' }));
+                }
+              }}
+            />
           </Form.Item>
 
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading}
+              >
                 修改密码
               </Button>
-              <Button onClick={() => passwordForm.resetFields()}>重置</Button>
+              <Button onClick={() => {
+                passwordForm.resetFields();
+                setPasswordErrors({});
+              }}>重置</Button>
             </Space>
           </Form.Item>
         </Form>
@@ -236,27 +342,51 @@ export const SettingsPage: React.FC = () => {
         )}
       </Card>
 
-      {/* 语言和地区 */}
-      <Card title={<Text strong style={{ fontSize: 16 }}><GlobalOutlined /> 语言和地区</Text>}>
-        <Form layout="vertical" style={{ maxWidth: 600 }}>
-          <Form.Item label="语言" initialValue="zh-CN">
-            <Select prefix={<GlobalOutlined />}>
-              <Option value="zh-CN">简体中文</Option>
-              <Option value="en-US">English</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item label="时区" initialValue="Asia/Shanghai">
+      {/* 时区设置 */}
+      <Card title={<Text strong style={{ fontSize: 16 }}><GlobalOutlined /> 时区设置</Text>}>
+        <Form 
+          form={timezoneForm}
+          layout="vertical" 
+          style={{ maxWidth: 600 }}
+          onFinish={handleTimezoneSettingsChange}
+          initialValues={timezoneSettings}
+        >
+          <Form.Item 
+            label="时区" 
+            name="timezone"
+            rules={[{ required: true, message: '请选择时区' }]}
+          >
             <Select>
               <Option value="Asia/Shanghai">中国标准时间 (UTC+8)</Option>
               <Option value="America/New_York">美国东部时间 (UTC-5)</Option>
               <Option value="Europe/London">英国时间 (UTC+0)</Option>
+              <Option value="Asia/Tokyo">日本标准时间 (UTC+9)</Option>
+              <Option value="Europe/Paris">欧洲中部时间 (UTC+1)</Option>
+              <Option value="America/Los_Angeles">美国太平洋时间 (UTC-8)</Option>
             </Select>
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary">保存设置</Button>
+            <Space>
+              <Button type="primary" htmlType="submit" loading={timezoneLoading}>
+                保存设置
+              </Button>
+              <Button onClick={() => {
+                timezoneForm.resetFields();
+                setTimezoneSettings({
+                  timezone: 'Asia/Shanghai'
+                });
+              }}>
+                重置
+              </Button>
+            </Space>
           </Form.Item>
+          
+          <div style={{ marginTop: 16, padding: 12, backgroundColor: '#f6f6f6', borderRadius: 6 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              💡 提示：时区设置会影响系统中所有时间的显示格式。
+            </Text>
+          </div>
         </Form>
       </Card>
     </div>

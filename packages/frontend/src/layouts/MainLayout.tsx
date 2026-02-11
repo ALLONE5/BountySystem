@@ -18,6 +18,8 @@ import {
 import { useAuthStore } from '../store/authStore';
 import { usePermission } from '../hooks/usePermission';
 import { useNotificationContext } from '../contexts/NotificationContext';
+import { useSystemConfig } from '../contexts/SystemConfigContext';
+import { SystemConfigTest } from '../components/SystemConfigTest';
 import { UserRole } from '../types';
 import { colors, spacing, shadows } from '../styles/design-tokens';
 
@@ -27,8 +29,9 @@ export const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, clearAuth } = useAuthStore();
-  const { canAccessAdminPanel, isSuperAdmin, isPositionAdmin } = usePermission();
+  const { canAccessAdminPanel, isSuperAdmin, isDeveloper, isPositionAdmin } = usePermission();
   const { unreadCount, refreshUnreadCount } = useNotificationContext();
+  const { config: systemConfig } = useSystemConfig();
 
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
@@ -67,12 +70,17 @@ export const MainLayout: React.FC = () => {
       try {
         const avatar = await avatarApi.getUserAvatar();
         setAvatarUrl(avatar?.imageUrl);
-      } catch (error) {
-        console.error('Failed to load user avatar:', error);
+      } catch (error: any) {
+        // User has no avatar - this is normal, don't show error
+        if (error.response?.status !== 404) {
+          console.error('Failed to load user avatar:', error);
+        }
         setAvatarUrl(undefined);
       }
     };
-    loadAvatar();
+    if (user?.id) {
+      loadAvatar();
+    }
   }, [user?.id]);
 
   useEffect(() => {
@@ -81,7 +89,10 @@ export const MainLayout: React.FC = () => {
         .getUserAvatar()
         .then((avatar: any) => setAvatarUrl(avatar?.imageUrl))
         .catch((error: any) => {
-          console.error('Failed to refresh user avatar:', error);
+          // User has no avatar - this is normal, don't show error
+          if (error.response?.status !== 404) {
+            console.error('Failed to refresh user avatar:', error);
+          }
           setAvatarUrl(undefined);
         });
     };
@@ -234,7 +245,7 @@ export const MainLayout: React.FC = () => {
   const adminChildren: Array<
     {
       key: string;
-      label: string;
+      label: string | React.ReactNode;
       onClick: () => void;
       roles?: UserRole[];
     }
@@ -243,19 +254,19 @@ export const MainLayout: React.FC = () => {
       key: 'user-management',
       label: '用户管理',
       onClick: () => navigate('/admin/users'),
-      roles: [UserRole.SUPER_ADMIN, UserRole.POSITION_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER, UserRole.POSITION_ADMIN],
     },
     {
       key: 'group-management',
       label: '组群管理',
       onClick: () => navigate('/admin/groups'),
-      roles: [UserRole.SUPER_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER],
     },
     {
       key: 'task-management',
       label: '任务管理',
       onClick: () => navigate('/admin/tasks'),
-      roles: [UserRole.SUPER_ADMIN, UserRole.POSITION_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER, UserRole.POSITION_ADMIN],
     },
     {
       key: 'approval',
@@ -268,43 +279,43 @@ export const MainLayout: React.FC = () => {
         </Space>
       ),
       onClick: () => navigate('/admin/approval'),
-      roles: [UserRole.SUPER_ADMIN, UserRole.POSITION_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER, UserRole.POSITION_ADMIN],
     },
     {
       key: 'avatar-management',
       label: '头像管理',
       onClick: () => navigate('/admin/avatars'),
-      roles: [UserRole.SUPER_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER],
     },
     {
       key: 'position-management',
       label: '岗位管理',
       onClick: () => navigate('/admin/positions'),
-      roles: [UserRole.SUPER_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER],
     },
     {
       key: 'bounty-algorithm',
       label: '赏金算法',
       onClick: () => navigate('/admin/bounty-algorithm'),
-      roles: [UserRole.SUPER_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER],
     },
     {
       key: 'notification-broadcast',
       label: '发布通知',
       onClick: () => navigate('/admin/notifications'),
-      roles: [UserRole.SUPER_ADMIN, UserRole.POSITION_ADMIN],
+      roles: [UserRole.SUPER_ADMIN, UserRole.DEVELOPER, UserRole.POSITION_ADMIN],
     },
     {
       key: 'system-config',
       label: '系统配置',
       onClick: () => navigate('/admin/system-config'),
-      roles: [UserRole.SUPER_ADMIN],
+      roles: [UserRole.DEVELOPER], // Only developers can access system config
     },
     {
       key: 'audit-logs',
       label: '审计日志',
       onClick: () => navigate('/admin/audit-logs'),
-      roles: [UserRole.SUPER_ADMIN],
+      roles: [UserRole.DEVELOPER], // Only developers can access audit logs
     },
   ];
 
@@ -325,7 +336,8 @@ export const MainLayout: React.FC = () => {
           ),
           children: adminChildren.filter((item) => {
             if (!item.roles || item.roles.length === 0) return true;
-            if (isSuperAdmin()) return true;
+            if (isDeveloper()) return item.roles.includes(UserRole.DEVELOPER);
+            if (isSuperAdmin()) return item.roles.includes(UserRole.SUPER_ADMIN);
             if (isPositionAdmin()) return item.roles.includes(UserRole.POSITION_ADMIN);
             return false;
           }),
@@ -356,8 +368,25 @@ export const MainLayout: React.FC = () => {
           alignItems: 'center',
           gap: spacing.sm,
         }}>
-          <TrophyOutlined style={{ fontSize: 24 }} />
-          赏金猎人平台
+          {systemConfig?.logoUrl ? (
+            <img 
+              src={systemConfig.logoUrl.startsWith('http') ? systemConfig.logoUrl : `http://localhost:3000${systemConfig.logoUrl}`} 
+              alt="Logo" 
+              style={{ 
+                height: 24, 
+                width: 'auto',
+                maxWidth: 40,
+                objectFit: 'contain'
+              }} 
+              onError={(e) => {
+                console.error('Logo failed to load:', systemConfig.logoUrl);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            <TrophyOutlined style={{ fontSize: 24 }} />
+          )}
+          {systemConfig?.siteName || '赏金猎人平台'}
         </div>
         <Space size="large">
           <Badge count={unreadCount} offset={[-5, 5]}>
@@ -426,6 +455,7 @@ export const MainLayout: React.FC = () => {
           </Content>
         </Layout>
       </Layout>
+      <SystemConfigTest />
     </Layout>
   );
 };

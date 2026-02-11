@@ -3,9 +3,7 @@ import { Typography, Card, Row, Col, Statistic, Button, Space, Select, message, 
 import {
   FileTextOutlined,
   CheckSquareOutlined,
-  TrophyOutlined,
   RightOutlined,
-  PercentageOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -33,6 +31,9 @@ export const DashboardPage: React.FC = () => {
   const [monthlyBounty, setMonthlyBounty] = useState(0);
   const [quarterlyBounty, setQuarterlyBounty] = useState(0);
   const [allTimeBounty, setAllTimeBounty] = useState(0);
+  const [monthlyHasData, setMonthlyHasData] = useState(true);
+  const [quarterlyHasData, setQuarterlyHasData] = useState(true);
+  const [allTimeHasData, setAllTimeHasData] = useState(true);
 
   useEffect(() => {
     loadStats();
@@ -55,25 +56,39 @@ export const DashboardPage: React.FC = () => {
           period: 'monthly', 
           year: currentYear, 
           month: currentMonth 
-        }).catch(() => null) : Promise.resolve(null),
+        }).catch((_error) => {
+          console.log('Monthly ranking not found, using default value');
+          return null;
+        }) : Promise.resolve(null),
         user ? rankingApi.getMyRanking(user.id, { 
           period: 'quarterly', 
           year: currentYear, 
           quarter: currentQuarter 
-        }).catch(() => null) : Promise.resolve(null),
+        }).catch((_error) => {
+          console.log('Quarterly ranking not found, using default value');
+          return null;
+        }) : Promise.resolve(null),
         user ? rankingApi.getMyRanking(user.id, { 
           period: 'all_time', 
           year: currentYear 
-        }).catch(() => null) : Promise.resolve(null),
+        }).catch((_error) => {
+          console.log('All-time ranking not found, using default value');
+          return null;
+        }) : Promise.resolve(null),
       ]);
 
       setPublishedTasksList(publishedTasks);
       setAssignedTasksList(assignedTasks);
 
-      // Set bounty data from rankings
-      setMonthlyBounty(monthlyRanking?.totalBounty || 0);
-      setQuarterlyBounty(quarterlyRanking?.totalBounty || 0);
-      setAllTimeBounty(allTimeRanking?.totalBounty || 0);
+      // Set bounty data from rankings, check hasRankingData field
+      setMonthlyBounty(monthlyRanking?.hasRankingData === false ? 0 : (monthlyRanking?.totalBounty || 0));
+      setQuarterlyBounty(quarterlyRanking?.hasRankingData === false ? 0 : (quarterlyRanking?.totalBounty || 0));
+      setAllTimeBounty(allTimeRanking?.hasRankingData === false ? 0 : (allTimeRanking?.totalBounty || 0));
+      
+      // Set hasData flags
+      setMonthlyHasData(monthlyRanking?.hasRankingData !== false);
+      setQuarterlyHasData(quarterlyRanking?.hasRankingData !== false);
+      setAllTimeHasData(allTimeRanking?.hasRankingData !== false);
 
       // Calculate stats from tasks
       const publishedCompleted = publishedTasks.filter(t => t.status === 'completed').length;
@@ -224,7 +239,9 @@ export const DashboardPage: React.FC = () => {
   if (loading) {
     return (
       <div className="loading-container">
-        <Spin size="large" tip="加载中..." />
+        <Spin size="large">
+          <div style={{ padding: '20px', textAlign: 'center' }}>加载中...</div>
+        </Spin>
       </div>
     );
   }
@@ -309,10 +326,11 @@ export const DashboardPage: React.FC = () => {
           >
             <Statistic
               title="当月赏金"
-              value={monthlyBounty}
-              prefix="$"
-              precision={2}
-              valueStyle={{ color: colors.warning }}
+              value={monthlyHasData ? monthlyBounty : 0}
+              prefix={monthlyHasData ? "$" : ""}
+              precision={monthlyHasData ? 2 : 0}
+              styles={{ content: { color: colors.warning } }}
+              formatter={monthlyHasData ? undefined : () => '当月未参与排名'}
             />
             <div style={{ 
               marginTop: spacing.sm, 
@@ -321,8 +339,12 @@ export const DashboardPage: React.FC = () => {
               display: 'flex',
               justifyContent: 'space-between',
             }}>
-              <span>当季赏金: ${quarterlyBounty.toFixed(2)}</span>
-              <span>累积赏金: ${allTimeBounty.toFixed(2)}</span>
+              <span>
+                {quarterlyHasData ? `当季赏金: $${quarterlyBounty.toFixed(2)}` : '当季未参与排名'}
+              </span>
+              <span>
+                {allTimeHasData ? `累积赏金: $${allTimeBounty.toFixed(2)}` : '累积未参与排名'}
+              </span>
             </div>
           </Card>
         </Col>
@@ -336,9 +358,7 @@ export const DashboardPage: React.FC = () => {
                   : 0
               }
               suffix="%"
-              valueStyle={{ 
-                color: '#eb2f96'
-              }}
+              styles={{ content: { color: '#eb2f96' } }}
             />
           </Card>
         </Col>
@@ -384,39 +404,7 @@ export const DashboardPage: React.FC = () => {
         </Text>
       </Card>
 
-      {/* 快速操作 */}
-      <Card 
-        style={{ marginTop: spacing.lg }} 
-        title="快速操作"
-      >
-        <Space wrap size="middle">
-          <Button 
-            type="primary" 
-            icon={<TrophyOutlined />}
-            onClick={() => navigate('/tasks/browse')}
-          >
-            浏览赏金任务
-          </Button>
-          <Button 
-            icon={<FileTextOutlined />}
-            onClick={() => navigate('/tasks/published')}
-          >
-            管理发布任务
-          </Button>
-          <Button 
-            icon={<CheckSquareOutlined />}
-            onClick={() => navigate('/tasks/assigned')}
-          >
-            管理承接任务
-          </Button>
-          <Button 
-            icon={<TrophyOutlined />}
-            onClick={() => navigate('/ranking')}
-          >
-            查看排名
-          </Button>
-        </Space>
-      </Card>
+
 
       {/* Bounty History Drawer */}
       {user?.id && (

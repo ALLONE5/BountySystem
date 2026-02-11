@@ -15,11 +15,15 @@ export const usePermission = () => {
   };
 
   const isAdmin = (): boolean => {
-    return hasRole([UserRole.POSITION_ADMIN, UserRole.SUPER_ADMIN]);
+    return hasRole([UserRole.POSITION_ADMIN, UserRole.SUPER_ADMIN, UserRole.DEVELOPER]);
   };
 
   const isSuperAdmin = (): boolean => {
-    return hasRole(UserRole.SUPER_ADMIN);
+    return hasRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]);
+  };
+
+  const isDeveloper = (): boolean => {
+    return hasRole(UserRole.DEVELOPER);
   };
 
   const isPositionAdmin = (): boolean => {
@@ -43,6 +47,7 @@ export const usePermission = () => {
     hasRole,
     isAdmin,
     isSuperAdmin,
+    isDeveloper,
     isPositionAdmin,
     canAccessAdminPanel,
     canManageAllUsers,

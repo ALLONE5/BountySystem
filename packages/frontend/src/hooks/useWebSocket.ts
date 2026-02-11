@@ -41,7 +41,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Handle connection
     socket.on('connect', () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected successfully');
       setIsConnected(true);
       setError(null);
       
@@ -76,7 +76,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Handle disconnection
     socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
+      console.log('WebSocket disconnected (this is normal when backend is not running):', reason);
       setIsConnected(false);
       if (optionsRef.current.onDisconnect) {
         optionsRef.current.onDisconnect();
@@ -85,7 +85,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Handle errors
     socket.on('connect_error', (err) => {
-      console.error('WebSocket connection error:', err);
+      console.log('WebSocket connection error (this is normal in development):', err.message);
       setError(err);
       if (optionsRef.current.onError) {
         optionsRef.current.onError(err);

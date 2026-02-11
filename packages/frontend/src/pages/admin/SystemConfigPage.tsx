@@ -8,63 +8,39 @@ import {
   Switch,
   Space,
   message,
-  Divider,
   InputNumber,
   Upload,
   Alert,
+  List,
+  Popconfirm,
 } from 'antd';
-import { SaveOutlined, UploadOutlined, SettingOutlined } from '@ant-design/icons';
+import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined } from '@ant-design/icons';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
+import { systemConfigApi, SystemConfig, SystemConfigUpdate, UploadedLogo } from '../../api/systemConfig';
+import { useSystemConfig } from '../../contexts/SystemConfigContext';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TextArea } = Input;
-
-interface SystemConfig {
-  siteName: string;
-  siteDescription: string;
-  logoUrl: string;
-  allowRegistration: boolean;
-  maintenanceMode: boolean;
-  maxFileSize: number; // MB
-  defaultUserRole: string;
-  emailEnabled: boolean;
-  smtpHost: string;
-  smtpPort: number;
-  smtpUser: string;
-  smtpPassword: string;
-  smtpSecure: boolean;
-}
 
 export const SystemConfigPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [config, setConfig] = useState<SystemConfig>({
-    siteName: '赏金猎人平台',
-    siteDescription: '基于任务的协作平台',
-    logoUrl: '',
-    allowRegistration: true,
-    maintenanceMode: false,
-    maxFileSize: 10,
-    defaultUserRole: 'user',
-    emailEnabled: false,
-    smtpHost: '',
-    smtpPort: 587,
-    smtpUser: '',
-    smtpPassword: '',
-    smtpSecure: true,
-  });
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [config, setConfig] = useState<SystemConfig | null>(null);
+  const [logos, setLogos] = useState<UploadedLogo[]>([]);
   const [form] = Form.useForm();
+  const { refreshConfig } = useSystemConfig();
 
   useEffect(() => {
     loadSystemConfig();
+    loadLogos();
   }, []);
 
   const loadSystemConfig = async () => {
     try {
       setLoading(true);
-      // TODO: Implement API call to load system config
-      // const data = await systemApi.getConfig();
-      // setConfig(data);
-      form.setFieldsValue(config);
+      const data = await systemConfigApi.getConfig();
+      setConfig(data);
+      form.setFieldsValue(data);
     } catch (error: any) {
       console.error('Failed to load system config:', error);
       message.error('加载系统配置失败');
@@ -73,12 +49,24 @@ export const SystemConfigPage: React.FC = () => {
     }
   };
 
-  const handleSave = async (values: SystemConfig) => {
+  const loadLogos = async () => {
+    try {
+      const data = await systemConfigApi.getLogos();
+      setLogos(data);
+    } catch (error: any) {
+      console.error('Failed to load logos:', error);
+    }
+  };
+
+  const handleSave = async (values: SystemConfigUpdate) => {
     try {
       setLoading(true);
-      // TODO: Implement API call to save system config
-      // await systemApi.updateConfig(values);
-      setConfig(values);
+      const updatedConfig = await systemConfigApi.updateConfig(values);
+      setConfig(updatedConfig);
+      
+      // 刷新全局系统配置
+      await refreshConfig();
+      
       message.success('系统配置保存成功');
     } catch (error: any) {
       console.error('Failed to save system config:', error);
@@ -88,14 +76,43 @@ export const SystemConfigPage: React.FC = () => {
     }
   };
 
-  const handleLogoUpload = (info: any) => {
-    if (info.file.status === 'done') {
-      const logoUrl = info.file.response?.url || '';
-      form.setFieldValue('logoUrl', logoUrl);
+  const handleLogoUpload = async (file: File) => {
+    try {
+      setUploadLoading(true);
+      const result = await systemConfigApi.uploadLogo(file);
+      form.setFieldValue('logoUrl', result.url);
       message.success('Logo上传成功');
-    } else if (info.file.status === 'error') {
+      loadLogos(); // Refresh logos list
+      return false; // Prevent default upload behavior
+    } catch (error: any) {
+      console.error('Failed to upload logo:', error);
       message.error('Logo上传失败');
+      return false;
+    } finally {
+      setUploadLoading(false);
     }
+  };
+
+  const handleDeleteLogo = async (filename: string) => {
+    try {
+      await systemConfigApi.deleteLogo(filename);
+      message.success('Logo删除成功');
+      loadLogos(); // Refresh logos list
+      
+      // If the deleted logo is currently selected, clear the form field
+      const currentLogoUrl = form.getFieldValue('logoUrl');
+      if (currentLogoUrl && currentLogoUrl.includes(filename)) {
+        form.setFieldValue('logoUrl', '');
+      }
+    } catch (error: any) {
+      console.error('Failed to delete logo:', error);
+      message.error('Logo删除失败');
+    }
+  };
+
+  const selectLogo = (logoUrl: string) => {
+    form.setFieldValue('logoUrl', logoUrl);
+    message.success('Logo已选择');
   };
 
   return (
@@ -114,7 +131,7 @@ export const SystemConfigPage: React.FC = () => {
         form={form}
         layout="vertical"
         onFinish={handleSave}
-        initialValues={config}
+        initialValues={config || undefined}
       >
         {/* 基础设置 */}
         <Card title={<Text strong><SettingOutlined /> 基础设置</Text>} style={{ marginBottom: 24 }}>
@@ -141,12 +158,75 @@ export const SystemConfigPage: React.FC = () => {
               <Input placeholder="Logo URL" />
               <Upload
                 name="logo"
-                action="/api/upload/logo"
-                onChange={handleLogoUpload}
+                beforeUpload={handleLogoUpload}
                 showUploadList={false}
+                accept="image/*"
               >
-                <Button icon={<UploadOutlined />}>上传Logo</Button>
+                <Button icon={<UploadOutlined />} loading={uploadLoading}>
+                  上传Logo
+                </Button>
               </Upload>
+              
+              {/* Logo Gallery */}
+              {logos.length > 0 && (
+                <Card size="small" title="已上传的Logo" style={{ marginTop: 16 }}>
+                  <List
+                    grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
+                    dataSource={logos}
+                    renderItem={(logo) => (
+                      <List.Item>
+                        <Card
+                          size="small"
+                          hoverable
+                          cover={
+                            <img
+                              alt={logo.filename}
+                              src={logo.url.startsWith('http') ? logo.url : `http://localhost:3000${logo.url}`}
+                              style={{ height: 80, objectFit: 'contain', padding: 8 }}
+                              onError={(e) => {
+                                console.error('Logo failed to load:', logo.url);
+                                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMiAyMCAyNCAyMiAyNCAyNEMyNCAyNiAyMiAyOCAyMCAyOEMxOCAyOCAxNiAyNiAxNiAyNEMxNiAyMiAxOCAyMCAyMCAyMFoiIGZpbGw9IiNEOUQ5RDkiLz4KPC9zdmc+';
+                              }}
+                            />
+                          }
+                          actions={[
+                            <Button
+                              type="link"
+                              size="small"
+                              onClick={() => selectLogo(logo.url)}
+                            >
+                              选择
+                            </Button>,
+                            <Popconfirm
+                              title="确定删除这个Logo吗？"
+                              onConfirm={() => handleDeleteLogo(logo.filename)}
+                              okText="确定"
+                              cancelText="取消"
+                            >
+                              <Button
+                                type="link"
+                                size="small"
+                                danger
+                                icon={<DeleteOutlined />}
+                              />
+                            </Popconfirm>,
+                          ]}
+                        >
+                          <Card.Meta
+                            description={
+                              <div>
+                                <div style={{ fontSize: 12, color: '#666' }}>
+                                  {(logo.size / 1024).toFixed(1)} KB
+                                </div>
+                              </div>
+                            }
+                          />
+                        </Card>
+                      </List.Item>
+                    )}
+                  />
+                </Card>
+              )}
             </Space>
           </Form.Item>
         </Card>
@@ -177,6 +257,15 @@ export const SystemConfigPage: React.FC = () => {
             label="维护模式"
             valuePropName="checked"
             extra="开启后，只有管理员可以访问系统"
+          >
+            <Switch />
+          </Form.Item>
+
+          <Form.Item
+            name="debugMode"
+            label="调试模式"
+            valuePropName="checked"
+            extra="开启后，右上角会显示系统配置调试信息"
           >
             <Switch />
           </Form.Item>

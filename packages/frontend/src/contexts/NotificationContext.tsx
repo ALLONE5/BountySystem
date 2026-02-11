@@ -92,10 +92,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Don't refresh count here - it's already loaded in useEffect
     },
     onDisconnect: () => {
-      console.log('WebSocket disconnected - notifications disabled');
+      console.log('WebSocket disconnected - notifications disabled (this is normal in development)');
     },
     onError: (error) => {
-      console.error('WebSocket error:', error);
+      console.log('WebSocket error (this is normal when backend is not running):', error.message);
     },
   });
 

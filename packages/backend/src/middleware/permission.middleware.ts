@@ -51,14 +51,14 @@ export const requirePageAccess = (page: PageAccess) => {
 };
 
 /**
- * Middleware to check if user is admin (position admin or super admin)
+ * Middleware to check if user is admin (position admin, super admin, or developer)
  */
-export const requireAdmin = requireRole([UserRole.POSITION_ADMIN, UserRole.SUPER_ADMIN]);
+export const requireAdmin = requireRole([UserRole.POSITION_ADMIN, UserRole.SUPER_ADMIN, UserRole.DEVELOPER]);
 
 /**
- * Middleware to check if user is super admin
+ * Middleware to check if user is super admin or developer
  */
-export const requireSuperAdmin = requireRole([UserRole.SUPER_ADMIN]);
+export const requireSuperAdmin = requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]);
 
 /**
  * Middleware to check if user can access another user's data

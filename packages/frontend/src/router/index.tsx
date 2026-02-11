@@ -38,12 +38,13 @@ const ErrorBoundary = () => (
   />
 );
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />,
-    errorElement: <ErrorBoundary />,
-  },
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Navigate to="/dashboard" replace />,
+      errorElement: <ErrorBoundary />,
+    },
   {
     path: '/auth',
     element: <AuthLayout />,
@@ -150,4 +151,8 @@ export const router = createBrowserRouter([
     path: '*',
     element: <ErrorBoundary />,
   },
-]);
+], {
+  future: {
+    v7_relativeSplatPath: true,
+  },
+});

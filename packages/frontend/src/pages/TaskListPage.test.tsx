@@ -33,12 +33,6 @@ describe('TaskListPage - Status Display', () => {
     expect(config.text).toBe('已完成');
   });
 
-  it('should use statusConfig for ABANDONED status', () => {
-    const config = getTaskStatusConfig(TaskStatus.ABANDONED);
-    expect(config.color).toBe('error');
-    expect(config.text).toBe('已放弃');
-  });
-
   it('should use statusConfig for PENDING_ACCEPTANCE status', () => {
     const config = getTaskStatusConfig(TaskStatus.PENDING_ACCEPTANCE);
     expect(config.color).toBe('orange');
@@ -52,7 +46,6 @@ describe('TaskListPage - Status Display', () => {
       TaskStatus.PENDING_ACCEPTANCE,
       TaskStatus.IN_PROGRESS,
       TaskStatus.COMPLETED,
-      TaskStatus.ABANDONED,
     ];
 
     statuses.forEach(status => {

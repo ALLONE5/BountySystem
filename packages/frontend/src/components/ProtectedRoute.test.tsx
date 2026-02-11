@@ -16,6 +16,7 @@ describe('ProtectedRoute Authentication', () => {
       avatarId: 'avatar1',
       role: UserRole.USER,
       positions: [],
+      balance: 0,
       createdAt: new Date(),
       lastLogin: new Date(),
     };
@@ -41,6 +42,7 @@ describe('ProtectedRoute Authentication', () => {
       avatarId: 'avatar1',
       role: UserRole.USER,
       positions: [],
+      balance: 0,
       createdAt: new Date(),
       lastLogin: new Date(),
     };
@@ -67,6 +69,7 @@ describe('ProtectedRoute Authentication', () => {
       avatarId: 'avatar1',
       role: UserRole.USER,
       positions: [],
+      balance: 0,
       createdAt: new Date(),
       lastLogin: new Date(),
     };
@@ -98,6 +101,7 @@ describe('ProtectedRoute Authentication', () => {
         avatarId: 'avatar1',
         role,
         positions: [],
+        balance: 0,
         createdAt: new Date(),
         lastLogin: new Date(),
       };

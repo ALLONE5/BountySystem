@@ -1,0 +1,379 @@
+import { pool } from '../config/database.js';
+import { 
+  SystemConfig, 
+  SystemConfigCreateDTO, 
+  SystemConfigUpdateDTO, 
+  SystemConfigResponse 
+} from '../models/SystemConfig.js';
+import { NotFoundError, ValidationError } from '../utils/errors.js';
+import { Validator } from '../utils/Validator.js';
+
+export class SystemConfigService {
+  /**
+   * Get current system configuration
+   */
+  async getConfig(): Promise<SystemConfigResponse> {
+    const query = `
+      SELECT 
+        id,
+        site_name as "siteName",
+        site_description as "siteDescription", 
+        logo_url as "logoUrl",
+        allow_registration as "allowRegistration",
+        maintenance_mode as "maintenanceMode",
+        debug_mode as "debugMode",
+        max_file_size as "maxFileSize",
+        default_user_role as "defaultUserRole",
+        email_enabled as "emailEnabled",
+        smtp_host as "smtpHost",
+        smtp_port as "smtpPort",
+        smtp_user as "smtpUser",
+        smtp_secure as "smtpSecure",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+      FROM system_config 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `;
+
+    const result = await pool.query(query);
+    
+    if (result.rows.length === 0) {
+      throw new NotFoundError('System configuration not found');
+    }
+
+    // Don't return sensitive SMTP password
+    const config = result.rows[0];
+    return {
+      ...config,
+      smtpPassword: config.smtpPassword ? '***' : ''
+    };
+  }
+
+  /**
+   * Get public system configuration (no authentication required)
+   * Returns only basic information like site name, logo, and debug mode
+   */
+  async getPublicConfig(): Promise<{ siteName: string; logoUrl: string; siteDescription: string; debugMode: boolean }> {
+    const query = `
+      SELECT 
+        site_name as "siteName",
+        site_description as "siteDescription", 
+        logo_url as "logoUrl",
+        debug_mode as "debugMode"
+      FROM system_config 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `;
+
+    const result = await pool.query(query);
+    
+    if (result.rows.length === 0) {
+      // Return default values if no config exists
+      return {
+        siteName: '赏金猎人平台',
+        siteDescription: '基于任务的协作平台',
+        logoUrl: '',
+        debugMode: false
+      };
+    }
+
+    return result.rows[0];
+  }
+
+  /**
+   * Update system configuration
+   */
+  async updateConfig(updates: SystemConfigUpdateDTO): Promise<SystemConfigResponse> {
+    console.log('🐛 updateConfig called with:', updates);
+    
+    // Validate input
+    this.validateConfigData(updates);
+
+    const fields: string[] = [];
+    const values: any[] = [];
+    let paramCount = 1;
+
+    // Build dynamic update query
+    if (updates.siteName !== undefined) {
+      fields.push(`site_name = $${paramCount++}`);
+      values.push(updates.siteName);
+    }
+
+    if (updates.siteDescription !== undefined) {
+      fields.push(`site_description = $${paramCount++}`);
+      values.push(updates.siteDescription);
+    }
+
+    if (updates.logoUrl !== undefined) {
+      fields.push(`logo_url = $${paramCount++}`);
+      values.push(updates.logoUrl);
+    }
+
+    if (updates.allowRegistration !== undefined) {
+      fields.push(`allow_registration = $${paramCount++}`);
+      values.push(updates.allowRegistration);
+    }
+
+    if (updates.maintenanceMode !== undefined) {
+      fields.push(`maintenance_mode = $${paramCount++}`);
+      values.push(updates.maintenanceMode);
+    }
+
+    if (updates.debugMode !== undefined) {
+      fields.push(`debug_mode = $${paramCount++}`);
+      values.push(updates.debugMode);
+      console.log('🐛 Debug mode update:', updates.debugMode);
+    }
+
+    if (updates.maxFileSize !== undefined) {
+      fields.push(`max_file_size = $${paramCount++}`);
+      values.push(updates.maxFileSize);
+    }
+
+    if (updates.defaultUserRole !== undefined) {
+      fields.push(`default_user_role = $${paramCount++}`);
+      values.push(updates.defaultUserRole);
+    }
+
+    if (updates.emailEnabled !== undefined) {
+      fields.push(`email_enabled = $${paramCount++}`);
+      values.push(updates.emailEnabled);
+    }
+
+    if (updates.smtpHost !== undefined) {
+      fields.push(`smtp_host = $${paramCount++}`);
+      values.push(updates.smtpHost);
+    }
+
+    if (updates.smtpPort !== undefined) {
+      fields.push(`smtp_port = $${paramCount++}`);
+      values.push(updates.smtpPort);
+    }
+
+    if (updates.smtpUser !== undefined) {
+      fields.push(`smtp_user = $${paramCount++}`);
+      values.push(updates.smtpUser);
+    }
+
+    if (updates.smtpPassword !== undefined) {
+      fields.push(`smtp_password = $${paramCount++}`);
+      values.push(updates.smtpPassword);
+    }
+
+    if (updates.smtpSecure !== undefined) {
+      fields.push(`smtp_secure = $${paramCount++}`);
+      values.push(updates.smtpSecure);
+    }
+
+    if (fields.length === 0) {
+      // No updates, return current config
+      return this.getConfig();
+    }
+
+    // Add updated_at field
+    fields.push(`updated_at = NOW()`);
+
+    console.log('🐛 SQL fields:', fields);
+    console.log('🐛 SQL values:', values);
+
+    const query = `
+      UPDATE system_config 
+      SET ${fields.join(', ')}
+      WHERE id = (SELECT id FROM system_config ORDER BY created_at DESC LIMIT 1)
+      RETURNING 
+        id,
+        site_name as "siteName",
+        site_description as "siteDescription", 
+        logo_url as "logoUrl",
+        allow_registration as "allowRegistration",
+        maintenance_mode as "maintenanceMode",
+        debug_mode as "debugMode",
+        max_file_size as "maxFileSize",
+        default_user_role as "defaultUserRole",
+        email_enabled as "emailEnabled",
+        smtp_host as "smtpHost",
+        smtp_port as "smtpPort",
+        smtp_user as "smtpUser",
+        smtp_secure as "smtpSecure",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `;
+
+    console.log('🐛 Final SQL query:', query);
+
+    const result = await pool.query(query, values);
+    
+    if (result.rows.length === 0) {
+      throw new NotFoundError('System configuration not found');
+    }
+
+    // Don't return sensitive SMTP password
+    const config = result.rows[0];
+    return {
+      ...config,
+      smtpPassword: config.smtpPassword ? '***' : ''
+    };
+  }
+
+  /**
+   * Create initial system configuration
+   */
+  async createConfig(configData: SystemConfigCreateDTO): Promise<SystemConfigResponse> {
+    this.validateConfigData(configData);
+
+    const query = `
+      INSERT INTO system_config (
+        site_name,
+        site_description,
+        logo_url,
+        allow_registration,
+        maintenance_mode,
+        debug_mode,
+        max_file_size,
+        default_user_role,
+        email_enabled,
+        smtp_host,
+        smtp_port,
+        smtp_user,
+        smtp_password,
+        smtp_secure
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      RETURNING 
+        id,
+        site_name as "siteName",
+        site_description as "siteDescription", 
+        logo_url as "logoUrl",
+        allow_registration as "allowRegistration",
+        maintenance_mode as "maintenanceMode",
+        debug_mode as "debugMode",
+        max_file_size as "maxFileSize",
+        default_user_role as "defaultUserRole",
+        email_enabled as "emailEnabled",
+        smtp_host as "smtpHost",
+        smtp_port as "smtpPort",
+        smtp_user as "smtpUser",
+        smtp_secure as "smtpSecure",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `;
+
+    const values = [
+      configData.siteName || '赏金猎人平台',
+      configData.siteDescription || '基于任务的协作平台',
+      configData.logoUrl || '',
+      configData.allowRegistration ?? true,
+      configData.maintenanceMode ?? false,
+      configData.debugMode ?? false,
+      configData.maxFileSize || 10,
+      configData.defaultUserRole || 'user',
+      configData.emailEnabled ?? false,
+      configData.smtpHost || '',
+      configData.smtpPort || 587,
+      configData.smtpUser || '',
+      configData.smtpPassword || '',
+      configData.smtpSecure ?? true
+    ];
+
+    const result = await pool.query(query, values);
+    
+    // Don't return sensitive SMTP password
+    const config = result.rows[0];
+    return {
+      ...config,
+      smtpPassword: config.smtpPassword ? '***' : ''
+    };
+  }
+
+  /**
+   * Check if system is in maintenance mode
+   */
+  async isMaintenanceMode(): Promise<boolean> {
+    const query = `
+      SELECT maintenance_mode 
+      FROM system_config 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `;
+
+    const result = await pool.query(query);
+    return result.rows.length > 0 ? result.rows[0].maintenance_mode : false;
+  }
+
+  /**
+   * Check if user registration is allowed
+   */
+  async isRegistrationAllowed(): Promise<boolean> {
+    const query = `
+      SELECT allow_registration 
+      FROM system_config 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `;
+
+    const result = await pool.query(query);
+    return result.rows.length > 0 ? result.rows[0].allow_registration : true;
+  }
+
+  /**
+   * Get maximum file upload size
+   */
+  async getMaxFileSize(): Promise<number> {
+    const query = `
+      SELECT max_file_size 
+      FROM system_config 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `;
+
+    const result = await pool.query(query);
+    return result.rows.length > 0 ? result.rows[0].max_file_size : 10;
+  }
+
+  /**
+   * Validate configuration data
+   */
+  private validateConfigData(data: SystemConfigCreateDTO | SystemConfigUpdateDTO): void {
+    if (data.siteName !== undefined) {
+      Validator.minLength(data.siteName, 1, 'Site name');
+      Validator.maxLength(data.siteName, 255, 'Site name');
+    }
+
+    if (data.siteDescription !== undefined) {
+      Validator.maxLength(data.siteDescription, 1000, 'Site description');
+    }
+
+    if (data.logoUrl !== undefined) {
+      Validator.maxLength(data.logoUrl, 500, 'Logo URL');
+    }
+
+    if (data.maxFileSize !== undefined) {
+      Validator.min(data.maxFileSize, 1, 'Max file size');
+      Validator.max(data.maxFileSize, 100, 'Max file size');
+    }
+
+    if (data.defaultUserRole !== undefined) {
+      const validRoles = ['user', 'position_admin', 'super_admin'];
+      if (!validRoles.includes(data.defaultUserRole)) {
+        throw new ValidationError('Invalid default user role');
+      }
+    }
+
+    if (data.smtpPort !== undefined) {
+      Validator.min(data.smtpPort, 1, 'SMTP port');
+      Validator.max(data.smtpPort, 65535, 'SMTP port');
+    }
+
+    if (data.smtpHost !== undefined) {
+      Validator.maxLength(data.smtpHost, 255, 'SMTP host');
+    }
+
+    if (data.smtpUser !== undefined) {
+      Validator.maxLength(data.smtpUser, 255, 'SMTP user');
+    }
+
+    if (data.smtpPassword !== undefined) {
+      Validator.maxLength(data.smtpPassword, 255, 'SMTP password');
+    }
+  }
+}

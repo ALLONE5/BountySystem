@@ -5,6 +5,7 @@ import { UserRole } from '../models/User.js';
 describe('JWTService', () => {
   const testPayload = {
     userId: '123e4567-e89b-12d3-a456-426614174000',
+    username: 'testuser',
     email: 'test@example.com',
     role: UserRole.USER,
   };
@@ -26,6 +27,7 @@ describe('JWTService', () => {
 
       expect(decoded).toBeDefined();
       expect(decoded.userId).toBe(testPayload.userId);
+      expect(decoded.username).toBe(testPayload.username);
       expect(decoded.email).toBe(testPayload.email);
       expect(decoded.role).toBe(testPayload.role);
     });
@@ -50,6 +52,7 @@ describe('JWTService', () => {
 
       expect(decoded).toBeDefined();
       expect(decoded?.userId).toBe(testPayload.userId);
+      expect(decoded?.username).toBe(testPayload.username);
       expect(decoded?.email).toBe(testPayload.email);
     });
 

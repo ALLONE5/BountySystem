@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { ValidationError, NotFoundError, AuthenticationError, ForbiddenError } from '../utils/errors.js';
+import { z } from 'zod';
 import logger from '../config/logger.js';
 
 /**
@@ -23,11 +24,21 @@ export const errorHandler = (
     params: req.params,
   });
 
+  // Zod validation errors (400)
+  if (error instanceof z.ZodError) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      type: 'ValidationError',
+      details: error.errors,
+    });
+  }
+
   // 验证错误 (400)
   if (error instanceof ValidationError) {
     return res.status(400).json({
       error: error.message,
       type: 'ValidationError',
+      details: error.details,
     });
   }
 

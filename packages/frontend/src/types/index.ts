@@ -2,7 +2,8 @@
 export enum UserRole {
   USER = 'user',
   POSITION_ADMIN = 'position_admin',
-  SUPER_ADMIN = 'super_admin'
+  SUPER_ADMIN = 'super_admin',
+  DEVELOPER = 'developer'
 }
 
 // 任务状态
@@ -126,6 +127,7 @@ export interface Ranking {
   rank: number;
   calculatedAt: Date;
   user?: User;
+  hasRankingData?: boolean;
 }
 
 // 认证响应

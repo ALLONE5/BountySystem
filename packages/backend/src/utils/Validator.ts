@@ -307,19 +307,19 @@ export class Validator {
   // ========================================
 
   /**
-   * Validate user is admin (SUPER_ADMIN or POSITION_ADMIN)
+   * Validate user is admin (SUPER_ADMIN, DEVELOPER, or POSITION_ADMIN)
    * Consolidates admin check patterns across services
    */
   static isAdmin(userRole: string): boolean {
-    return userRole === 'super_admin' || userRole === 'position_admin';
+    return userRole === 'super_admin' || userRole === 'developer' || userRole === 'position_admin';
   }
 
   /**
-   * Validate user is super admin
+   * Validate user is super admin or developer
    * Consolidates super admin check patterns
    */
   static isSuperAdmin(userRole: string): boolean {
-    return userRole === 'super_admin';
+    return userRole === 'super_admin' || userRole === 'developer';
   }
 
   /**

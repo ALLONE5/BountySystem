@@ -26,11 +26,31 @@ export const rankingApi = {
 
   // 获取用户排名
   getUserRanking: async (userId: string, params: RankingQueryParams): Promise<Ranking | null> => {
-    return createApiMethodWithParams<Ranking | null, string>('get', (id) => `/rankings/user/${id}`)(userId, params);
+    try {
+      return await createApiMethodWithParams<Ranking | null, string>('get', (id) => `/rankings/user/${id}`)(userId, { 
+        ...params,
+        headers: { 'X-Skip-Error-Message': '404' }
+      });
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   },
 
   // 获取当前用户排名
   getMyRanking: async (userId: string, params: RankingQueryParams): Promise<Ranking | null> => {
-    return createApiMethodWithParams<Ranking | null, string>('get', (id) => `/rankings/user/${id}`)(userId, params);
+    try {
+      return await createApiMethodWithParams<Ranking | null, string>('get', (id) => `/rankings/user/${id}`)(userId, { 
+        ...params,
+        headers: { 'X-Skip-Error-Message': '404' }
+      });
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   },
 };

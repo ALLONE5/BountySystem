@@ -13,6 +13,7 @@
     "clear-rate-limits": "node scripts/clear-rate-limits.js"
   },
   "dependencies": {
+    "@types/multer": "^2.0.0",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -22,6 +23,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
     "pg": "^8.11.3",
     "redis": "^4.6.12",
     "socket.io": "^4.8.1",

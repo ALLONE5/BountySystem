@@ -78,7 +78,7 @@ export const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
     <Drawer
       title="用户详情"
       placement="right"
-      width={600}
+      size="default"
       onClose={onClose}
       open={open}
     >

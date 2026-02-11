@@ -12,112 +12,147 @@ import {
   Tooltip,
   Drawer,
   Descriptions,
+  message,
+  Popconfirm,
 } from 'antd';
-import { SearchOutlined, EyeOutlined, DownloadOutlined, FilterOutlined } from '@ant-design/icons';
+import { SearchOutlined, EyeOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
+import { auditLogApi, AuditLog, AuditLogFilters } from '../../api/auditLog';
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
-
-interface AuditLog {
-  id: string;
-  userId: string;
-  username: string;
-  action: string;
-  resource: string;
-  resourceId: string;
-  details: any;
-  ipAddress: string;
-  userAgent: string;
-  timestamp: Date;
-  success: boolean;
-}
 
 export const AuditLogPage: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
-  const [filters, setFilters] = useState({
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 20,
+    total: 0,
+  });
+  const [filters, setFilters] = useState<AuditLogFilters>({
     search: '',
     action: '',
     resource: '',
-    dateRange: null as any,
-    success: '',
+    success: undefined,
+    startDate: undefined,
+    endDate: undefined,
   });
 
   useEffect(() => {
     loadAuditLogs();
-  }, [filters]);
+  }, [filters, pagination.current, pagination.pageSize]);
 
   const loadAuditLogs = async () => {
     try {
       setLoading(true);
-      // TODO: Implement API call to load audit logs
-      // const data = await auditApi.getLogs(filters);
-      // setLogs(data.logs);
+      const data = await auditLogApi.getLogs({
+        ...filters,
+        page: pagination.current,
+        pageSize: pagination.pageSize,
+      });
       
-      // Mock data for demonstration
-      const mockLogs: AuditLog[] = [
-        {
-          id: '1',
-          userId: 'admin-id',
-          username: 'admin',
-          action: 'CREATE_USER',
-          resource: 'USER',
-          resourceId: 'user-123',
-          details: { username: 'newuser', email: 'newuser@example.com' },
-          ipAddress: '192.168.1.100',
-          userAgent: 'Mozilla/5.0...',
-          timestamp: new Date(),
-          success: true,
-        },
-        {
-          id: '2',
-          userId: 'admin-id',
-          username: 'admin',
-          action: 'UPDATE_TASK',
-          resource: 'TASK',
-          resourceId: 'task-456',
-          details: { field: 'status', oldValue: 'in_progress', newValue: 'completed' },
-          ipAddress: '192.168.1.100',
-          userAgent: 'Mozilla/5.0...',
-          timestamp: new Date(Date.now() - 3600000),
-          success: true,
-        },
-        {
-          id: '3',
-          userId: 'user-id',
-          username: 'user1',
-          action: 'LOGIN_FAILED',
-          resource: 'AUTH',
-          resourceId: '',
-          details: { reason: 'Invalid password' },
-          ipAddress: '192.168.1.101',
-          userAgent: 'Mozilla/5.0...',
-          timestamp: new Date(Date.now() - 7200000),
-          success: false,
-        },
-      ];
-      setLogs(mockLogs);
+      setLogs(data.logs);
+      setPagination(prev => ({
+        ...prev,
+        total: data.pagination.total,
+      }));
     } catch (error: any) {
       console.error('Failed to load audit logs:', error);
+      message.error('加载审计日志失败');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewDetails = (log: AuditLog) => {
-    setSelectedLog(log);
-    setDetailsVisible(true);
+  const handleViewDetails = async (log: AuditLog) => {
+    try {
+      const detailedLog = await auditLogApi.getLogById(log.id);
+      setSelectedLog(detailedLog);
+      setDetailsVisible(true);
+    } catch (error: any) {
+      console.error('Failed to load log details:', error);
+      message.error('加载日志详情失败');
+    }
   };
 
-  const handleExport = () => {
-    // TODO: Implement export functionality
-    console.log('Export audit logs');
+  const handleExport = async () => {
+    try {
+      setLoading(true);
+      const blob = await auditLogApi.exportLogs(filters);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `audit_logs_${dayjs().format('YYYY-MM-DD')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      message.success('审计日志导出成功');
+    } catch (error: any) {
+      console.error('Failed to export logs:', error);
+      message.error('导出审计日志失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCleanup = async () => {
+    try {
+      const result = await auditLogApi.cleanupOldLogs(365);
+      message.success(`已删除 ${result.deletedCount} 条旧日志记录`);
+      loadAuditLogs(); // Refresh the list
+    } catch (error: any) {
+      console.error('Failed to cleanup logs:', error);
+      message.error('清理旧日志失败');
+    }
+  };
+
+  const handleTableChange = (paginationConfig: any) => {
+    setPagination({
+      current: paginationConfig.current,
+      pageSize: paginationConfig.pageSize,
+      total: pagination.total,
+    });
+  };
+
+  const handleFilterChange = (key: keyof AuditLogFilters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+    setPagination(prev => ({
+      ...prev,
+      current: 1, // Reset to first page when filtering
+    }));
+  };
+
+  const handleDateRangeChange = (dates: any) => {
+    if (dates && dates.length === 2) {
+      setFilters(prev => ({
+        ...prev,
+        startDate: dates[0].toISOString(),
+        endDate: dates[1].toISOString(),
+      }));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        startDate: undefined,
+        endDate: undefined,
+      }));
+    }
+    setPagination(prev => ({
+      ...prev,
+      current: 1,
+    }));
   };
 
   const getActionColor = (action: string) => {
@@ -153,7 +188,7 @@ export const AuditLogPage: React.FC = () => {
       dataIndex: 'timestamp',
       key: 'timestamp',
       width: 180,
-      render: (timestamp: Date) => (
+      render: (timestamp: string) => (
         <Tooltip title={dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss')}>
           {dayjs(timestamp).format('MM-DD HH:mm')}
         </Tooltip>
@@ -238,13 +273,30 @@ export const AuditLogPage: React.FC = () => {
       <PageHeaderBar
         title="审计日志"
         actions={
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={handleExport}
-          >
-            导出日志
-          </Button>
+          <Space>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              onClick={handleExport}
+              loading={loading}
+            >
+              导出日志
+            </Button>
+            <Popconfirm
+              title="确定要清理一年前的旧日志吗？"
+              description="此操作不可撤销，将删除365天前的所有日志记录。"
+              onConfirm={handleCleanup}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button
+                icon={<DeleteOutlined />}
+                danger
+              >
+                清理旧日志
+              </Button>
+            </Popconfirm>
+          </Space>
         }
       />
 
@@ -255,7 +307,7 @@ export const AuditLogPage: React.FC = () => {
             placeholder="搜索用户名或操作"
             prefix={<SearchOutlined />}
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
             style={{ width: 200 }}
             allowClear
           />
@@ -263,7 +315,7 @@ export const AuditLogPage: React.FC = () => {
           <Select
             placeholder="操作类型"
             value={filters.action}
-            onChange={(value) => setFilters({ ...filters, action: value })}
+            onChange={(value) => handleFilterChange('action', value)}
             style={{ width: 150 }}
             allowClear
           >
@@ -280,7 +332,7 @@ export const AuditLogPage: React.FC = () => {
           <Select
             placeholder="资源类型"
             value={filters.resource}
-            onChange={(value) => setFilters({ ...filters, resource: value })}
+            onChange={(value) => handleFilterChange('resource', value)}
             style={{ width: 120 }}
             allowClear
           >
@@ -293,15 +345,14 @@ export const AuditLogPage: React.FC = () => {
           </Select>
 
           <RangePicker
-            value={filters.dateRange}
-            onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
+            onChange={handleDateRangeChange}
             style={{ width: 240 }}
           />
 
           <Select
             placeholder="状态"
             value={filters.success}
-            onChange={(value) => setFilters({ ...filters, success: value })}
+            onChange={(value) => handleFilterChange('success', value)}
             style={{ width: 100 }}
             allowClear
           >
@@ -319,10 +370,14 @@ export const AuditLogPage: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 20,
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
             showTotal: (total) => `共 ${total} 条记录`,
+            pageSizeOptions: ['10', '20', '50', '100'],
           }}
+          onChange={handleTableChange}
           scroll={{ x: 1000 }}
         />
       </Card>
@@ -331,7 +386,7 @@ export const AuditLogPage: React.FC = () => {
       <Drawer
         title="审计日志详情"
         placement="right"
-        width={600}
+        size="default"
         onClose={() => setDetailsVisible(false)}
         open={detailsVisible}
       >

@@ -2,8 +2,10 @@ import type { Request, Response, NextFunction } from 'express';
 import { Router } from 'express';
 import { z } from 'zod';
 import { UserService } from '../services/UserService.js';
+import { SystemConfigService } from '../services/SystemConfigService.js';
 import { JWTService } from '../utils/jwt.js';
 import { ValidationError, AuthenticationError, ConflictError } from '../utils/errors.js';
+import { auditLogin } from '../middleware/audit.middleware.js';
 import { AuthResponse } from '../models/User.js';
 import {
   loginRateLimiter,
@@ -46,6 +48,19 @@ router.post(
     // Data is already validated by middleware
     const validatedData = req.body;
 
+    // Check if registration is allowed
+    const systemConfigService = new SystemConfigService();
+    const isMaintenanceMode = await systemConfigService.isMaintenanceMode();
+    const isRegistrationAllowed = await systemConfigService.isRegistrationAllowed();
+
+    if (isMaintenanceMode) {
+      throw new ValidationError('系统正在维护中，暂时无法注册');
+    }
+
+    if (!isRegistrationAllowed) {
+      throw new ValidationError('系统暂时不允许新用户注册');
+    }
+
     // Check if user already exists
     const existingUserByEmail = await userService.findByEmail(validatedData.email);
     if (existingUserByEmail) {
@@ -63,6 +78,7 @@ router.post(
     // Generate JWT token
     const token = JWTService.generateToken({
       userId: user.id,
+      username: user.username,
       email: user.email,
       role: user.role,
     });
@@ -88,45 +104,72 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     // Data is already validated by middleware
     const validatedData = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress || '';
+    const userAgent = req.get('User-Agent') || '';
 
-    // Find user by username or email
-    let user = await userService.findByUsername(validatedData.username);
-    if (!user) {
-      // Try finding by email if username lookup fails
-      user = await userService.findByEmail(validatedData.username);
+    try {
+      // Find user by username or email
+      let user = await userService.findByUsername(validatedData.username);
+      if (!user) {
+        // Try finding by email if username lookup fails
+        user = await userService.findByEmail(validatedData.username);
+      }
+      
+      if (!user) {
+        // Audit failed login attempt
+        await auditLogin(validatedData.username, false, ipAddress, userAgent, undefined, {
+          reason: 'User not found'
+        });
+        throw new AuthenticationError('Invalid username or password');
+      }
+
+      // Verify password
+      const isPasswordValid = await userService.verifyPassword(
+        validatedData.password,
+        user.passwordHash
+      );
+
+      if (!isPasswordValid) {
+        // Audit failed login attempt
+        await auditLogin(validatedData.username, false, ipAddress, userAgent, user.id, {
+          reason: 'Invalid password'
+        });
+        throw new AuthenticationError('Invalid username or password');
+      }
+
+      // Update last login
+      await userService.updateLastLogin(user.id);
+
+      // Generate JWT token
+      const token = JWTService.generateToken({
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      });
+
+      // Audit successful login
+      await auditLogin(user.username, true, ipAddress, userAgent, user.id, {
+        email: user.email,
+        role: user.role
+      });
+
+      // Prepare response
+      const response: AuthResponse = {
+        user: userService.toUserResponse(user),
+        token,
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      // If it's not an authentication error, audit as failed login
+      if (!(error instanceof AuthenticationError)) {
+        await auditLogin(validatedData.username, false, ipAddress, userAgent, undefined, {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+      throw error;
     }
-    
-    if (!user) {
-      throw new AuthenticationError('Invalid username or password');
-    }
-
-    // Verify password
-    const isPasswordValid = await userService.verifyPassword(
-      validatedData.password,
-      user.passwordHash
-    );
-
-    if (!isPasswordValid) {
-      throw new AuthenticationError('Invalid username or password');
-    }
-
-    // Update last login
-    await userService.updateLastLogin(user.id);
-
-    // Generate JWT token
-    const token = JWTService.generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    // Prepare response
-    const response: AuthResponse = {
-      user: userService.toUserResponse(user),
-      token,
-    };
-
-    res.status(200).json(response);
   })
 );
 

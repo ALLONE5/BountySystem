@@ -137,7 +137,9 @@ export const AvatarManagementPage: React.FC = () => {
           </Button>
           <ConfirmDeleteButton
             buttonProps={{ type: 'link', danger: true, icon: undefined, style: { padding: 0 } }}
-            onConfirm={() => deleteItem(record.id)}
+            onConfirm={async () => {
+              await deleteItem(record.id);
+            }}
             popconfirmProps={{ title: '确定要删除这个头像吗？' }}
             buttonText="删除"
           />

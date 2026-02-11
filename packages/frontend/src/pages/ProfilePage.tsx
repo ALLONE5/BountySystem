@@ -45,6 +45,8 @@ export const ProfilePage: React.FC = () => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [allPositions, setAllPositions] = useState<Position[]>([]);
   const [userPositions, setUserPositions] = useState<Position[]>([]);
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [positionError, setPositionError] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -59,14 +61,24 @@ export const ProfilePage: React.FC = () => {
 
   const loadAvatarData = async () => {
     try {
-      const [current, available, all] = await Promise.all([
-        avatarApi.getUserAvatar(),
+      const [available, all] = await Promise.all([
         avatarApi.getAvailableAvatars(),
         avatarApi.getAllAvatars(),
       ]);
-      setCurrentAvatar(current);
       setAvailableAvatars(available);
       setAllAvatars(all);
+      
+      // Get current avatar separately with proper error handling
+      try {
+        const current = await avatarApi.getUserAvatar();
+        setCurrentAvatar(current);
+      } catch (error: any) {
+        // User has no avatar - this is normal, don't show error
+        if (error.response?.status !== 404) {
+          console.error('Failed to load user avatar:', error);
+        }
+        setCurrentAvatar(null);
+      }
     } catch (error) {
       console.error('Failed to load avatar data:', error);
     }
@@ -89,6 +101,7 @@ export const ProfilePage: React.FC = () => {
   const handleUpdateProfile = async (values: any) => {
     try {
       setLoading(true);
+      setFormErrors({}); // Clear previous errors
       const response = await userApi.updateProfile({ username: values.username });
       message.success(response.message || '个人信息更新成功');
       // Update the auth store with the new user data
@@ -96,8 +109,43 @@ export const ProfilePage: React.FC = () => {
         useAuthStore.getState().setAuth(token, response.user);
       }
     } catch (error: any) {
-      if (error.response?.data?.error) {
-        message.error(error.response.data.error);
+      if (error.response?.data) {
+        const responseData = error.response.data;
+        
+        // Check if it's a validation error with details (new format)
+        if (responseData.code === 'VALIDATION_ERROR' && responseData.details) {
+          const newErrors: {[key: string]: string} = {};
+          responseData.details.forEach((detail: any) => {
+            if (detail.path && detail.path.length > 0) {
+              newErrors[detail.path[0]] = detail.message;
+            }
+          });
+          setFormErrors(newErrors);
+        } 
+        // Check if it's a validation error with details (old format)
+        else if (responseData.type === 'ValidationError' && responseData.details) {
+          const newErrors: {[key: string]: string} = {};
+          responseData.details.forEach((detail: any) => {
+            if (detail.path && detail.path.length > 0) {
+              newErrors[detail.path[0]] = detail.message;
+            }
+          });
+          setFormErrors(newErrors);
+        } 
+        // Check if it's a field-specific error by message content
+        else if (responseData.error || responseData.message) {
+          const errorMessage = responseData.error || responseData.message;
+          if (errorMessage.includes('用户名') || errorMessage.includes('username')) {
+            setFormErrors({ username: errorMessage });
+          } else if (errorMessage.includes('邮箱') || errorMessage.includes('email')) {
+            setFormErrors({ email: errorMessage });
+          } else {
+            // General error, show at top
+            message.error(errorMessage);
+          }
+        } else {
+          message.error('更新失败');
+        }
       } else {
         message.error('更新失败');
       }
@@ -130,14 +178,16 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handlePositionChangeRequest = async () => {
+    setPositionError(''); // Clear previous errors
+    
     if (!selectedPositions || selectedPositions.length === 0) {
-      message.warning('请至少选择一个岗位');
+      setPositionError('请至少选择一个岗位');
       return;
     }
     
     // Validate position limit
     if (selectedPositions.length > 3) {
-      message.error('最多只能选择3个岗位');
+      setPositionError('最多只能选择3个岗位');
       return;
     }
     
@@ -150,8 +200,7 @@ export const ProfilePage: React.FC = () => {
         selectedPositions.some(posId => !currentPositionIds.includes(posId));
       
       if (!hasChanged) {
-        message.info('岗位未发生变化');
-        setPositionModalVisible(false);
+        setPositionError('岗位未发生变化');
         return;
       }
       
@@ -164,8 +213,7 @@ export const ProfilePage: React.FC = () => {
       );
       
       if (positionsToAdd.length === 0 && positionsToRemove.length === 0) {
-        message.info('岗位未发生变化');
-        setPositionModalVisible(false);
+        setPositionError('岗位未发生变化');
         return;
       }
       
@@ -187,11 +235,12 @@ export const ProfilePage: React.FC = () => {
       message.success(successMsg);
       setPositionModalVisible(false);
       setSelectedPositions([]);
+      setPositionError('');
     } catch (error: any) {
       if (error.response?.data?.error) {
-        message.error(error.response.data.error);
+        setPositionError(error.response.data.error);
       } else {
-        message.error('申请提交失败');
+        setPositionError('申请提交失败');
       }
       console.error('Failed to submit position change request:', error);
     }
@@ -291,6 +340,7 @@ export const ProfilePage: React.FC = () => {
                   onClick={() => {
                     // Pre-populate with current positions
                     setSelectedPositions(userPositions.map(pos => pos.id));
+                    setPositionError('');
                     setPositionModalVisible(true);
                   }}
                 >
@@ -314,8 +364,19 @@ export const ProfilePage: React.FC = () => {
             name="username"
             label="用户名"
             rules={[{ required: true, message: '请输入用户名' }]}
+            validateStatus={formErrors.username ? 'error' : ''}
+            help={formErrors.username || ''}
           >
-            <Input prefix={<UserOutlined />} placeholder="用户名" />
+            <Input 
+              prefix={<UserOutlined />} 
+              placeholder="用户名" 
+              onChange={() => {
+                // Clear error when user starts typing
+                if (formErrors.username) {
+                  setFormErrors(prev => ({ ...prev, username: '' }));
+                }
+              }}
+            />
           </Form.Item>
 
           <Form.Item
@@ -325,8 +386,20 @@ export const ProfilePage: React.FC = () => {
               { required: true, message: '请输入邮箱' },
               { type: 'email', message: '请输入有效的邮箱地址' },
             ]}
+            validateStatus={formErrors.email ? 'error' : ''}
+            help={formErrors.email || ''}
           >
-            <Input prefix={<MailOutlined />} placeholder="邮箱" disabled />
+            <Input 
+              prefix={<MailOutlined />} 
+              placeholder="邮箱" 
+              disabled 
+              onChange={() => {
+                // Clear error when user starts typing
+                if (formErrors.email) {
+                  setFormErrors(prev => ({ ...prev, email: '' }));
+                }
+              }}
+            />
           </Form.Item>
 
           <Divider />
@@ -424,6 +497,7 @@ export const ProfilePage: React.FC = () => {
         onCancel={() => {
           setPositionModalVisible(false);
           setSelectedPositions([]);
+          setPositionError('');
         }}
         okText="提交申请"
         cancelText="取消"
@@ -441,12 +515,23 @@ export const ProfilePage: React.FC = () => {
           )}
         </div>
         <Form layout="vertical">
-          <Form.Item label="选择岗位" required help="最多可选择3个岗位">
+          <Form.Item 
+            label="选择岗位" 
+            required 
+            help={positionError || "最多可选择3个岗位"}
+            validateStatus={positionError ? 'error' : ''}
+          >
             <Select
               mode="multiple"
               placeholder="请选择岗位（可多选、可删减）"
               value={selectedPositions}
-              onChange={setSelectedPositions}
+              onChange={(value) => {
+                setSelectedPositions(value);
+                // Clear error when user makes changes
+                if (positionError) {
+                  setPositionError('');
+                }
+              }}
               showSearch
               maxTagCount="responsive"
               maxCount={3}

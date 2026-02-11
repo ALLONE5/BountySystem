@@ -101,7 +101,21 @@ export function createRankingRouter(pool: Pool): Router {
     );
 
     if (!ranking) {
-      res.status(404).json({ error: 'Ranking not found for user' });
+      // Return default ranking data for users without rankings
+      const defaultRanking = {
+        userId,
+        username: null,
+        avatarUrl: null,
+        totalBounty: 0,
+        completedTasksCount: 0,
+        rank: null,
+        period: period as RankingPeriod,
+        year: year ? parseInt(year as string) : new Date().getFullYear(),
+        month: month ? parseInt(month as string) : null,
+        quarter: quarter ? parseInt(quarter as string) : null,
+        user: null
+      };
+      res.json(defaultRanking);
       return;
     }
 

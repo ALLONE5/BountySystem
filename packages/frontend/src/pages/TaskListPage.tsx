@@ -8,7 +8,6 @@ import {
   ClockCircleOutlined,
   FolderOutlined,
   CheckOutlined,
-  CloseOutlined,
   EditOutlined,
   TeamOutlined,
   DeleteOutlined,

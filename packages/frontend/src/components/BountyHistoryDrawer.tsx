@@ -252,7 +252,7 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
               precision={0}
               prefix={<ArrowUpOutlined style={{ color: '#52c41a' }} />}
               suffix="赏金"
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Col>
           <Col xs={24} sm={8}>
@@ -262,7 +262,7 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
               precision={0}
               prefix={<ArrowDownOutlined style={{ color: '#ff4d4f' }} />}
               suffix="赏金"
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Col>
           <Col xs={24} sm={8}>
@@ -272,7 +272,7 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
               precision={0}
               prefix={<DollarOutlined />}
               suffix="赏金"
-              valueStyle={{ color: state.summary.netBalance >= 0 ? '#52c41a' : '#ff4d4f' }}
+              styles={{ content: { color: state.summary.netBalance >= 0 ? '#52c41a' : '#ff4d4f' } }}
             />
           </Col>
         </Row>
@@ -370,7 +370,9 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
     if (state.loading) {
       return (
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <Spin size="large" tip="加载中..." />
+          <Spin size="large">
+            <div style={{ padding: '20px' }}>加载中...</div>
+          </Spin>
         </div>
       );
     }
@@ -404,10 +406,9 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
     <Drawer
       title="赏金交易历史"
       placement="right"
-      width={window.innerWidth > 768 ? 800 : '100%'}
+      size={window.innerWidth > 768 ? 'large' : 'default'}
       onClose={onClose}
       open={visible}
-      destroyOnClose
     >
       {renderContent()}
     </Drawer>

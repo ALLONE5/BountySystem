@@ -43,16 +43,26 @@ export const UserManagementPage: React.FC = () => {
     loadAll,
     selectedItem: selectedUser,
     setSelectedItem: setSelectedUser,
+  }: {
+    data: User[];
+    loading: boolean;
+    update: (id: string, data: Partial<User>) => Promise<User | null>;
+    deleteItem: (id: string) => Promise<boolean>;
+    loadAll: () => Promise<void>;
+    selectedItem: User | null;
+    setSelectedItem: (item: User | null) => void;
   } = useCrudOperations<User>({
     fetchAll: async () => {
       const data = await adminApi.getUsers();
       return data.users;
     },
-    update: async (id, data) => {
+    update: async (id, data): Promise<User> => {
       await adminApi.updateUser(id, data as UpdateUserRequest);
       return { ...selectedUser!, ...data } as User;
     },
-    delete: adminApi.deleteUser,
+    delete: async (id: string) => {
+      await adminApi.deleteUser(id);
+    },
     successMessages: {
       update: '用户信息更新成功',
       delete: '用户删除成功',

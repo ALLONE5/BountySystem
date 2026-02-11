@@ -21,7 +21,6 @@ import {
   Select,
 } from 'antd';
 import {
-  CloseCircleOutlined,
   TeamOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -393,7 +392,7 @@ export const AssignedTasksPage: React.FC = () => {
               title="总任务数"
               value={stats.total}
               prefix={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: 20 }} />}
-              valueStyle={{ fontSize: 24, fontWeight: 600 }}
+              styles={{ content: { fontSize: 24, fontWeight: 600 } }}
             />
           </Card>
         </Col>
@@ -403,7 +402,7 @@ export const AssignedTasksPage: React.FC = () => {
               title="进行中"
               value={stats.inProgress}
               prefix={<PlayCircleOutlined style={{ color: '#faad14', fontSize: 20 }} />}
-              valueStyle={{ fontSize: 24, fontWeight: 600 }}
+              styles={{ content: { fontSize: 24, fontWeight: 600 } }}
             />
           </Card>
         </Col>
@@ -413,7 +412,7 @@ export const AssignedTasksPage: React.FC = () => {
               title="已完成"
               value={stats.completed}
               prefix={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: 20 }} />}
-              valueStyle={{ fontSize: 24, fontWeight: 600 }}
+              styles={{ content: { fontSize: 24, fontWeight: 600 } }}
             />
           </Card>
         </Col>
@@ -424,7 +423,7 @@ export const AssignedTasksPage: React.FC = () => {
               value={stats.totalBounty}
               prefix="$"
               precision={2}
-              valueStyle={{ fontSize: 24, fontWeight: 600, color: '#f5222d' }}
+              styles={{ content: { fontSize: 24, fontWeight: 600, color: '#f5222d' } }}
             />
           </Card>
         </Col>

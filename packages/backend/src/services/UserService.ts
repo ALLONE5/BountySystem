@@ -4,7 +4,7 @@ import { User, UserCreateDTO, UserUpdateDTO, UserRole, UserResponse } from '../m
 import { IUserRepository } from '../repositories/UserRepository.js';
 import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { UserMapper } from '../utils/mappers/UserMapper.js';
-import { AuthorizationError, NotFoundError } from '../utils/errors.js';
+import { AuthorizationError, NotFoundError, ValidationError } from '../utils/errors.js';
 import { Validator } from '../utils/Validator.js';
 
 const SALT_ROUNDS = 10;
@@ -203,7 +203,13 @@ export class UserService {
     // Verify current password
     const isValid = await this.verifyPassword(currentPassword, user.passwordHash);
     if (!isValid) {
-      throw new Error('Current password is incorrect');
+      throw new ValidationError('Current password is incorrect', [
+        {
+          code: 'invalid',
+          message: 'Current password is incorrect',
+          path: ['currentPassword']
+        }
+      ]);
     }
 
     // Validate new password strength

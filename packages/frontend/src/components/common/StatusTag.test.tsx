@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { TaskStatus, InvitationStatus, UserRole } from '../../types';
+import { TaskStatus, InvitationStatus } from '../../types';
 import { 
   getTaskStatusConfig, 
   getApplicationStatusConfig, 
@@ -51,11 +51,11 @@ describe('StatusTag - Status Configuration Integration', () => {
       expect(config.icon).toBe('CheckCircleOutlined');
     });
 
-    it('should use statusConfig for ABANDONED status', () => {
-      const config = getTaskStatusConfig(TaskStatus.ABANDONED);
-      expect(config.color).toBe('error');
-      expect(config.text).toBe('已放弃');
-      expect(config.icon).toBe('CloseCircleOutlined');
+    it('should use statusConfig for PENDING_ACCEPTANCE status', () => {
+      const config = getTaskStatusConfig(TaskStatus.PENDING_ACCEPTANCE);
+      expect(config.color).toBe('warning');
+      expect(config.text).toBe('待接受');
+      expect(config.icon).toBe('ClockCircleOutlined');
     });
   });
 

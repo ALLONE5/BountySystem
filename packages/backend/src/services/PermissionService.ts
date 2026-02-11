@@ -46,6 +46,9 @@ export class PermissionService {
       case UserRole.SUPER_ADMIN:
         return true; // Super admin has access to all pages
 
+      case UserRole.DEVELOPER:
+        return true; // Developer has access to all pages (same as super admin)
+
       default:
         return false;
     }

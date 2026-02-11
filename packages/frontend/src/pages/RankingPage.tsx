@@ -162,9 +162,18 @@ export const RankingPage: React.FC = () => {
 
   const renderMyRankingCard = () => {
     if (!myRanking) {
+      const getNoRankingMessage = () => {
+        if (period === 'monthly') {
+          return `${year}年${month}月未参与排名`;
+        } else if (period === 'quarterly') {
+          return `${year}年第${quarter}季度未参与排名`;
+        }
+        return '总累积期间未参与排名';
+      };
+
       return (
         <Card style={{ textAlign: 'center', padding: '24px 0' }}>
-          <Text type="secondary" style={{ fontSize: 16 }}>您还没有排名数据</Text>
+          <Text type="secondary" style={{ fontSize: 16 }}>{getNoRankingMessage()}</Text>
         </Card>
       );
     }
@@ -198,14 +207,14 @@ export const RankingPage: React.FC = () => {
               value={myRanking.totalBounty}
               precision={2}
               prefix="$"
-              valueStyle={{ color: 'white', fontSize: 28, fontWeight: 700 }}
+              styles={{ content: { color: 'white', fontSize: 28, fontWeight: 700 } }}
             />
           </Col>
           <Col xs={12} sm={8}>
             <Statistic
               title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14 }}>统计周期</span>}
               value={getPeriodText()}
-              valueStyle={{ color: 'white', fontSize: 18, fontWeight: 600 }}
+              styles={{ content: { color: 'white', fontSize: 18, fontWeight: 600 } }}
             />
           </Col>
         </Row>

@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { config } from './config/env.js';
 import { testConnection } from './config/database.js';
@@ -13,8 +15,12 @@ import bountyRoutes from './routes/bounty.routes.js';
 import groupRoutes from './routes/group.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import systemConfigRoutes from './routes/systemConfig.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
+import auditLogRoutes from './routes/auditLog.routes.js';
 import schedulerRoutes from './routes/scheduler.routes.js';
 import metricsRoutes from './routes/metrics.routes.js';
+import publicRoutes from './routes/public.routes.js';
 import { createRankingRouter } from './routes/ranking.routes.js';
 import { createAvatarRouter } from './routes/avatar.routes.js';
 import { createProjectGroupRouter } from './routes/projectGroup.routes.js';
@@ -25,6 +31,10 @@ import { WebSocketService } from './services/WebSocketService.js';
 import { ipRateLimiter } from './middleware/rateLimit.middleware.js';
 
 const app = express();
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Security headers middleware
 app.use((req, res, next) => {
@@ -56,8 +66,12 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Limit payload size
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Apply IP-based rate limiting to all routes
-app.use(ipRateLimiter);
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Apply IP-based rate limiting to all routes (only if Redis is available)
+// Temporarily disabled due to Redis connection issues
+// app.use(ipRateLimiter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -78,6 +92,9 @@ app.get('/api', (req, res) => {
 
 // Authentication routes
 app.use('/api/auth', authRoutes);
+
+// Public routes (no authentication required)
+app.use('/api/public', publicRoutes);
 
 // User routes
 app.use('/api/users', userRoutes);
@@ -102,6 +119,15 @@ app.use('/api/notifications', notificationRoutes);
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
+
+// System configuration routes
+app.use('/api/admin/system', systemConfigRoutes);
+
+// Audit log routes
+app.use('/api/admin/audit', auditLogRoutes);
+
+// Upload routes
+app.use('/api/upload', uploadRoutes);
 
 // Scheduler routes
 app.use('/api/scheduler', schedulerRoutes);

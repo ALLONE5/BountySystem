@@ -4,6 +4,7 @@ import { UserRole } from '../models/User.js';
 
 export interface JWTPayload {
   userId: string;
+  username: string;
   email: string;
   role: UserRole;
 }

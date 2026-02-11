@@ -114,20 +114,6 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ tasks: propTasks, lo
     setFilteredTasks(filtered);
   };
 
-  const handleAbandonTask = async (taskId: string) => {
-    try {
-      await taskApi.abandonTask(taskId);
-      message.success('任务已放弃');
-      setDrawerVisible(false);
-      if (!propTasks) {
-        loadTasks();
-      }
-    } catch (error) {
-      message.error('放弃任务失败');
-      console.error('Failed to abandon task:', error);
-    }
-  };
-
   const handleCompleteTask = async (taskId: string) => {
     Modal.confirm({
       title: '确定要完成这个任务吗？',
@@ -380,7 +366,6 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ tasks: propTasks, lo
             task={selectedTask}
             visible={drawerVisible}
             onClose={() => setDrawerVisible(false)}
-            onAbandonTask={handleAbandonTask}
             onCompleteTask={handleCompleteTask}
           />
         </div>
@@ -465,7 +450,6 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ tasks: propTasks, lo
             task={selectedTask}
             visible={drawerVisible}
             onClose={() => setDrawerVisible(false)}
-            onAbandonTask={handleAbandonTask}
             onCompleteTask={handleCompleteTask}
           />
         </>

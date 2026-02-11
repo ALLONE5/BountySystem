@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 
 // 创建 axios 实例
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
   timeout: 30000, // 增加到 30 秒，因为完成任务操作可能需要处理赏金分配、通知等
   headers: {
     'Content-Type': 'application/json',
@@ -52,14 +52,36 @@ apiClient.interceptors.response.use(
       
       // 403 权限不足
       if (status === 403) {
-        message.error(data.message || '权限不足');
+        // 只有在非预期的403错误时才显示消息
+        if (!skipErrorMessage || skipErrorMessage !== '403') {
+          message.error(data.message || '权限不足');
+        }
         return Promise.reject(error);
       }
       
       // 404 资源不存在 - 检查是否应该跳过错误消息
       if (status === 404) {
         if (skipErrorMessage !== '404') {
-          message.error(data.message || '请求的资源不存在');
+          // 只有在关键API调用失败时才显示错误消息
+          const isCriticalAPI = error.config?.url && (
+            error.config.url.includes('/auth/') ||
+            error.config.url.includes('/users/') ||
+            error.config.url.includes('/tasks/') ||
+            error.config.url.includes('/positions/') ||
+            error.config.url.includes('/notifications')
+          );
+          
+          // 排除已知的可选API调用
+          const isOptionalAPI = error.config?.url && (
+            error.config.url.includes('/avatars/user/me') ||
+            error.config.url.includes('/stats') ||
+            error.config.url.includes('/dashboard') ||
+            error.config.url.includes('/profile')
+          );
+          
+          if (isCriticalAPI && !isOptionalAPI) {
+            message.error(data.message || '请求的资源不存在');
+          }
         }
         return Promise.reject(error);
       }

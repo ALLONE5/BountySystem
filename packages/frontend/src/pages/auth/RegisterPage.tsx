@@ -12,9 +12,11 @@ export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
   const onFinish = async (values: any) => {
     setLoading(true);
+    setFormErrors({}); // Clear previous errors
     try {
       // Only send required fields to backend (exclude confirmPassword)
       const registerData: RegisterRequest = {
@@ -27,7 +29,49 @@ export const RegisterPage: React.FC = () => {
       message.success('注册成功！');
       navigate('/dashboard');
     } catch (error: any) {
-      message.error(error.response?.data?.message || '注册失败，请稍后重试');
+      console.error('Registration error:', error);
+      
+      // Handle validation errors with detailed messages
+      if (error.response?.data?.code === 'VALIDATION_ERROR' && error.response?.data?.details) {
+        const newErrors: {[key: string]: string} = {};
+        error.response.data.details.forEach((detail: any) => {
+          if (detail.path && detail.path.length > 0) {
+            newErrors[detail.path[0]] = detail.message;
+          }
+        });
+        setFormErrors(newErrors);
+      } else if (error.response?.status === 400 && error.response?.data?.type === 'ValidationError' && error.response?.data?.details) {
+        const newErrors: {[key: string]: string} = {};
+        error.response.data.details.forEach((detail: any) => {
+          if (detail.path && detail.path.length > 0) {
+            newErrors[detail.path[0]] = detail.message;
+          }
+        });
+        setFormErrors(newErrors);
+      } else if (error.response?.status === 400 && error.response?.data?.details) {
+        const validationErrors = error.response.data.details;
+        const newErrors: {[key: string]: string} = {};
+        validationErrors.forEach((err: any) => {
+          newErrors[err.field] = err.message;
+        });
+        setFormErrors(newErrors);
+      } else if (error.response?.status === 409) {
+        // Handle conflict errors (user already exists)
+        const errorMessage = error.response?.data?.message || '用户名或邮箱已存在';
+        if (errorMessage.includes('用户名') || errorMessage.includes('username')) {
+          setFormErrors({ username: errorMessage });
+        } else if (errorMessage.includes('邮箱') || errorMessage.includes('email')) {
+          setFormErrors({ email: errorMessage });
+        } else {
+          message.error(errorMessage);
+        }
+      } else if (error.response?.status === 429) {
+        // Handle rate limiting - show at top as it's not field-specific
+        message.error('注册请求过于频繁，请稍后再试');
+      } else {
+        // Generic error message - show at top
+        message.error(error.response?.data?.message || '注册失败，请稍后重试');
+      }
     } finally {
       setLoading(false);
     }
@@ -45,11 +89,18 @@ export const RegisterPage: React.FC = () => {
             { required: true, message: '请输入用户名！' },
             { min: 3, message: '用户名至少3个字符！' },
           ]}
+          validateStatus={formErrors.username ? 'error' : ''}
+          help={formErrors.username || ''}
         >
           <Input
             prefix={<UserOutlined />}
             placeholder="用户名"
             size="large"
+            onChange={() => {
+              if (formErrors.username) {
+                setFormErrors(prev => ({ ...prev, username: '' }));
+              }
+            }}
           />
         </Form.Item>
 
@@ -59,11 +110,18 @@ export const RegisterPage: React.FC = () => {
             { required: true, message: '请输入邮箱！' },
             { type: 'email', message: '请输入有效的邮箱地址！' },
           ]}
+          validateStatus={formErrors.email ? 'error' : ''}
+          help={formErrors.email || ''}
         >
           <Input
             prefix={<MailOutlined />}
             placeholder="邮箱"
             size="large"
+            onChange={() => {
+              if (formErrors.email) {
+                setFormErrors(prev => ({ ...prev, email: '' }));
+              }
+            }}
           />
         </Form.Item>
 
@@ -71,13 +129,24 @@ export const RegisterPage: React.FC = () => {
           name="password"
           rules={[
             { required: true, message: '请输入密码！' },
-            { min: 6, message: '密码至少6个字符！' },
+            { min: 8, message: '密码至少8个字符！' },
+            { 
+              pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 
+              message: '密码必须包含至少一个大写字母、一个小写字母和一个数字！' 
+            },
           ]}
+          validateStatus={formErrors.password ? 'error' : ''}
+          help={formErrors.password || ''}
         >
           <Input.Password
             prefix={<LockOutlined />}
-            placeholder="密码"
+            placeholder="密码（至少8位，包含大小写字母和数字）"
             size="large"
+            onChange={() => {
+              if (formErrors.password) {
+                setFormErrors(prev => ({ ...prev, password: '' }));
+              }
+            }}
           />
         </Form.Item>
 

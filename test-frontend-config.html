@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试系统配置</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .config-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #f0f9ff;
+            border-color: #0ea5e9;
+        }
+        .error {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+        }
+        img {
+            max-width: 100px;
+            max-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>系统配置测试</h1>
+    <div id="results"></div>
+
+    <script>
+        async function testSystemConfig() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Test public config API
+                console.log('Testing public config API...');
+                const response = await fetch('http://localhost:3000/api/public/config');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const config = data.data;
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="config-item success">
+                            <h3>✅ 公开配置API测试成功</h3>
+                            <p><strong>网站名称:</strong> ${config.siteName}</p>
+                            <p><strong>网站描述:</strong> ${config.siteDescription}</p>
+                            <p><strong>Logo URL:</strong> ${config.logoUrl}</p>
+                            ${config.logoUrl ? `<p><strong>Logo预览:</strong><br><img src="http://localhost:3000${config.logoUrl}" alt="Logo" /></p>` : ''}
+                        </div>
+                        <div class="config-item success">
+                            <h3>📝 页面标题测试</h3>
+                            <p>当前页面标题: <strong>${document.title}</strong></p>
+                            <p>期望标题: <strong>${config.siteName}</strong></p>
+                            <p>状态: ${document.title === config.siteName ? '✅ 匹配' : '❌ 不匹配'}</p>
+                        </div>
+                    `;
+                    
+                    // Update page title
+                    document.title = config.siteName;
+                    
+                } else {
+                    throw new Error('API返回失败状态');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="config-item error">
+                        <h3>❌ 测试失败</h3>
+                        <p>错误信息: ${error.message}</p>
+                        <p>请确保后端服务正在运行在 http://localhost:3000</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Run test when page loads
+        testSystemConfig();
+    </script>
+</body>
+</html>
