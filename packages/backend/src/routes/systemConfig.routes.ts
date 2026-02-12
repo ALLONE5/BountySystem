@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { SystemConfigService } from '../services/SystemConfigService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { requireSuperAdmin } from '../middleware/permission.middleware.js';
+import { requireDeveloper } from '../middleware/permission.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ValidationError } from '../utils/errors.js';
 import { auditSystemConfigUpdate } from '../middleware/audit.middleware.js';
@@ -27,11 +27,17 @@ const updateSystemConfigSchema = z.object({
   smtpUser: z.string().max(255).optional(),
   smtpPassword: z.string().max(255).optional(),
   smtpSecure: z.boolean().optional(),
+  // UI Theme fields
+  defaultTheme: z.enum(['light', 'dark']).optional(),
+  allowThemeSwitch: z.boolean().optional(),
+  animationStyle: z.enum(['none', 'minimal', 'scanline', 'particles', 'hexagon', 'datastream', 'hologram', 'ripple']).optional(),
+  enableAnimations: z.boolean().optional(),
+  reducedMotion: z.boolean().optional(),
 });
 
-// Apply authentication and super admin permission to all routes
+// Apply authentication and developer permission to all routes
 router.use(authenticate);
-router.use(requireSuperAdmin);
+router.use(requireDeveloper);
 
 /**
  * GET /api/admin/system/config

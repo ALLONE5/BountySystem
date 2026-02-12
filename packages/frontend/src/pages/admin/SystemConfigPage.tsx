@@ -13,14 +13,17 @@ import {
   Alert,
   List,
   Popconfirm,
+  Select,
+  Divider,
 } from 'antd';
-import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined, BgColorsOutlined } from '@ant-design/icons';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { systemConfigApi, SystemConfig, SystemConfigUpdate, UploadedLogo } from '../../api/systemConfig';
 import { useSystemConfig } from '../../contexts/SystemConfigContext';
 
 const { Text } = Typography;
 const { TextArea } = Input;
+const { Option } = Select;
 
 export const SystemConfigPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -338,6 +341,83 @@ export const SystemConfigPage: React.FC = () => {
                 </>
               ) : null
             }
+          </Form.Item>
+        </Card>
+
+        {/* UI主题设置 */}
+        <Card title={<Text strong><BgColorsOutlined /> UI主题设置</Text>} style={{ marginBottom: 24 }}>
+          <Alert
+            message="主题设置说明"
+            description="这些设置将影响所有用户的界面外观和动画效果。用户可以在支持的情况下切换主题模式。"
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+
+          <Form.Item
+            name="defaultTheme"
+            label="默认主题模式"
+            rules={[{ required: true, message: '请选择默认主题模式' }]}
+          >
+            <Select placeholder="选择默认主题">
+              <Option value="light">亮色主题 (日光战士)</Option>
+              <Option value="dark">暗色主题 (夜行猎人)</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="allowThemeSwitch"
+            label="允许用户切换主题"
+            valuePropName="checked"
+            extra="开启后，用户可以在界面右上角切换亮色/暗色主题"
+          >
+            <Switch />
+          </Form.Item>
+
+          <Divider orientation="left">动画效果设置</Divider>
+
+          <Form.Item
+            name="enableAnimations"
+            label="启用动画效果"
+            valuePropName="checked"
+            extra="关闭后将禁用所有装饰性动画效果"
+          >
+            <Switch />
+          </Form.Item>
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.enableAnimations !== currentValues.enableAnimations}
+          >
+            {({ getFieldValue }) =>
+              getFieldValue('enableAnimations') ? (
+                <Form.Item
+                  name="animationStyle"
+                  label="动画风格"
+                  rules={[{ required: true, message: '请选择动画风格' }]}
+                >
+                  <Select placeholder="选择动画风格">
+                    <Option value="none">无动画</Option>
+                    <Option value="minimal">简约网格</Option>
+                    <Option value="scanline">扫描线效果</Option>
+                    <Option value="particles">浮动粒子</Option>
+                    <Option value="hexagon">六边形背景</Option>
+                    <Option value="datastream">数据流</Option>
+                    <Option value="hologram">全息投影</Option>
+                    <Option value="ripple">能量涟漪</Option>
+                  </Select>
+                </Form.Item>
+              ) : null
+            }
+          </Form.Item>
+
+          <Form.Item
+            name="reducedMotion"
+            label="减少动画运动"
+            valuePropName="checked"
+            extra="为运动敏感用户减少动画强度，遵循系统无障碍设置"
+          >
+            <Switch />
           </Form.Item>
         </Card>
 

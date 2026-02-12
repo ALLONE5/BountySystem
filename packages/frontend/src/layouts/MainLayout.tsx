@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Space, Badge } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Space, Badge, Button } from 'antd';
 import { avatarApi } from '../api/avatar';
 import { taskApi } from '../api/task';
 import { adminApi } from '../api/admin';
@@ -14,14 +14,18 @@ import {
   LogoutOutlined,
   SettingOutlined,
   TeamOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../store/authStore';
 import { usePermission } from '../hooks/usePermission';
 import { useNotificationContext } from '../contexts/NotificationContext';
 import { useSystemConfig } from '../contexts/SystemConfigContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { AnimationEffects } from '../components/animations/AnimationEffects';
 import { SystemConfigTest } from '../components/SystemConfigTest';
 import { UserRole } from '../types';
-import { colors, spacing, shadows } from '../styles/design-tokens';
+import './MainLayout.css';
 
 const { Header, Sider, Content } = Layout;
 
@@ -32,6 +36,7 @@ export const MainLayout: React.FC = () => {
   const { canAccessAdminPanel, isSuperAdmin, isDeveloper, isPositionAdmin } = usePermission();
   const { unreadCount, refreshUnreadCount } = useNotificationContext();
   const { config: systemConfig } = useSystemConfig();
+  const { theme, themeMode, animationStyle, enableAnimations, reducedMotion, allowThemeSwitch, toggleTheme } = useTheme();
 
   const [openKeys, setOpenKeys] = useState<string[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
@@ -346,27 +351,32 @@ export const MainLayout: React.FC = () => {
     : [];
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh' }} className={`theme-${themeMode}`}>
+      <AnimationEffects 
+        style={animationStyle} 
+        enabled={enableAnimations} 
+        reducedMotion={reducedMotion} 
+      />
       <Header
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: colors.primary,
-          padding: `0 ${spacing.lg}px`,
-          boxShadow: shadows.sm,
+          background: theme.colors.primary,
+          padding: `0 ${theme.spacing.lg}`,
+          boxShadow: theme.shadows.sm,
           position: 'sticky',
           top: 0,
           zIndex: 1000,
         }}
       >
         <div style={{ 
-          color: colors.text.inverse, 
+          color: theme.colors.textInverse, 
           fontSize: 20, 
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
-          gap: spacing.sm,
+          gap: theme.spacing.sm,
         }}>
           {systemConfig?.logoUrl ? (
             <img 
@@ -389,10 +399,23 @@ export const MainLayout: React.FC = () => {
           {systemConfig?.siteName || '赏金猎人平台'}
         </div>
         <Space size="large">
+          {allowThemeSwitch && (
+            <Button
+              type="text"
+              icon={themeMode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+              onClick={toggleTheme}
+              style={{ 
+                color: theme.colors.textInverse,
+                border: 'none',
+                background: 'transparent',
+              }}
+              title={themeMode === 'dark' ? '切换到亮色主题' : '切换到暗色主题'}
+            />
+          )}
           <Badge count={unreadCount} offset={[-5, 5]}>
             <BellOutlined
               style={{ 
-                color: colors.text.inverse, 
+                color: theme.colors.textInverse, 
                 fontSize: 20, 
                 cursor: 'pointer',
                 transition: 'transform 0.2s',
@@ -410,9 +433,9 @@ export const MainLayout: React.FC = () => {
               <Avatar 
                 src={avatarUrl} 
                 icon={!avatarUrl ? <UserOutlined /> : undefined}
-                style={{ border: `2px solid ${colors.text.inverse}` }}
+                style={{ border: `2px solid ${theme.colors.textInverse}` }}
               />
-              <span style={{ color: colors.text.inverse, fontWeight: 500 }}>
+              <span style={{ color: theme.colors.textInverse, fontWeight: 500 }}>
                 {user?.username}
               </span>
             </Space>
@@ -423,8 +446,8 @@ export const MainLayout: React.FC = () => {
         <Sider 
           width={220} 
           style={{ 
-            background: colors.background.base,
-            boxShadow: shadows.sm,
+            background: theme.colors.bgSecondary,
+            boxShadow: theme.shadows.sm,
           }}
         >
           <Menu
@@ -435,19 +458,26 @@ export const MainLayout: React.FC = () => {
             style={{ 
               height: '100%', 
               borderRight: 0,
-              paddingTop: spacing.sm,
+              paddingTop: theme.spacing.sm,
+              background: theme.colors.bgSecondary,
+              color: theme.colors.textPrimary,
             }}
+            theme={themeMode}
             items={[...menuItems, ...adminMenuItems]}
           />
         </Sider>
-        <Layout style={{ padding: spacing.lg, background: colors.background.light }}>
+        <Layout style={{ 
+          padding: theme.spacing.lg, 
+          background: theme.colors.bgPrimary,
+        }}>
           <Content
             style={{
-              background: colors.background.base,
-              padding: spacing.lg,
-              borderRadius: 8,
-              boxShadow: shadows.sm,
+              background: theme.colors.bgSecondary,
+              padding: theme.spacing.lg,
+              borderRadius: theme.borderRadius.md,
+              boxShadow: theme.shadows.sm,
               minHeight: 280,
+              color: theme.colors.textPrimary,
             }}
             className="fade-in"
           >

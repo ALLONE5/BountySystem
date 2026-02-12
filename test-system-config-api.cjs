@@ -7,7 +7,7 @@ async function testSystemConfigAPI() {
     // First, let's try to login to get a token
     console.log('1. Attempting to login...');
     const loginResponse = await axios.post('http://localhost:3000/api/auth/login', {
-      username: 'admin',
+      username: 'developer',
       password: 'Password123'
     });
     

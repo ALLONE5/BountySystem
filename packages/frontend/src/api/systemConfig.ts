@@ -15,6 +15,12 @@ export interface SystemConfig {
   smtpPort: number;
   smtpUser: string;
   smtpSecure: boolean;
+  // UI Theme Configuration
+  defaultTheme: 'light' | 'dark';
+  allowThemeSwitch: boolean;
+  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+  enableAnimations: boolean;
+  reducedMotion: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +40,12 @@ export interface SystemConfigUpdate {
   smtpUser?: string;
   smtpPassword?: string;
   smtpSecure?: boolean;
+  // UI Theme Configuration
+  defaultTheme?: 'light' | 'dark';
+  allowThemeSwitch?: boolean;
+  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+  enableAnimations?: boolean;
+  reducedMotion?: boolean;
 }
 
 export interface UploadedLogo {
@@ -51,7 +63,17 @@ export const systemConfigApi = {
   },
 
   // Get public system configuration (no auth required)
-  async getPublicConfig(): Promise<{ siteName: string; logoUrl: string; siteDescription: string; debugMode: boolean }> {
+  async getPublicConfig(): Promise<{ 
+    siteName: string; 
+    logoUrl: string; 
+    siteDescription: string; 
+    debugMode: boolean;
+    defaultTheme: 'light' | 'dark';
+    allowThemeSwitch: boolean;
+    animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+    enableAnimations: boolean;
+    reducedMotion: boolean;
+  }> {
     const response = await apiClient.get('/public/config');
     return response.data.data;
   },

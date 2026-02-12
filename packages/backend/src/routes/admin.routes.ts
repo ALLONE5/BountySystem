@@ -66,8 +66,8 @@ const requireAdmin = asyncHandler(async (req: Request, res: Response, next: Next
     throw new AuthenticationError('Not authenticated');
   }
 
-  // Check if user has admin role
-  if (userRole !== UserRole.POSITION_ADMIN && userRole !== UserRole.SUPER_ADMIN) {
+  // Check if user has admin role (including developer)
+  if (userRole !== UserRole.POSITION_ADMIN && userRole !== UserRole.SUPER_ADMIN && userRole !== UserRole.DEVELOPER) {
     throw new AuthorizationError('Admin access required');
   }
 

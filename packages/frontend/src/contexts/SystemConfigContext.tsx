@@ -36,6 +36,12 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         smtpPort: 587,
         smtpUser: '',
         smtpSecure: false,
+        // UI Theme settings from API
+        defaultTheme: data.defaultTheme,
+        allowThemeSwitch: data.allowThemeSwitch,
+        animationStyle: data.animationStyle,
+        enableAnimations: data.enableAnimations,
+        reducedMotion: data.reducedMotion,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -71,6 +77,12 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         smtpPort: 587,
         smtpUser: '',
         smtpSecure: false,
+        // UI Theme defaults
+        defaultTheme: 'dark' as const,
+        allowThemeSwitch: true,
+        animationStyle: 'scanline' as const,
+        enableAnimations: true,
+        reducedMotion: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

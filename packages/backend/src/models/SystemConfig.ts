@@ -14,6 +14,12 @@ export interface SystemConfig {
   smtpUser: string;
   smtpPassword: string;
   smtpSecure: boolean;
+  // UI Theme Configuration
+  defaultTheme: 'light' | 'dark';
+  allowThemeSwitch: boolean;
+  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+  enableAnimations: boolean;
+  reducedMotion: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +39,12 @@ export interface SystemConfigCreateDTO {
   smtpUser?: string;
   smtpPassword?: string;
   smtpSecure?: boolean;
+  // UI Theme Configuration
+  defaultTheme?: 'light' | 'dark';
+  allowThemeSwitch?: boolean;
+  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+  enableAnimations?: boolean;
+  reducedMotion?: boolean;
 }
 
 export interface SystemConfigUpdateDTO {
@@ -50,6 +62,12 @@ export interface SystemConfigUpdateDTO {
   smtpUser?: string;
   smtpPassword?: string;
   smtpSecure?: boolean;
+  // UI Theme Configuration
+  defaultTheme?: 'light' | 'dark';
+  allowThemeSwitch?: boolean;
+  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+  enableAnimations?: boolean;
+  reducedMotion?: boolean;
 }
 
 export interface SystemConfigResponse {
@@ -67,6 +85,12 @@ export interface SystemConfigResponse {
   smtpPort: number;
   smtpUser: string;
   smtpSecure: boolean;
+  // UI Theme Configuration
+  defaultTheme: 'light' | 'dark';
+  allowThemeSwitch: boolean;
+  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+  enableAnimations: boolean;
+  reducedMotion: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

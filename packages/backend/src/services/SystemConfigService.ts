@@ -29,6 +29,11 @@ export class SystemConfigService {
         smtp_port as "smtpPort",
         smtp_user as "smtpUser",
         smtp_secure as "smtpSecure",
+        default_theme as "defaultTheme",
+        allow_theme_switch as "allowThemeSwitch",
+        animation_style as "animationStyle",
+        enable_animations as "enableAnimations",
+        reduced_motion as "reducedMotion",
         created_at as "createdAt",
         updated_at as "updatedAt"
       FROM system_config 
@@ -52,15 +57,30 @@ export class SystemConfigService {
 
   /**
    * Get public system configuration (no authentication required)
-   * Returns only basic information like site name, logo, and debug mode
+   * Returns only basic information like site name, logo, debug mode, and theme settings
    */
-  async getPublicConfig(): Promise<{ siteName: string; logoUrl: string; siteDescription: string; debugMode: boolean }> {
+  async getPublicConfig(): Promise<{ 
+    siteName: string; 
+    logoUrl: string; 
+    siteDescription: string; 
+    debugMode: boolean;
+    defaultTheme: 'light' | 'dark';
+    allowThemeSwitch: boolean;
+    animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+    enableAnimations: boolean;
+    reducedMotion: boolean;
+  }> {
     const query = `
       SELECT 
         site_name as "siteName",
         site_description as "siteDescription", 
         logo_url as "logoUrl",
-        debug_mode as "debugMode"
+        debug_mode as "debugMode",
+        default_theme as "defaultTheme",
+        allow_theme_switch as "allowThemeSwitch",
+        animation_style as "animationStyle",
+        enable_animations as "enableAnimations",
+        reduced_motion as "reducedMotion"
       FROM system_config 
       ORDER BY created_at DESC 
       LIMIT 1
@@ -74,7 +94,12 @@ export class SystemConfigService {
         siteName: '赏金猎人平台',
         siteDescription: '基于任务的协作平台',
         logoUrl: '',
-        debugMode: false
+        debugMode: false,
+        defaultTheme: 'dark',
+        allowThemeSwitch: true,
+        animationStyle: 'scanline',
+        enableAnimations: true,
+        reducedMotion: false,
       };
     }
 
@@ -166,6 +191,32 @@ export class SystemConfigService {
       values.push(updates.smtpSecure);
     }
 
+    // UI Theme fields
+    if (updates.defaultTheme !== undefined) {
+      fields.push(`default_theme = $${paramCount++}`);
+      values.push(updates.defaultTheme);
+    }
+
+    if (updates.allowThemeSwitch !== undefined) {
+      fields.push(`allow_theme_switch = $${paramCount++}`);
+      values.push(updates.allowThemeSwitch);
+    }
+
+    if (updates.animationStyle !== undefined) {
+      fields.push(`animation_style = $${paramCount++}`);
+      values.push(updates.animationStyle);
+    }
+
+    if (updates.enableAnimations !== undefined) {
+      fields.push(`enable_animations = $${paramCount++}`);
+      values.push(updates.enableAnimations);
+    }
+
+    if (updates.reducedMotion !== undefined) {
+      fields.push(`reduced_motion = $${paramCount++}`);
+      values.push(updates.reducedMotion);
+    }
+
     if (fields.length === 0) {
       // No updates, return current config
       return this.getConfig();
@@ -196,6 +247,11 @@ export class SystemConfigService {
         smtp_port as "smtpPort",
         smtp_user as "smtpUser",
         smtp_secure as "smtpSecure",
+        default_theme as "defaultTheme",
+        allow_theme_switch as "allowThemeSwitch",
+        animation_style as "animationStyle",
+        enable_animations as "enableAnimations",
+        reduced_motion as "reducedMotion",
         created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -237,8 +293,13 @@ export class SystemConfigService {
         smtp_port,
         smtp_user,
         smtp_password,
-        smtp_secure
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        smtp_secure,
+        default_theme,
+        allow_theme_switch,
+        animation_style,
+        enable_animations,
+        reduced_motion
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
       RETURNING 
         id,
         site_name as "siteName",
@@ -254,6 +315,11 @@ export class SystemConfigService {
         smtp_port as "smtpPort",
         smtp_user as "smtpUser",
         smtp_secure as "smtpSecure",
+        default_theme as "defaultTheme",
+        allow_theme_switch as "allowThemeSwitch",
+        animation_style as "animationStyle",
+        enable_animations as "enableAnimations",
+        reduced_motion as "reducedMotion",
         created_at as "createdAt",
         updated_at as "updatedAt"
     `;
@@ -272,7 +338,12 @@ export class SystemConfigService {
       configData.smtpPort || 587,
       configData.smtpUser || '',
       configData.smtpPassword || '',
-      configData.smtpSecure ?? true
+      configData.smtpSecure ?? true,
+      configData.defaultTheme || 'dark',
+      configData.allowThemeSwitch ?? true,
+      configData.animationStyle || 'scanline',
+      configData.enableAnimations ?? true,
+      configData.reducedMotion ?? false
     ];
 
     const result = await pool.query(query, values);
@@ -374,6 +445,21 @@ export class SystemConfigService {
 
     if (data.smtpPassword !== undefined) {
       Validator.maxLength(data.smtpPassword, 255, 'SMTP password');
+    }
+
+    // UI Theme validation
+    if (data.defaultTheme !== undefined) {
+      const validThemes = ['light', 'dark'];
+      if (!validThemes.includes(data.defaultTheme)) {
+        throw new ValidationError('Invalid default theme');
+      }
+    }
+
+    if (data.animationStyle !== undefined) {
+      const validAnimationStyles = ['none', 'minimal', 'scanline', 'particles', 'hexagon', 'datastream', 'hologram', 'ripple'];
+      if (!validAnimationStyles.includes(data.animationStyle)) {
+        throw new ValidationError('Invalid animation style');
+      }
     }
   }
 }

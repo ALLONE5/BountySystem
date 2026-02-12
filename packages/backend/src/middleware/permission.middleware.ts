@@ -61,6 +61,11 @@ export const requireAdmin = requireRole([UserRole.POSITION_ADMIN, UserRole.SUPER
 export const requireSuperAdmin = requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]);
 
 /**
+ * Middleware to check if user is developer only
+ */
+export const requireDeveloper = requireRole([UserRole.DEVELOPER]);
+
+/**
  * Middleware to check if user can access another user's data
  */
 export const requireUserDataAccess = async (
