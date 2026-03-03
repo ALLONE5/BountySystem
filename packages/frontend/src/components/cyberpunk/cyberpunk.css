@@ -1,0 +1,295 @@
+/* Cyberpunk UI Components */
+
+/* CyberCard */
+.cyber-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(0, 242, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cyber-card:hover::before {
+  opacity: 1;
+}
+
+.cyber-card--cyan {
+  border-color: rgba(0, 242, 255, 0.6) !important;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+.cyber-card--magenta {
+  border-color: rgba(255, 0, 229, 0.6) !important;
+  box-shadow: 0 0 10px rgba(255, 0, 229, 0.3);
+}
+
+.cyber-card--green {
+  border-color: rgba(57, 255, 20, 0.6) !important;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+}
+
+.cyber-card--low {
+  box-shadow: 0 0 5px currentColor;
+}
+
+.cyber-card--medium {
+  box-shadow: 0 0 10px currentColor, 0 0 20px rgba(0, 242, 255, 0.2);
+}
+
+.cyber-card--high {
+  box-shadow: 0 0 15px currentColor, 0 0 30px rgba(0, 242, 255, 0.3), 0 0 45px rgba(255, 0, 229, 0.1);
+}
+
+.cyber-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px currentColor, 0 0 40px rgba(0, 242, 255, 0.4);
+}
+
+.cyber-card__content {
+  position: relative;
+  z-index: 2;
+}
+
+/* NeonButton */
+.neon-button {
+  position: relative;
+  background: transparent !important;
+  border: 2px solid !important;
+  border-radius: 0.25rem !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden;
+}
+
+.neon-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+  z-index: 1;
+}
+
+.neon-button:hover::before {
+  left: 100%;
+}
+
+.neon-button__text {
+  position: relative;
+  z-index: 2;
+}
+
+.neon-button--cyan {
+  border-color: #00f2ff !important;
+  color: #00f2ff !important;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+.neon-button--cyan:hover {
+  background: rgba(0, 242, 255, 0.1) !important;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.6), inset 0 0 20px rgba(0, 242, 255, 0.1);
+  color: #ffffff !important;
+}
+
+.neon-button--magenta {
+  border-color: #ff00e5 !important;
+  color: #ff00e5 !important;
+  box-shadow: 0 0 10px rgba(255, 0, 229, 0.3);
+}
+
+.neon-button--magenta:hover {
+  background: rgba(255, 0, 229, 0.1) !important;
+  box-shadow: 0 0 20px rgba(255, 0, 229, 0.6), inset 0 0 20px rgba(255, 0, 229, 0.1);
+  color: #ffffff !important;
+}
+
+.neon-button--green {
+  border-color: #39ff14 !important;
+  color: #39ff14 !important;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+}
+
+.neon-button--green:hover {
+  background: rgba(57, 255, 20, 0.1) !important;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.6), inset 0 0 20px rgba(57, 255, 20, 0.1);
+  color: #ffffff !important;
+}
+
+.neon-button--primary {
+  padding: 8px 24px !important;
+  height: auto !important;
+}
+
+.neon-button--secondary {
+  padding: 6px 16px !important;
+  height: auto !important;
+  font-size: 12px !important;
+}
+
+.neon-button--ghost {
+  background: transparent !important;
+  border-style: dashed !important;
+}
+
+/* GlassPanel */
+.glass-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.8), transparent);
+  z-index: 1;
+}
+
+.glass-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 229, 0.6), transparent);
+  z-index: 1;
+}
+
+.glass-panel__content {
+  position: relative;
+  z-index: 2;
+  padding: 16px;
+}
+
+/* HolographicText */
+.holographic-text {
+  animation: holographic-shimmer 3s ease-in-out infinite;
+}
+
+.holographic-text--glitch {
+  animation: holographic-shimmer 3s ease-in-out infinite, text-glitch 0.3s ease-in-out infinite;
+}
+
+@keyframes holographic-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes text-glitch {
+  0%, 90%, 100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-1px, 1px);
+  }
+  40% {
+    transform: translate(1px, -1px);
+  }
+  60% {
+    transform: translate(-1px, -1px);
+  }
+  80% {
+    transform: translate(1px, 1px);
+  }
+}
+
+/* Cyberpunk Theme Overrides */
+.cyberpunk-theme .ant-card {
+  background: rgba(26, 13, 26, 0.85) !important;
+  border: 1px solid rgba(0, 242, 255, 0.6) !important;
+  backdrop-filter: blur(10px);
+}
+
+.cyberpunk-theme .ant-card-head {
+  background: rgba(0, 242, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.3) !important;
+}
+
+.cyberpunk-theme .ant-card-head-title {
+  color: #00f2ff !important;
+  font-family: 'Orbitron', monospace !important;
+  font-weight: bold !important;
+}
+
+.cyberpunk-theme .ant-table {
+  background: transparent !important;
+}
+
+.cyberpunk-theme .ant-table-thead > tr > th {
+  background: rgba(0, 242, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.3) !important;
+  color: #00f2ff !important;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+.cyberpunk-theme .ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(0, 242, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.cyberpunk-theme .ant-table-tbody > tr:hover > td {
+  background: rgba(0, 242, 255, 0.05) !important;
+}
+
+.cyberpunk-theme .ant-tag {
+  background: rgba(0, 242, 255, 0.2) !important;
+  border: 1px solid rgba(0, 242, 255, 0.4) !important;
+  color: #00f2ff !important;
+}
+
+.cyberpunk-theme .ant-progress-bg {
+  background: linear-gradient(90deg, #00f2ff, #ff00e5) !important;
+}
+
+.cyberpunk-theme .ant-statistic-content {
+  color: #00f2ff !important;
+  font-family: 'Orbitron', monospace !important;
+}
+
+.cyberpunk-theme .ant-input {
+  background: rgba(26, 13, 26, 0.8) !important;
+  border: 1px solid rgba(0, 242, 255, 0.4) !important;
+  color: #ffffff !important;
+}
+
+.cyberpunk-theme .ant-input:focus {
+  border-color: #00f2ff !important;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.3) !important;
+}
+
+.cyberpunk-theme .ant-select-selector {
+  background: rgba(26, 13, 26, 0.8) !important;
+  border: 1px solid rgba(0, 242, 255, 0.4) !important;
+  color: #ffffff !important;
+}
+
+.cyberpunk-theme .ant-select-focused .ant-select-selector {
+  border-color: #00f2ff !important;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.3) !important;
+}

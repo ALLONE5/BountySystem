@@ -1,0 +1,509 @@
+/**
+ * Side Navigation Styles
+ * Discord 风格的侧边导航样式
+ */
+
+/* ============================================
+   基础布局
+   ============================================ */
+
+.side-navigation {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.side-navigation.horizontal {
+  flex-direction: row;
+  height: auto;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+}
+
+/* ============================================
+   用户信息区域
+   ============================================ */
+
+.user-info-section {
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.user-avatar-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-avatar:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.username {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-status {
+  color: #57f287;
+  font-size: 12px;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+/* ============================================
+   主导航菜单
+   ============================================ */
+
+.main-navigation {
+  flex: 1;
+  padding: 8px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-menu {
+  background: transparent !important;
+  border: none !important;
+  color: #b9bbbe;
+}
+
+.nav-menu .ant-menu-item {
+  height: 48px;
+  line-height: 48px;
+  margin: 2px 8px;
+  border-radius: 8px;
+  padding: 0 16px;
+  color: #b9bbbe;
+  background: transparent;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-menu .ant-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #5865f2;
+  transform: scaleY(0);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-menu .ant-menu-item:hover {
+  background: rgba(79, 84, 92, 0.16);
+  color: #dcddde;
+}
+
+.nav-menu .ant-menu-item:hover::before {
+  transform: scaleY(1);
+}
+
+.nav-menu .ant-menu-item.ant-menu-item-selected {
+  background: rgba(88, 101, 242, 0.1);
+  color: #ffffff;
+}
+
+.nav-menu .ant-menu-item.ant-menu-item-selected::before {
+  transform: scaleY(1);
+}
+
+.nav-menu .ant-menu-item .ant-menu-item-icon {
+  font-size: 20px;
+  margin-right: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-menu .ant-menu-item:hover .ant-menu-item-icon {
+  transform: scale(1.1);
+}
+
+/* 收起状态的菜单项 */
+.side-navigation.collapsed .nav-menu .ant-menu-item {
+  padding: 0;
+  text-align: center;
+  margin: 4px 8px;
+  width: 64px;
+  height: 44px;
+  line-height: 44px;
+}
+
+.side-navigation.collapsed .nav-menu .ant-menu-item .ant-menu-item-icon {
+  margin-right: 0;
+  font-size: 18px;
+}
+
+/* ============================================
+   子导航菜单
+   ============================================ */
+
+.sub-navigation {
+  padding: 0 8px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 8px;
+}
+
+.sub-nav-title {
+  color: #72767d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 16px 8px;
+  margin-bottom: 4px;
+}
+
+.sub-nav-menu {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sub-nav-menu .ant-menu-item {
+  height: 36px;
+  line-height: 36px;
+  margin: 1px 0;
+  border-radius: 6px;
+  padding: 0 12px;
+  color: #96989d;
+  font-size: 13px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sub-nav-menu .ant-menu-item:hover {
+  background: rgba(79, 84, 92, 0.12);
+  color: #dcddde;
+}
+
+.sub-nav-menu .ant-menu-item .ant-menu-item-icon {
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+/* ============================================
+   水平导航 (移动端)
+   ============================================ */
+
+.nav-items-horizontal {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.nav-item-horizontal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: #b9bbbe;
+  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  min-width: 60px;
+  position: relative;
+}
+
+.nav-item-horizontal .anticon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.nav-item-horizontal .nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.nav-item-horizontal:hover {
+  background: rgba(79, 84, 92, 0.16);
+  color: #dcddde;
+  transform: translateY(-2px);
+}
+
+.nav-item-horizontal.active {
+  background: rgba(88, 101, 242, 0.15);
+  color: #5865f2;
+}
+
+.nav-item-horizontal.active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: #5865f2;
+  border-radius: 0 0 3px 3px;
+}
+
+/* ============================================
+   底部信息
+   ============================================ */
+
+.nav-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: auto;
+}
+
+.system-info {
+  text-align: center;
+}
+
+.system-name {
+  color: #dcddde;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.system-version {
+  color: #72767d;
+  font-size: 10px;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+/* ============================================
+   主题变体
+   ============================================ */
+
+/* 赛博朋克主题 */
+.modern-layout.theme-cyberpunk .nav-menu .ant-menu-item::before {
+  background: #00f2ff;
+}
+
+.modern-layout.theme-cyberpunk .nav-menu .ant-menu-item.ant-menu-item-selected {
+  background: rgba(0, 242, 255, 0.1);
+  color: #00f2ff;
+}
+
+.modern-layout.theme-cyberpunk .nav-item-horizontal.active {
+  background: rgba(0, 242, 255, 0.15);
+  color: #00f2ff;
+}
+
+.modern-layout.theme-cyberpunk .nav-item-horizontal.active::before {
+  background: #00f2ff;
+}
+
+.modern-layout.theme-cyberpunk .user-status {
+  color: #39ff14;
+}
+
+/* 亮色主题 */
+.modern-layout.theme-light .nav-menu {
+  color: #4f545c;
+}
+
+.modern-layout.theme-light .nav-menu .ant-menu-item {
+  color: #4f545c;
+}
+
+.modern-layout.theme-light .nav-menu .ant-menu-item:hover {
+  background: rgba(116, 127, 141, 0.08);
+  color: #2e3338;
+}
+
+.modern-layout.theme-light .nav-menu .ant-menu-item.ant-menu-item-selected {
+  background: rgba(88, 101, 242, 0.08);
+  color: #5865f2;
+}
+
+.modern-layout.theme-light .username {
+  color: #2e3338;
+}
+
+.modern-layout.theme-light .sub-nav-title {
+  color: #747f8d;
+}
+
+.modern-layout.theme-light .sub-nav-menu .ant-menu-item {
+  color: #747f8d;
+}
+
+.modern-layout.theme-light .sub-nav-menu .ant-menu-item:hover {
+  color: #4f545c;
+}
+
+.modern-layout.theme-light .system-name {
+  color: #2e3338;
+}
+
+.modern-layout.theme-light .system-version {
+  color: #747f8d;
+}
+
+/* ============================================
+   响应式设计
+   ============================================ */
+
+/* 平板端 */
+@media (max-width: 1024px) {
+  .user-info-section {
+    padding: 16px 12px;
+  }
+  
+  .nav-menu .ant-menu-item {
+    margin: 2px 4px;
+    padding: 0 12px;
+  }
+}
+
+/* 移动端 */
+@media (max-width: 768px) {
+  .side-navigation:not(.horizontal) {
+    width: 280px;
+  }
+  
+  .nav-items-horizontal {
+    gap: 4px;
+    padding: 0 8px;
+  }
+  
+  .nav-item-horizontal {
+    padding: 6px 8px;
+    min-width: 50px;
+  }
+  
+  .nav-item-horizontal .anticon {
+    font-size: 18px;
+  }
+  
+  .nav-item-horizontal .nav-label {
+    font-size: 9px;
+  }
+}
+
+/* ============================================
+   滚动条样式
+   ============================================ */
+
+.main-navigation::-webkit-scrollbar {
+  width: 6px;
+}
+
+.main-navigation::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.main-navigation::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.main-navigation::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   动画效果
+   ============================================ */
+
+.side-navigation {
+  animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.nav-item-horizontal {
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 徽章动画 */
+.ant-badge-count {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ============================================
+   可访问性优化
+   ============================================ */
+
+/* 减少动画 */
+@media (prefers-reduced-motion: reduce) {
+  .side-navigation,
+  .nav-item-horizontal,
+  .nav-menu .ant-menu-item,
+  .user-avatar,
+  .ant-badge-count {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .nav-menu .ant-menu-item {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .nav-menu .ant-menu-item.ant-menu-item-selected {
+    border-color: #5865f2;
+  }
+}

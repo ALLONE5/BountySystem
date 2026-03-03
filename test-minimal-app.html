@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试最小应用</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        .success { border-color: #52c41a; background: #f6ffed; }
+        .error { border-color: #ff4d4f; background: #fff2f0; }
+        .test-link {
+            display: inline-block;
+            margin: 10px 10px 10px 0;
+            padding: 8px 16px;
+            background: #1890ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .test-link:hover {
+            background: #40a9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 最小应用测试</h1>
+        <p>测试简化版本的前端应用是否正常工作</p>
+        
+        <div class="test-item">
+            <h3>📍 测试路由</h3>
+            <p>点击以下链接测试不同页面：</p>
+            <a href="http://localhost:5173/" class="test-link" target="_blank">主页 (TestPage)</a>
+            <a href="http://localhost:5173/test" class="test-link" target="_blank">测试页面</a>
+            <a href="http://localhost:5173/auth/login" class="test-link" target="_blank">登录页面</a>
+            <a href="http://localhost:5173/dashboard" class="test-link" target="_blank">仪表板</a>
+        </div>
+        
+        <div class="test-item">
+            <h3>🔧 服务器状态</h3>
+            <p>前端: <span id="frontend-status">检查中...</span></p>
+            <p>后端: <span id="backend-status">检查中...</span></p>
+        </div>
+        
+        <div class="test-item">
+            <h3>📋 测试步骤</h3>
+            <ol>
+                <li>确认主页显示正常（应该看到测试页面）</li>
+                <li>点击"测试登录页面"按钮</li>
+                <li>在登录页面输入任意用户名和密码</li>
+                <li>点击登录，应该跳转到仪表板</li>
+                <li>在仪表板点击"返回登录页"测试导航</li>
+            </ol>
+        </div>
+        
+        <div class="test-item">
+            <h3>🎯 预期结果</h3>
+            <ul>
+                <li>✅ 所有页面都能正常加载，无空白页面</li>
+                <li>✅ 页面样式正常显示</li>
+                <li>✅ 导航功能正常工作</li>
+                <li>✅ 无控制台错误</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 检查服务器状态
+        async function checkServers() {
+            // 检查前端
+            try {
+                const frontendResponse = await fetch('http://localhost:5173/');
+                document.getElementById('frontend-status').innerHTML = 
+                    '<span style="color: #52c41a;">✅ 运行中 (端口 5173)</span>';
+            } catch (error) {
+                document.getElementById('frontend-status').innerHTML = 
+                    '<span style="color: #ff4d4f;">❌ 未运行</span>';
+            }
+            
+            // 检查后端
+            try {
+                const backendResponse = await fetch('http://localhost:3000/api/health');
+                document.getElementById('backend-status').innerHTML = 
+                    '<span style="color: #52c41a;">✅ 运行中 (端口 3000)</span>';
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = 
+                    '<span style="color: #ff4d4f;">❌ 未运行</span>';
+            }
+        }
+        
+        checkServers();
+    </script>
+</body>
+</html>

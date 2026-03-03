@@ -21,6 +21,8 @@ import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
 import dayjs from 'dayjs';
 import { useAuthStore } from '../store/authStore';
 import { getTaskStatusConfig } from '../utils/statusConfig';
+import { useTheme } from '../contexts/ThemeContext';
+import { CyberCard, NeonButton } from '../components/cyberpunk';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -71,6 +73,8 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
 }) => {
   console.log('TaskListPage rendered, hideFilters:', hideFilters);
   const { user } = useAuthStore();
+  const { themeMode } = useTheme();
+  const isCyberpunk = themeMode === 'cyberpunk';
   const [internalTasks, setInternalTasks] = useState<Task[]>([]);
   const [internalLoading, setInternalLoading] = useState(true);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
@@ -729,18 +733,18 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
                       header={
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                           <Space>
-                            <FolderOutlined style={{ color: '#722ed1', fontSize: 16 }} />
-                            <span style={{ fontWeight: 600, fontSize: 14 }}>{projectName}</span>
-                            <Badge count={projectTasks.length} style={{ backgroundColor: '#722ed1' }} />
+                            <FolderOutlined style={{ color: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#00d9ff' : '#722ed1', fontSize: 16 }} />
+                            <span style={{ fontWeight: 600, fontSize: 14, color: isCyberpunk ? '#ffffff' : themeMode === 'dark' ? '#f8fafc' : '#0f172a' }}>{projectName}</span>
+                            <Badge count={projectTasks.length} style={{ backgroundColor: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#00d9ff' : '#722ed1' }} />
                           </Space>
                           <Space size="large" onClick={(e) => e.stopPropagation()}>
-                            <span style={{ fontSize: 13, color: '#666' }}>
+                            <span style={{ fontSize: 13, color: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#94a3b8' : '#666' }}>
                               {stats.inProgress} 进行中
                             </span>
-                            <span style={{ fontSize: 13, color: '#666' }}>
+                            <span style={{ fontSize: 13, color: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#94a3b8' : '#666' }}>
                               {stats.completed} 已完成
                             </span>
-                            <span style={{ fontSize: 13, color: '#f5222d', fontWeight: 600 }}>
+                            <span style={{ fontSize: 13, color: isCyberpunk ? '#ff00e5' : themeMode === 'dark' ? '#ff6b6b' : '#f5222d', fontWeight: 600 }}>
                               ${stats.totalBounty.toFixed(2)}
                             </span>
                           </Space>
@@ -748,9 +752,9 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
                       }
                       style={{
                         marginBottom: 16,
-                        background: '#fff',
+                        background: isCyberpunk ? 'rgba(26, 13, 26, 0.8)' : themeMode === 'dark' ? '#1f2937' : '#fff',
                         borderRadius: 4,
-                        border: '1px solid #d9d9d9',
+                        border: isCyberpunk ? '1px solid rgba(0, 242, 255, 0.2)' : themeMode === 'dark' ? '1px solid rgba(0, 242, 255, 0.1)' : '1px solid #d9d9d9',
                       }}
                     >
                       <Table
@@ -792,16 +796,23 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
           <div style={{ 
             marginBottom: 16, 
             padding: '12px 16px',
-            background: '#fafafa',
+            background: isCyberpunk ? 'rgba(26, 13, 26, 0.6)' : themeMode === 'dark' ? '#1f2937' : '#fafafa',
             borderRadius: '4px',
             display: 'flex', 
             justifyContent: 'flex-end',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '12px'
+            gap: '12px',
+            border: isCyberpunk ? '1px solid rgba(0, 242, 255, 0.2)' : themeMode === 'dark' ? '1px solid rgba(0, 242, 255, 0.1)' : '1px solid #e8e8e8'
           }}>
             <Space size="middle">
-              <span style={{ fontSize: 14, display: 'flex', alignItems: 'center', fontWeight: 500 }}>
+              <span style={{ 
+                fontSize: 14, 
+                display: 'flex', 
+                alignItems: 'center', 
+                fontWeight: 500,
+                color: isCyberpunk ? '#ffffff' : themeMode === 'dark' ? '#f8fafc' : '#0f172a'
+              }}>
                 按项目组分组:
                 <Switch
                   checked={groupByProject}
@@ -867,18 +878,39 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
                     header={
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                         <Space>
-                          <FolderOutlined style={{ color: '#722ed1', fontSize: 16 }} />
-                          <span style={{ fontWeight: 600, fontSize: 14 }}>{projectName}</span>
-                          <Badge count={projectTasks.length} style={{ backgroundColor: '#722ed1' }} />
+                          <FolderOutlined style={{ 
+                            color: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#00d9ff' : '#722ed1', 
+                            fontSize: 16 
+                          }} />
+                          <span style={{ 
+                            fontWeight: 600, 
+                            fontSize: 14,
+                            color: isCyberpunk ? '#ffffff' : themeMode === 'dark' ? '#f8fafc' : '#0f172a'
+                          }}>
+                            {projectName}
+                          </span>
+                          <Badge count={projectTasks.length} style={{ 
+                            backgroundColor: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#00d9ff' : '#722ed1' 
+                          }} />
                         </Space>
                         <Space size="large" onClick={(e) => e.stopPropagation()}>
-                          <span style={{ fontSize: 13, color: '#666' }}>
+                          <span style={{ 
+                            fontSize: 13, 
+                            color: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#94a3b8' : '#666' 
+                          }}>
                             {stats.inProgress} 进行中
                           </span>
-                          <span style={{ fontSize: 13, color: '#666' }}>
+                          <span style={{ 
+                            fontSize: 13, 
+                            color: isCyberpunk ? '#00f2ff' : themeMode === 'dark' ? '#94a3b8' : '#666' 
+                          }}>
                             {stats.completed} 已完成
                           </span>
-                          <span style={{ fontSize: 13, color: '#f5222d', fontWeight: 600 }}>
+                          <span style={{ 
+                            fontSize: 13, 
+                            color: isCyberpunk ? '#ff00e5' : themeMode === 'dark' ? '#ff6b6b' : '#f5222d', 
+                            fontWeight: 600 
+                          }}>
                             ${stats.totalBounty.toFixed(2)}
                           </span>
                         </Space>
@@ -886,9 +918,9 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
                     }
                     style={{
                       marginBottom: 16,
-                      background: '#fff',
+                      background: isCyberpunk ? 'rgba(26, 13, 26, 0.8)' : themeMode === 'dark' ? '#1f2937' : '#fff',
                       borderRadius: 4,
-                      border: '1px solid #d9d9d9',
+                      border: isCyberpunk ? '1px solid rgba(0, 242, 255, 0.2)' : themeMode === 'dark' ? '1px solid rgba(0, 242, 255, 0.1)' : '1px solid #d9d9d9',
                     }}
                   >
                     <Table

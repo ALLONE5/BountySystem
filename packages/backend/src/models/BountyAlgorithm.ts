@@ -5,6 +5,7 @@ export interface BountyAlgorithm {
   urgencyWeight: number;
   importanceWeight: number;
   durationWeight: number;
+  remainingDaysWeight: number;
   formula: string;
   effectiveFrom: Date;
   createdBy: string;
@@ -17,6 +18,7 @@ export interface BountyAlgorithmCreateDTO {
   urgencyWeight: number;
   importanceWeight: number;
   durationWeight: number;
+  remainingDaysWeight: number;
   formula: string;
   effectiveFrom?: Date;
   createdBy: string;

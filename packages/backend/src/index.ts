@@ -16,6 +16,7 @@ import groupRoutes from './routes/group.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import systemConfigRoutes from './routes/systemConfig.routes.js';
+import publicSystemConfigRoutes from './routes/publicSystemConfig.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import auditLogRoutes from './routes/auditLog.routes.js';
 import schedulerRoutes from './routes/scheduler.routes.js';
@@ -122,6 +123,9 @@ app.use('/api/admin', adminRoutes);
 
 // System configuration routes
 app.use('/api/admin/system', systemConfigRoutes);
+
+// Public system configuration routes (no auth required)
+app.use('/api/system-config', publicSystemConfigRoutes);
 
 // Audit log routes
 app.use('/api/admin/audit', auditLogRoutes);

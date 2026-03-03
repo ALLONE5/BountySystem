@@ -21,8 +21,8 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { config } = useSystemConfig();
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('dark');
-  const [animationStyle, setAnimationStyle] = useState<AnimationStyle>('scanline');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('cyberpunk');
+  const [animationStyle, setAnimationStyle] = useState<AnimationStyle>('cyberpunk');
   const [enableAnimations, setEnableAnimations] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [allowThemeSwitch, setAllowThemeSwitch] = useState(true);
@@ -31,15 +31,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     if (config) {
       // Set system defaults
-      setAnimationStyle(config.animationStyle || 'scanline');
+      setAnimationStyle(config.animationStyle || 'cyberpunk');
       setEnableAnimations(config.enableAnimations ?? true);
       setReducedMotion(config.reducedMotion ?? false);
       setAllowThemeSwitch(config.allowThemeSwitch ?? true);
 
-      // Get user preference or system default
+      // Get user preference or use cyberpunk as default
       const savedTheme = localStorage.getItem('theme') as ThemeMode;
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      const initialTheme = savedTheme || config.defaultTheme || systemTheme;
+      const initialTheme = savedTheme || 'cyberpunk'; // Force cyberpunk as default
       
       setThemeModeState(initialTheme);
     }

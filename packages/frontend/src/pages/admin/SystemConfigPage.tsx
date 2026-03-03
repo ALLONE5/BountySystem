@@ -362,6 +362,7 @@ export const SystemConfigPage: React.FC = () => {
             <Select placeholder="选择默认主题">
               <Option value="light">亮色主题 (日光战士)</Option>
               <Option value="dark">暗色主题 (夜行猎人)</Option>
+              <Option value="cyberpunk">赛博朋克主题 (赛博战士)</Option>
             </Select>
           </Form.Item>
 
@@ -405,6 +406,8 @@ export const SystemConfigPage: React.FC = () => {
                     <Option value="datastream">数据流</Option>
                     <Option value="hologram">全息投影</Option>
                     <Option value="ripple">能量涟漪</Option>
+                    <Option value="cyberpunk">赛博朋克</Option>
+                    <Option value="matrix">矩阵雨滴</Option>
                   </Select>
                 </Form.Item>
               ) : null

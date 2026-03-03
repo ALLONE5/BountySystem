@@ -1,0 +1,485 @@
+/**
+ * Info Panel Styles
+ * Discord 风格的信息面板样式
+ */
+
+/* ============================================
+   信息面板基础样式
+   ============================================ */
+
+.info-panel {
+  height: 100%;
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: transparent;
+}
+
+.info-panel .ant-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-panel .ant-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.info-panel .ant-card-head {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  min-height: auto;
+}
+
+.info-panel .ant-card-head-title {
+  color: #dcddde;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.info-panel .ant-card-body {
+  padding: 12px 16px;
+}
+
+.info-panel .ant-card-extra {
+  color: #72767d;
+  font-size: 12px;
+}
+
+/* ============================================
+   统计卡片
+   ============================================ */
+
+.stats-card {
+  background: rgba(88, 101, 242, 0.1) !important;
+  border-color: rgba(88, 101, 242, 0.2) !important;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stats-grid .ant-statistic {
+  text-align: center;
+}
+
+.stats-grid .ant-statistic-title {
+  color: #b9bbbe;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.stats-grid .ant-statistic-content {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+/* ============================================
+   在线用户列表
+   ============================================ */
+
+.online-users-card {
+  background: rgba(87, 242, 135, 0.05) !important;
+  border-color: rgba(87, 242, 135, 0.15) !important;
+}
+
+.online-users-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.online-users-list .ant-list-item {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.online-users-list .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.online-user-item .ant-list-item-meta {
+  align-items: center;
+}
+
+.online-user-item .username {
+  color: #dcddde;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.online-user-item .user-status {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.online-user-item .ant-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.online-user-item:hover .ant-avatar {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* ============================================
+   最近活动列表
+   ============================================ */
+
+.recent-activities-card {
+  background: rgba(254, 231, 92, 0.05) !important;
+  border-color: rgba(254, 231, 92, 0.15) !important;
+}
+
+.activities-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.activities-list .ant-list-item {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.activities-list .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item .ant-list-item-meta-avatar {
+  margin-right: 12px;
+}
+
+.activity-item .ant-list-item-meta-avatar .anticon {
+  font-size: 16px;
+}
+
+.activity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-user {
+  color: #5865f2;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.activity-text {
+  color: #dcddde;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.activity-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.activity-time {
+  color: #72767d;
+  font-size: 11px;
+}
+
+.activity-bounty {
+  color: #57f287;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(87, 242, 135, 0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(87, 242, 135, 0.2);
+}
+
+/* ============================================
+   快捷操作卡片
+   ============================================ */
+
+.quick-actions-card {
+  background: rgba(237, 66, 69, 0.05) !important;
+  border-color: rgba(237, 66, 69, 0.15) !important;
+}
+
+.quick-actions-card .ant-btn {
+  height: 36px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-actions-card .ant-btn-primary {
+  background: #5865f2;
+  border-color: #5865f2;
+}
+
+.quick-actions-card .ant-btn-primary:hover {
+  background: #4752c4;
+  border-color: #4752c4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+}
+
+.quick-actions-card .ant-btn:not(.ant-btn-primary) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #dcddde;
+}
+
+.quick-actions-card .ant-btn:not(.ant-btn-primary):hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   分割线样式
+   ============================================ */
+
+.info-panel .ant-divider {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin: 12px 0;
+}
+
+/* ============================================
+   徽章样式
+   ============================================ */
+
+.info-panel .ant-badge-count {
+  background: #57f287;
+  color: #2f3136;
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(87, 242, 135, 0.3);
+}
+
+.info-panel .ant-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #2f3136;
+}
+
+/* ============================================
+   主题变体
+   ============================================ */
+
+/* 赛博朋克主题 */
+.modern-layout.theme-cyberpunk .info-panel .ant-card {
+  background: rgba(0, 242, 255, 0.05);
+  border-color: rgba(0, 242, 255, 0.15);
+}
+
+.modern-layout.theme-cyberpunk .stats-card {
+  background: rgba(0, 242, 255, 0.1) !important;
+  border-color: rgba(0, 242, 255, 0.2) !important;
+}
+
+.modern-layout.theme-cyberpunk .online-users-card {
+  background: rgba(57, 255, 20, 0.05) !important;
+  border-color: rgba(57, 255, 20, 0.15) !important;
+}
+
+.modern-layout.theme-cyberpunk .recent-activities-card {
+  background: rgba(255, 0, 229, 0.05) !important;
+  border-color: rgba(255, 0, 229, 0.15) !important;
+}
+
+.modern-layout.theme-cyberpunk .quick-actions-card {
+  background: rgba(255, 170, 0, 0.05) !important;
+  border-color: rgba(255, 170, 0, 0.15) !important;
+}
+
+.modern-layout.theme-cyberpunk .activity-user {
+  color: #00f2ff;
+}
+
+.modern-layout.theme-cyberpunk .activity-bounty {
+  color: #39ff14;
+  background: rgba(57, 255, 20, 0.1);
+  border-color: rgba(57, 255, 20, 0.2);
+}
+
+.modern-layout.theme-cyberpunk .quick-actions-card .ant-btn-primary {
+  background: #00f2ff;
+  border-color: #00f2ff;
+  color: #0a0a0f;
+}
+
+.modern-layout.theme-cyberpunk .quick-actions-card .ant-btn-primary:hover {
+  background: #00d4e6;
+  border-color: #00d4e6;
+  box-shadow: 0 4px 12px rgba(0, 242, 255, 0.4);
+}
+
+/* 亮色主题 */
+.modern-layout.theme-light .info-panel .ant-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.modern-layout.theme-light .info-panel .ant-card:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.modern-layout.theme-light .info-panel .ant-card-head-title {
+  color: #2e3338;
+}
+
+.modern-layout.theme-light .stats-grid .ant-statistic-title {
+  color: #747f8d;
+}
+
+.modern-layout.theme-light .online-user-item .username {
+  color: #2e3338;
+}
+
+.modern-layout.theme-light .activity-text {
+  color: #4f545c;
+}
+
+.modern-layout.theme-light .activity-time {
+  color: #747f8d;
+}
+
+.modern-layout.theme-light .quick-actions-card .ant-btn:not(.ant-btn-primary) {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #4f545c;
+}
+
+.modern-layout.theme-light .quick-actions-card .ant-btn:not(.ant-btn-primary):hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #2e3338;
+}
+
+/* ============================================
+   滚动条样式
+   ============================================ */
+
+.info-panel::-webkit-scrollbar,
+.online-users-list::-webkit-scrollbar,
+.activities-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.info-panel::-webkit-scrollbar-track,
+.online-users-list::-webkit-scrollbar-track,
+.activities-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.info-panel::-webkit-scrollbar-thumb,
+.online-users-list::-webkit-scrollbar-thumb,
+.activities-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.info-panel::-webkit-scrollbar-thumb:hover,
+.online-users-list::-webkit-scrollbar-thumb:hover,
+.activities-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   响应式设计
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .info-panel {
+    padding: 12px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .online-users-list {
+    max-height: 150px;
+  }
+  
+  .activities-list {
+    max-height: 200px;
+  }
+}
+
+/* ============================================
+   动画效果
+   ============================================ */
+
+.info-panel {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.info-panel .ant-card {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   可访问性优化
+   ============================================ */
+
+/* 减少动画 */
+@media (prefers-reduced-motion: reduce) {
+  .info-panel,
+  .info-panel .ant-card,
+  .online-user-item .ant-avatar,
+  .quick-actions-card .ant-btn {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .info-panel .ant-card {
+    border-width: 2px;
+  }
+  
+  .online-user-item .ant-avatar {
+    border-width: 3px;
+  }
+}

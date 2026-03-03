@@ -1,6 +1,6 @@
 // Design Tokens and Theme Configuration
-export type ThemeMode = 'light' | 'dark';
-export type AnimationStyle = 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
+export type ThemeMode = 'light' | 'dark' | 'cyberpunk';
+export type AnimationStyle = 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'cyberpunk' | 'matrix';
 
 export interface ThemeColors {
   // Background colors
@@ -62,35 +62,35 @@ export interface Theme {
   };
 }
 
-// Dark Theme - "夜行猎人"
+// Dark Theme - "夜行猎人" (Optimized with cyberpunk fusion)
 export const darkTheme: Theme = {
   mode: 'dark',
   colors: {
-    bgPrimary: '#0a0b10',
-    bgSecondary: '#161821',
-    bgTertiary: '#1f2937',
-    bgGlass: 'rgba(22, 24, 33, 0.8)',
+    bgPrimary: '#0d0d12',
+    bgSecondary: '#1a1a24',
+    bgTertiary: '#252533',
+    bgGlass: 'rgba(26, 26, 36, 0.85)',
     
-    primary: '#00f2ff',
-    secondary: '#FDE047',
-    accent: '#8b5cf6',
+    primary: '#00d9ff',
+    secondary: '#ff006e',
+    accent: '#39ff14',
     
-    success: '#10b981',
-    warning: '#facc15',
-    danger: '#ef4444',
-    info: '#3b82f6',
+    success: '#39ff14',
+    warning: '#ffa500',
+    danger: '#ff0040',
+    info: '#00d9ff',
     
-    textPrimary: '#f8fafc',
-    textSecondary: '#94a3b8',
-    textTertiary: '#64748b',
-    textInverse: '#0f172a',
+    textPrimary: '#e8e8f0',
+    textSecondary: '#00d9ff',
+    textTertiary: '#ff006e',
+    textInverse: '#0d0d12',
     
-    borderPrimary: 'rgba(0, 242, 255, 0.2)',
-    borderSecondary: 'rgba(148, 163, 184, 0.1)',
-    divider: 'rgba(148, 163, 184, 0.1)',
+    borderPrimary: 'rgba(0, 217, 255, 0.4)',
+    borderSecondary: 'rgba(255, 0, 110, 0.2)',
+    divider: 'rgba(0, 217, 255, 0.15)',
   },
   fonts: {
-    display: '"Orbitron", sans-serif',
+    display: '"Orbitron", "JetBrains Mono", monospace',
     body: '"Inter", sans-serif',
     mono: '"JetBrains Mono", monospace',
   },
@@ -109,10 +109,10 @@ export const darkTheme: Theme = {
     full: '9999px',
   },
   shadows: {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-    glow: '0 0 20px rgba(0, 242, 255, 0.3)',
+    sm: '0 0 8px rgba(0, 217, 255, 0.2)',
+    md: '0 0 16px rgba(0, 217, 255, 0.3), 0 0 8px rgba(255, 0, 110, 0.15)',
+    lg: '0 0 24px rgba(0, 217, 255, 0.4), 0 0 16px rgba(255, 0, 110, 0.2)',
+    glow: '0 0 20px rgba(0, 217, 255, 0.6), 0 0 40px rgba(255, 0, 110, 0.3)',
   },
 };
 
@@ -170,7 +170,62 @@ export const lightTheme: Theme = {
   },
 };
 
+// Cyberpunk Theme - "赛博朋克" (Enhanced with dark fusion)
+export const cyberpunkTheme: Theme = {
+  mode: 'cyberpunk',
+  colors: {
+    bgPrimary: '#0a0a0f',
+    bgSecondary: '#151520',
+    bgTertiary: '#1f1f2e',
+    bgGlass: 'rgba(21, 21, 32, 0.9)',
+    
+    primary: '#00f2ff',
+    secondary: '#ff00e5',
+    accent: '#39ff14',
+    
+    success: '#39ff14',
+    warning: '#ffaa00',
+    danger: '#ff0040',
+    info: '#00f2ff',
+    
+    textPrimary: '#f0f0f8',
+    textSecondary: '#00f2ff',
+    textTertiary: '#ff00e5',
+    textInverse: '#0a0a0f',
+    
+    borderPrimary: 'rgba(0, 242, 255, 0.5)',
+    borderSecondary: 'rgba(255, 0, 229, 0.3)',
+    divider: 'rgba(0, 242, 255, 0.15)',
+  },
+  fonts: {
+    display: '"Orbitron", "JetBrains Mono", monospace',
+    body: '"JetBrains Mono", "Courier New", monospace',
+    mono: '"JetBrains Mono", "Courier New", monospace',
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    xxl: '3rem',
+  },
+  borderRadius: {
+    sm: '0.125rem',
+    md: '0.25rem',
+    lg: '0.375rem',
+    full: '9999px',
+  },
+  shadows: {
+    sm: '0 0 8px rgba(0, 242, 255, 0.25)',
+    md: '0 0 16px rgba(0, 242, 255, 0.35), 0 0 8px rgba(255, 0, 229, 0.15)',
+    lg: '0 0 24px rgba(0, 242, 255, 0.45), 0 0 16px rgba(255, 0, 229, 0.25)',
+    glow: '0 0 20px rgba(0, 242, 255, 0.7), 0 0 40px rgba(255, 0, 229, 0.35)',
+  },
+};
+
 export const themes = {
   light: lightTheme,
   dark: darkTheme,
+  cyberpunk: cyberpunkTheme,
 };

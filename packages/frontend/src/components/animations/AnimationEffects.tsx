@@ -87,6 +87,23 @@ export const AnimationEffects: React.FC<AnimationEffectsProps> = ({
           </div>
         );
       
+      case 'cyberpunk':
+        return (
+          <div className="cyberpunk-effects">
+            <div className="cyber-grid" />
+            <div className="neon-lines" />
+            <div className="glitch-overlay" />
+          </div>
+        );
+      
+      case 'matrix':
+        return (
+          <div className="matrix-effects">
+            <div className="matrix-rain" />
+            <div className="digital-noise" />
+          </div>
+        );
+      
       default:
         return null;
     }

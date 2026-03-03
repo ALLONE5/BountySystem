@@ -1,0 +1,424 @@
+/**
+ * Glassmorphism Design System
+ * 现代化玻璃态效果样式库
+ * 参考 Discord 和 Midjourney 的设计理念
+ */
+
+/* ============================================
+   CSS 变量定义
+   ============================================ */
+:root {
+  /* 玻璃态基础变量 */
+  --glass-blur: 20px;
+  --glass-opacity: 0.8;
+  --glass-border-opacity: 0.2;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  
+  /* Discord 风格色彩 */
+  --discord-bg-primary: #2f3136;
+  --discord-bg-secondary: #36393f;
+  --discord-bg-tertiary: #40444b;
+  --discord-accent: #5865f2;
+  --discord-success: #57f287;
+  --discord-warning: #fee75c;
+  --discord-danger: #ed4245;
+  
+  /* Midjourney 风格渐变 */
+  --midjourney-gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --midjourney-gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --midjourney-gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  
+  /* 间距系统 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* 圆角系统 */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 50%;
+  
+  /* 动画时长 */
+  --duration-fast: 0.15s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.5s;
+  
+  /* 缓动函数 */
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ============================================
+   玻璃态基础类
+   ============================================ */
+
+/* 基础玻璃效果 */
+.glass {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(255, 255, 255, var(--glass-border-opacity));
+  box-shadow: var(--glass-shadow);
+  transition: all var(--duration-normal) var(--ease-out-cubic);
+}
+
+/* 玻璃卡片 */
+.glass-card {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(255, 255, 255, var(--glass-border-opacity));
+  box-shadow: var(--glass-shadow);
+  transition: all var(--duration-normal) var(--ease-out-cubic);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 玻璃按钮 */
+.glass-button {
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(255, 255, 255, var(--glass-border-opacity));
+  box-shadow: var(--glass-shadow);
+  transition: all var(--duration-normal) var(--ease-out-cubic);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--duration-normal) var(--ease-out-cubic);
+}
+
+.glass-button:hover::before {
+  left: 100%;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.glass-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   Discord 风格组件
+   ============================================ */
+
+/* Discord 侧边栏 */
+.discord-sidebar {
+  background: var(--discord-bg-primary);
+  backdrop-filter: blur(var(--glass-blur));
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Discord 卡片 */
+.discord-card {
+  background: var(--discord-bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  transition: all var(--duration-normal) var(--ease-out-cubic);
+}
+
+.discord-card:hover {
+  background: var(--discord-bg-tertiary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Discord 按钮变体 */
+.discord-button-primary {
+  background: var(--discord-accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-weight: 500;
+  transition: all var(--duration-fast) var(--ease-out-cubic);
+}
+
+.discord-button-primary:hover {
+  background: #4752c4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+}
+
+.discord-button-success {
+  background: var(--discord-success);
+  color: var(--discord-bg-primary);
+}
+
+.discord-button-success:hover {
+  background: #4ade80;
+  box-shadow: 0 4px 15px rgba(87, 242, 135, 0.4);
+}
+
+.discord-button-danger {
+  background: var(--discord-danger);
+  color: white;
+}
+
+.discord-button-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 15px rgba(237, 66, 69, 0.4);
+}
+
+/* ============================================
+   Midjourney 风格组件
+   ============================================ */
+
+/* Midjourney 网格卡片 */
+.midjourney-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+.midjourney-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-in-out-cubic);
+}
+
+.midjourney-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--midjourney-gradient-1);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out-cubic);
+  z-index: -1;
+}
+
+.midjourney-card:hover::before {
+  opacity: 0.1;
+}
+
+.midjourney-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Midjourney 渐变按钮 */
+.midjourney-button {
+  background: var(--midjourney-gradient-1);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-out-cubic);
+}
+
+.midjourney-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--midjourney-gradient-2);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out-cubic);
+}
+
+.midjourney-button:hover::before {
+  opacity: 1;
+}
+
+.midjourney-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+/* ============================================
+   响应式设计
+   ============================================ */
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .glass-card {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+  
+  .midjourney-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+  }
+  
+  .midjourney-card {
+    padding: var(--spacing-lg);
+  }
+}
+
+/* 平板端优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .midjourney-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+/* ============================================
+   动画关键帧
+   ============================================ */
+
+@keyframes glassShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes glassFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glassPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 动画工具类 */
+.animate-shimmer {
+  animation: glassShimmer 2s infinite;
+}
+
+.animate-float {
+  animation: glassFloat 3s ease-in-out infinite;
+}
+
+.animate-pulse {
+  animation: glassPulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   实用工具类
+   ============================================ */
+
+/* 文字渐变 */
+.text-gradient {
+  background: var(--midjourney-gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* 边框渐变 */
+.border-gradient {
+  position: relative;
+  background: var(--discord-bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: var(--midjourney-gradient-1);
+  border-radius: inherit;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  -webkit-mask-composite: xor;
+}
+
+/* 阴影变体 */
+.shadow-glass {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.shadow-glass-lg {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.shadow-glass-xl {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+/* 模糊效果变体 */
+.blur-sm {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.blur-md {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.blur-lg {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.blur-xl {
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+}
