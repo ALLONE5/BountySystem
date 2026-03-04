@@ -1,7 +1,7 @@
 import { RouterProvider } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import { router } from './router';
+import { router } from './router/index';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { SystemConfigProvider } from './contexts/SystemConfigContext';
@@ -9,14 +9,11 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { useEffect } from 'react';
 import { initializeUserSettings } from './utils/timezone';
 import { getThemeConfig } from './theme';
+import './styles/global.css';
 import './styles/global-theme.css';
-import './styles/discord-global.css';
 import './styles/search-bar.css';
 import './styles/collapse.css';
 import './styles/glassmorphism.css';
-
-// CACHE BUSTER: 2026-03-03-17:00:00 - Apply Modern UI Design
-console.log('🎨 APP.TSX MODERN UI APPLIED - 2026-03-03-17:00:00 🎨');
 
 // Import Google Fonts
 const fontLink = document.createElement('link');

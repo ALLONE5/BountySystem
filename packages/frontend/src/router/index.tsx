@@ -27,7 +27,13 @@ import { AdminPage } from '../pages/AdminPage';
 import { TaskInvitationsPage } from '../pages/TaskInvitationsPage';
 import { UIShowcasePage } from '../pages/UIShowcasePage';
 
+// 工作台页面 - 使用现有页面替代
+// import { MyBountiesPage } from '../pages/workspace/MyBountiesPage';
+// import { MyTasksPage } from '../pages/workspace/MyTasksPage';
+// import { MyGroupsPage } from '../pages/workspace/MyGroupsPage';
+
 // 管理页面
+// import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { UserManagementPage } from '../pages/admin/UserManagementPage';
 import { GroupManagementPage } from '../pages/admin/GroupManagementPage';
 import { TaskManagementPage } from '../pages/admin/TaskManagementPage';
@@ -38,6 +44,10 @@ import { BountyAlgorithmPage } from '../pages/admin/BountyAlgorithmPage';
 import { NotificationBroadcastPage } from '../pages/admin/NotificationBroadcastPage';
 import { SystemConfigPage } from '../pages/admin/SystemConfigPage';
 import { AuditLogPage } from '../pages/admin/AuditLogPage';
+
+// 开发者页面
+// import { DevSystemConfigPage } from '../pages/developer/DevSystemConfigPage';
+import { DevAuditLogPage } from '../pages/developer/DevAuditLogPage';
 
 // 测试页面
 import { TestPage } from '../pages/TestPage';
@@ -83,7 +93,7 @@ export const router = createBrowserRouter(
       path: '/',
       element: (
         <ProtectedRoute>
-          <ModernLayout showInfoPanel={true} />
+          <ModernLayout />
         </ProtectedRoute>
       ),
       errorElement: <ErrorBoundary />,
@@ -111,6 +121,20 @@ export const router = createBrowserRouter(
           element: <MyPage />,
         },
         
+        // 工作台子页面 - 使用现有页面替代
+        {
+          path: 'my/bounties',
+          element: <BountyTasksPage />,
+        },
+        {
+          path: 'my/tasks',
+          element: <TaskListPage />,
+        },
+        {
+          path: 'my/groups',
+          element: <GroupsPage />,
+        },
+        
         // 模块化路由 - 赏金任务
         {
           path: 'bounty-tasks',
@@ -120,6 +144,12 @@ export const router = createBrowserRouter(
         // 模块化路由 - 管理中心
         {
           path: 'admin',
+          element: <AdminPage />,
+        },
+        
+        // 管理中心子页面 - 使用现有页面替代
+        {
+          path: 'admin/dashboard',
           element: <AdminPage />,
         },
         
@@ -239,6 +269,12 @@ export const router = createBrowserRouter(
         {
           path: 'admin/audit-logs',
           element: <AuditLogPage />,
+        },
+        
+        // 开发者页面 - 使用现有页面替代
+        {
+          path: 'dev/audit-logs',
+          element: <DevAuditLogPage />,
         },
       ],
     },

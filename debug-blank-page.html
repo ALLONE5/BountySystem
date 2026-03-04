@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>调试空白页面问题</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>🔍 调试空白页面问题</h1>
+    
+    <div class="debug-section">
+        <h2>问题分析</h2>
+        <p>页面显示空白通常由以下原因造成：</p>
+        <ul>
+            <li>JavaScript 运行时错误</li>
+            <li>React 组件渲染错误</li>
+            <li>路由配置问题</li>
+            <li>认证状态异常</li>
+            <li>API 请求失败</li>
+            <li>CSS 样式问题</li>
+        </ul>
+    </div>
+
+    <div class="debug-section">
+        <h2>🚨 立即检查步骤</h2>
+        <ol>
+            <li><strong>打开浏览器控制台 (F12)</strong>
+                <ul>
+                    <li>查看 Console 标签页是否有红色错误信息</li>
+                    <li>查看 Network 标签页确认 API 请求状态</li>
+                </ul>
+            </li>
+            
+            <li><strong>检查认证状态</strong>
+                <ul>
+                    <li>在控制台执行: <code>localStorage.getItem('auth-storage')</code></li>
+                    <li>确认是否有有效的认证信息</li>
+                </ul>
+            </li>
+            
+            <li><strong>检查路由状态</strong>
+                <ul>
+                    <li>在控制台执行: <code>window.location.pathname</code></li>
+                    <li>确认当前路径是否正确</li>
+                </ul>
+            </li>
+            
+            <li><strong>检查组件渲染</strong>
+                <ul>
+                    <li>查看是否有 "🔥 BottomNavLayout is now rendering!" 的日志</li>
+                    <li>如果没有，说明组件没有渲染</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="debug-section">
+        <h2>🔧 快速修复方案</h2>
+        
+        <h3>方案 1: 清除认证状态</h3>
+        <p>在浏览器控制台执行：</p>
+        <pre>
+localStorage.clear();
+sessionStorage.clear();
+location.reload();
+        </pre>
+        
+        <h3>方案 2: 直接访问登录页</h3>
+        <p>访问: <a href="http://localhost:5173/auth/login">http://localhost:5173/auth/login</a></p>
+        
+        <h3>方案 3: 重启开发服务器</h3>
+        <pre>
+# 停止服务器 (Ctrl+C)
+cd packages/frontend
+npm run dev
+        </pre>
+        
+        <h3>方案 4: 临时回退到 ModernLayout</h3>
+        <p>如果问题持续，可以临时回退到 ModernLayout 进行调试</p>
+    </div>
+
+    <div class="debug-section">
+        <h2>📋 常见错误和解决方案</h2>
+        
+        <h3 class="error">错误: Cannot read property 'xxx' of undefined</h3>
+        <p><strong>原因:</strong> 组件依赖的数据或 hook 返回 undefined</p>
+        <p><strong>解决:</strong> 检查 useAuthStore, usePermission 等 hook 的返回值</p>
+        
+        <h3 class="error">错误: Module not found</h3>
+        <p><strong>原因:</strong> 导入路径错误或文件不存在</p>
+        <p><strong>解决:</strong> 检查所有 import 语句的路径</p>
+        
+        <h3 class="error">错误: Hydration failed</h3>
+        <p><strong>原因:</strong> 服务端渲染和客户端渲染不匹配</p>
+        <p><strong>解决:</strong> 清除缓存并重新启动</p>
+        
+        <h3 class="warning">警告: 页面无限重定向</h3>
+        <p><strong>原因:</strong> 认证逻辑导致的重定向循环</p>
+        <p><strong>解决:</strong> 检查 AuthLayout 和 ProtectedRoute 的逻辑</p>
+    </div>
+
+    <div class="debug-section">
+        <h2>🎯 下一步行动</h2>
+        <p>请按优先级执行以下操作：</p>
+        <ol>
+            <li class="success">检查浏览器控制台错误信息</li>
+            <li class="success">清除浏览器缓存和存储</li>
+            <li class="success">重启开发服务器</li>
+            <li class="warning">如果问题持续，提供控制台错误截图</li>
+        </ol>
+    </div>
+
+    <script>
+        console.log('🔍 调试页面已加载');
+        console.log('当前时间:', new Date().toISOString());
+        console.log('当前路径:', window.location.pathname);
+        console.log('localStorage 内容:', localStorage.getItem('auth-storage'));
+    </script>
+</body>
+</html>

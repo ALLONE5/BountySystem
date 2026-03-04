@@ -21,8 +21,8 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { config } = useSystemConfig();
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('discord');
-  const [animationStyle, setAnimationStyle] = useState<AnimationStyle>('cyberpunk');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
+  const [animationStyle, setAnimationStyle] = useState<AnimationStyle>('minimal');
   const [enableAnimations, setEnableAnimations] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [allowThemeSwitch, setAllowThemeSwitch] = useState(true);
@@ -31,16 +31,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     if (config) {
       // Set system defaults
-      setAnimationStyle(config.animationStyle || 'cyberpunk');
+      setAnimationStyle(config.animationStyle || 'minimal');
       setEnableAnimations(config.enableAnimations ?? true);
       setReducedMotion(config.reducedMotion ?? false);
       setAllowThemeSwitch(config.allowThemeSwitch ?? true);
 
-      // Get user preference or use discord as default
+      // Get user preference or detect system preference
       const savedTheme = localStorage.getItem('theme') as ThemeMode;
-      const initialTheme = savedTheme || 'discord'; // Force discord as default
-      
-      setThemeModeState(initialTheme);
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+        setThemeModeState(savedTheme);
+      } else {
+        // Detect system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialTheme = prefersDark ? 'dark' : 'light';
+        setThemeModeState(initialTheme);
+        localStorage.setItem('theme', initialTheme);
+      }
     }
   }, [config]);
 
@@ -76,20 +82,32 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     
     // Set CSS custom properties
     Object.entries(theme.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--color-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, value);
+      const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+      root.style.setProperty(`--color-${cssKey}`, value);
+    });
+
+    // Set additional theme properties
+    Object.entries(theme.fonts).forEach(([key, value]) => {
+      root.style.setProperty(`--font-${key}`, value);
+    });
+
+    Object.entries(theme.spacing).forEach(([key, value]) => {
+      root.style.setProperty(`--spacing-${key}`, value);
+    });
+
+    Object.entries(theme.borderRadius).forEach(([key, value]) => {
+      root.style.setProperty(`--radius-${key}`, value);
+    });
+
+    Object.entries(theme.shadows).forEach(([key, value]) => {
+      root.style.setProperty(`--shadow-${key}`, value);
     });
 
     // Set theme mode attribute
     root.setAttribute('data-theme', themeMode);
     
-    // Set theme class for Ant Design
-    if (themeMode === 'dark') {
-      document.body.classList.add('dark');
-      document.body.classList.remove('light');
-    } else {
-      document.body.classList.add('light');
-      document.body.classList.remove('dark');
-    }
+    // Set theme class for body
+    document.body.className = `theme-${themeMode}`;
   }, [themeMode]);
 
   const toggleTheme = () => {

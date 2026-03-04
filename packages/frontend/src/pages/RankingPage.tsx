@@ -23,6 +23,7 @@ import dayjs from 'dayjs';
 import { rankingApi } from '../api/ranking';
 import { useAuthStore } from '../store/authStore';
 import { Ranking } from '../types';
+import './RankingPage.css';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -53,16 +54,11 @@ export const RankingPage: React.FC = () => {
         params.quarter = quarter;
       }
 
-      const [rankingsData, myRankingData] = await Promise.all([
-        rankingApi.getRankings(params).catch(() => []),
-        user ? rankingApi.getMyRanking(user.id, params).catch(() => null) : Promise.resolve(null),
-      ]);
-
-      setRankings(rankingsData || []);
-      setMyRanking(myRankingData);
+      const data = await rankingApi.getRankings(params);
+      setRankings(data.rankings || []);
+      setMyRanking(data.myRanking || null);
     } catch (error) {
       console.error('Failed to load rankings:', error);
-      // Don't show error message - empty rankings are acceptable
       setRankings([]);
       setMyRanking(null);
     } finally {
@@ -72,11 +68,11 @@ export const RankingPage: React.FC = () => {
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) {
-      return <CrownOutlined style={{ color: '#FFD700', fontSize: 24 }} />;
+      return <CrownOutlined style={{ color: '#FFD700', fontSize: 20 }} />;
     } else if (rank === 2) {
-      return <TrophyOutlined style={{ color: '#C0C0C0', fontSize: 24 }} />;
+      return <CrownOutlined style={{ color: '#C0C0C0', fontSize: 18 }} />;
     } else if (rank === 3) {
-      return <TrophyOutlined style={{ color: '#CD7F32', fontSize: 24 }} />;
+      return <CrownOutlined style={{ color: '#CD7F32', fontSize: 16 }} />;
     }
     return <span style={{ fontSize: 18, fontWeight: 'bold' }}>{rank}</span>;
   };
@@ -94,60 +90,61 @@ export const RankingPage: React.FC = () => {
       dataIndex: 'rank',
       key: 'rank',
       width: 80,
-      align: 'center',
-      render: (rank: number) => getRankIcon(rank),
+      render: (rank: number) => (
+        <div className="rank-cell">
+          {getRankIcon(rank)}
+        </div>
+      ),
     },
     {
       title: '用户',
       key: 'user',
-      width: 250,
       render: (_, record) => (
-        <Space size={12}>
+        <div className="user-cell">
           <Avatar
-            size={48}
-            icon={<UserOutlined />}
+            size={40}
             src={record.user?.avatarUrl}
-            style={{ border: '2px solid #f0f0f0' }}
+            icon={<UserOutlined />}
           />
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 15 }}>
-              {record.user?.username || '未知用户'}
-            </div>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {record.user?.email}
-            </Text>
+          <div className="user-info">
+            <div className="username">{record.user?.username || '未知用户'}</div>
+            <div className="user-id">ID: {record.userId}</div>
           </div>
-        </Space>
+        </div>
       ),
     },
     {
-      title: '累计赏金',
+      title: '总赏金',
       dataIndex: 'totalBounty',
       key: 'totalBounty',
-      width: 180,
-      align: 'right',
-      render: (amount: number) => (
-        <span style={{ fontSize: 20, fontWeight: 700, color: '#f5222d' }}>
-          ${amount.toFixed(2)}
+      width: 120,
+      render: (bounty: number) => (
+        <span className="bounty-amount">
+          ${bounty?.toFixed(2) || '0.00'}
         </span>
       ),
+      sorter: (a, b) => (a.totalBounty || 0) - (b.totalBounty || 0),
     },
     {
-      title: '任务完成数',
-      dataIndex: 'completedTasksCount',
-      key: 'completedTasksCount',
-      width: 150,
-      align: 'center',
-      render: (count: number) => (
-        <Tag color="blue">{count || 0} 个任务</Tag>
+      title: '统计信息',
+      key: 'stats',
+      render: (_, record) => (
+        <div className="stats-display">
+          <div className="stat-badge">
+            任务: {record.completedTasks || 0}
+          </div>
+          <div className="stat-badge">
+            积分: {record.totalPoints || 0}
+          </div>
+        </div>
       ),
     },
     {
       title: '更新时间',
-      dataIndex: 'calculatedAt',
-      key: 'calculatedAt',
-      width: 150,
-      render: (date: Date) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      width: 120,
+      render: (date: string) => dayjs(date).format('MM-DD HH:mm'),
     },
   ];
 
@@ -162,7 +159,7 @@ export const RankingPage: React.FC = () => {
 
   const renderMyRankingCard = () => {
     if (!myRanking) {
-      const getNoRankingMessage = () => {
+      const periodText = () => {
         if (period === 'monthly') {
           return `${year}年${month}月未参与排名`;
         } else if (period === 'quarterly') {
@@ -172,73 +169,78 @@ export const RankingPage: React.FC = () => {
       };
 
       return (
-        <Card style={{ textAlign: 'center', padding: '24px 0' }}>
-          <Text type="secondary" style={{ fontSize: 16 }}>{getNoRankingMessage()}</Text>
+        <Card className="ranking-card no-ranking-card">
+          <div className="no-ranking-content">
+            <TrophyOutlined className="no-ranking-icon" />
+            <h3 className="no-ranking-title">暂无排名</h3>
+            <p className="no-ranking-description">{periodText()}</p>
+          </div>
         </Card>
       );
     }
 
-    const rankColor = getRankColor(myRanking.rank) || '#1890ff';
+    const rankColor = getRankColor(myRanking.rank);
+    const isTopThree = myRanking.rank <= 3;
 
     return (
-      <Card
-        style={{
-          background: `linear-gradient(135deg, ${rankColor} 0%, ${rankColor}dd 100%)`,
-          color: 'white',
-          borderLeft: `8px solid ${rankColor}`,
-        }}
-        className="stat-card"
-      >
-        <Row gutter={24} align="middle">
-          <Col xs={24} sm={8} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 64, marginBottom: 8 }}>
-              {myRanking.rank === 1 && <CrownOutlined style={{ color: '#FFD700' }} />}
-              {myRanking.rank === 2 && <TrophyOutlined style={{ color: '#C0C0C0' }} />}
-              {myRanking.rank === 3 && <TrophyOutlined style={{ color: '#CD7F32' }} />}
-              {myRanking.rank > 3 && <TrophyOutlined />}
-            </div>
-            <Text style={{ color: 'white', fontSize: 20, fontWeight: 600 }}>
+      <Card className={`ranking-card my-ranking-card ${isTopThree ? 'top-three' : ''}`}>
+        <div className="ranking-gradient" style={{ background: `linear-gradient(135deg, ${rankColor}20, ${rankColor}10)` }} />
+        <div className="my-ranking-content">
+          <div className="my-ranking-header">
+            <h3 className="my-ranking-title">我的排名 - {getPeriodText()}</h3>
+            <div className="my-ranking-badge">
               第 {myRanking.rank} 名
-            </Text>
-          </Col>
-          <Col xs={12} sm={8}>
-            <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14 }}>累计赏金</span>}
-              value={myRanking.totalBounty}
-              precision={2}
-              prefix="$"
-              styles={{ content: { color: 'white', fontSize: 28, fontWeight: 700 } }}
-            />
-          </Col>
-          <Col xs={12} sm={8}>
-            <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14 }}>统计周期</span>}
-              value={getPeriodText()}
-              styles={{ content: { color: 'white', fontSize: 18, fontWeight: 600 } }}
-            />
-          </Col>
-        </Row>
+            </div>
+          </div>
+          <Row gutter={24} className="my-ranking-stats">
+            <Col span={6}>
+              <div className="stat-item">
+                <div className="stat-value">${myRanking.totalBounty?.toFixed(2) || '0.00'}</div>
+                <div className="stat-label">总赏金</div>
+              </div>
+            </Col>
+            <Col span={6}>
+              <div className="stat-item">
+                <div className="stat-value">{myRanking.completedTasks || 0}</div>
+                <div className="stat-label">完成任务</div>
+              </div>
+            </Col>
+            <Col span={6}>
+              <div className="stat-item">
+                <div className="stat-value">{myRanking.totalPoints || 0}</div>
+                <div className="stat-label">总积分</div>
+              </div>
+            </Col>
+            <Col span={6}>
+              <div className="stat-item">
+                <div className="stat-value">{myRanking.rank}</div>
+                <div className="stat-label">当前排名</div>
+              </div>
+            </Col>
+          </Row>
+        </div>
       </Card>
     );
   };
 
   return (
-    <div className="page-container fade-in">
-      {/* Page Header */}
+    <div className="ranking-page">
+      {/* 页面头部 */}
       <div className="page-header">
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
-            <TrophyOutlined /> 赏金排名
-          </Title>
-          <Text type="secondary">查看用户赏金排行榜</Text>
+        <div className="header-content">
+          <div className="header-title">
+            <TrophyOutlined className="header-icon" />
+            <h1>赏金排行榜</h1>
+          </div>
+          <p className="header-subtitle">查看用户赏金排行榜和竞争情况</p>
         </div>
       </div>
 
       {/* 我的排名卡片 */}
-      <div style={{ marginBottom: 24 }}>
+      <div className="my-ranking-section">
         {loading ? (
-          <Card>
-            <Spin />
+          <Card className="ranking-card loading-card">
+            <Spin size="large" />
           </Card>
         ) : (
           renderMyRankingCard()
@@ -246,18 +248,19 @@ export const RankingPage: React.FC = () => {
       </div>
 
       {/* 排名列表 */}
-      <Card>
+      <Card className="ranking-list-card">
         <Tabs
           activeKey={period}
           onChange={(key) => setPeriod(key as any)}
+          className="ranking-tabs"
           tabBarExtraContent={
-            <Space>
+            <div className="tab-controls">
               {period !== 'all_time' && (
                 <>
                   <Select
                     value={year}
                     onChange={setYear}
-                    style={{ width: 100 }}
+                    className="year-select"
                   >
                     {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
                       <Option key={y} value={y}>
@@ -269,7 +272,7 @@ export const RankingPage: React.FC = () => {
                     <Select
                       value={month}
                       onChange={setMonth}
-                      style={{ width: 80 }}
+                      className="month-select"
                     >
                       {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                         <Option key={m} value={m}>
@@ -282,7 +285,7 @@ export const RankingPage: React.FC = () => {
                     <Select
                       value={quarter}
                       onChange={setQuarter}
-                      style={{ width: 100 }}
+                      className="quarter-select"
                     >
                       <Option value={1}>第1季度</Option>
                       <Option value={2}>第2季度</Option>
@@ -292,7 +295,7 @@ export const RankingPage: React.FC = () => {
                   )}
                 </>
               )}
-            </Space>
+            </div>
           }
         >
           <TabPane tab="本月排名" key="monthly">
@@ -304,10 +307,12 @@ export const RankingPage: React.FC = () => {
               pagination={{
                 showSizeChanger: true,
                 showTotal: (total) => `共 ${total} 名用户`,
+                pageSize: 20,
               }}
               rowClassName={(record) =>
                 record.userId === user?.id ? 'highlight-row' : ''
               }
+              className="ranking-table"
             />
           </TabPane>
           <TabPane tab="本季度排名" key="quarterly">
@@ -319,10 +324,12 @@ export const RankingPage: React.FC = () => {
               pagination={{
                 showSizeChanger: true,
                 showTotal: (total) => `共 ${total} 名用户`,
+                pageSize: 20,
               }}
               rowClassName={(record) =>
                 record.userId === user?.id ? 'highlight-row' : ''
               }
+              className="ranking-table"
             />
           </TabPane>
           <TabPane tab="总累积排名" key="all_time">
@@ -334,23 +341,16 @@ export const RankingPage: React.FC = () => {
               pagination={{
                 showSizeChanger: true,
                 showTotal: (total) => `共 ${total} 名用户`,
+                pageSize: 20,
               }}
               rowClassName={(record) =>
                 record.userId === user?.id ? 'highlight-row' : ''
               }
+              className="ranking-table"
             />
           </TabPane>
         </Tabs>
       </Card>
-
-      <style>{`
-        .highlight-row {
-          background-color: #e6f7ff !important;
-        }
-        .highlight-row:hover {
-          background-color: #bae7ff !important;
-        }
-      `}</style>
     </div>
   );
 };

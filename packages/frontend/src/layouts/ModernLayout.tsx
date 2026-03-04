@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Avatar, Badge, Dropdown, Space, Button, Input } from 'antd';
+import { Layout, Menu, Avatar, Badge, Dropdown, Space, Button, Input, Tooltip, Switch } from 'antd';
 import {
   HomeOutlined,
   UserOutlined,
@@ -12,6 +12,9 @@ import {
   ProfileOutlined,
   GiftOutlined,
   ControlOutlined,
+  SearchOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -31,7 +34,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { theme } = useTheme();
+  const { theme, themeMode, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
@@ -198,69 +201,92 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
   };
 
   return (
-    <Layout className={`modern-layout theme-${theme.mode}`}>
-      {/* 顶部导航栏 */}
+    <Layout className={`modern-layout theme-${themeMode}`}>
+      {/* 顶部导航栏 - Discord 风格 */}
       <Header className="modern-header">
-        <div className="header-left">
-          <Button
-            type="text"
-            icon={<MenuOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            className="sidebar-toggle"
-          />
-          <div className="app-logo">
-            <span className="logo-icon">🎯</span>
-            {!collapsed && <span className="logo-text">赏金猎人平台</span>}
+        <div className="header-content">
+          <div className="header-left">
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              className="sidebar-toggle"
+            />
+            <div className="app-logo">
+              <div className="logo-icon">🎯</div>
+              <div className="logo-text">赏金猎人</div>
+            </div>
           </div>
-        </div>
 
-        <div className="header-center">
-          <Search
-            placeholder="搜索任务、用户、组群..."
-            allowClear
-            style={{ width: 400, maxWidth: '100%' }}
-            size="middle"
-          />
-        </div>
-
-        <div className="header-right">
-          <Space size="middle">
-            <Badge count={5} size="small">
-              <Button
-                type="text"
-                icon={<BellOutlined />}
-                onClick={() => navigate('/notifications')}
-                className="notification-btn"
-              />
-            </Badge>
-            
-            <Dropdown
-              menu={{ items: userMenuItems }}
-              placement="bottomRight"
-              trigger={['click']}
-            >
-              <div className="user-profile">
-                <Avatar
-                  size="small"
-                  src={user?.avatarUrl}
-                  icon={<UserOutlined />}
+          <div className="header-center">
+            {!isMobile && (
+              <div className="search-container">
+                <SearchOutlined className="search-icon" />
+                <Input
+                  placeholder="搜索任务、用户、组群..."
+                  className="search-input"
+                  allowClear
                 />
-                {!isMobile && (
-                  <span className="username">{user?.username}</span>
-                )}
               </div>
-            </Dropdown>
-          </Space>
+            )}
+          </div>
+
+          <div className="header-right">
+            <Space size="large">
+              {/* 主题切换按钮 */}
+              <Tooltip title={themeMode === 'light' ? '切换到暗色模式' : '切换到亮色模式'}>
+                <Button
+                  type="text"
+                  icon={themeMode === 'light' ? <MoonOutlined /> : <SunOutlined />}
+                  onClick={toggleTheme}
+                  className="theme-toggle-btn"
+                />
+              </Tooltip>
+
+              <Tooltip title="通知">
+                <Badge count={5} size="small" offset={[-2, 2]}>
+                  <Button
+                    type="text"
+                    icon={<BellOutlined />}
+                    onClick={() => navigate('/notifications')}
+                    className="header-action-btn"
+                  />
+                </Badge>
+              </Tooltip>
+              
+              <Dropdown
+                menu={{ items: userMenuItems }}
+                placement="bottomRight"
+                trigger={['click']}
+                overlayClassName="user-dropdown"
+              >
+                <div className="user-profile">
+                  <Avatar
+                    size={32}
+                    src={user?.avatarUrl}
+                    icon={<UserOutlined />}
+                    className="user-avatar"
+                  />
+                  {!isMobile && (
+                    <div className="user-info">
+                      <div className="username">{user?.username}</div>
+                      <div className="user-status">在线</div>
+                    </div>
+                  )}
+                </div>
+              </Dropdown>
+            </Space>
+          </div>
         </div>
       </Header>
 
       <Layout className="modern-layout-body">
-        {/* 左侧导航栏 */}
+        {/* 左侧导航栏 - Discord 风格 */}
         <Sider
           className="modern-sidebar"
           collapsed={collapsed}
-          collapsedWidth={isMobile ? 0 : 80}
-          width={280}
+          collapsedWidth={isMobile ? 0 : 72}
+          width={240}
           theme="dark"
         >
           <div className="sidebar-content">
@@ -277,69 +303,42 @@ export const ModernLayout: React.FC<ModernLayoutProps> = ({
 
         {/* 主内容区域 */}
         <Content className="modern-content">
-          <div className="content-wrapper glass-card">
+          <div className="content-container">
             <Outlet />
           </div>
         </Content>
-
-        {/* 右侧信息面板 - 可选 */}
-        {showInfoPanel && !isMobile && (
-          <Sider
-            className="modern-info-panel"
-            width={300}
-            theme="dark"
-          >
-            <div className="info-panel-content">
-              <div className="panel-section">
-                <h4>在线用户</h4>
-                <div className="online-users">
-                  <div className="user-item">
-                    <Avatar size="small" icon={<UserOutlined />} />
-                    <span>用户1</span>
-                  </div>
-                  <div className="user-item">
-                    <Avatar size="small" icon={<UserOutlined />} />
-                    <span>用户2</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="panel-section">
-                <h4>最新动态</h4>
-                <div className="activity-feed">
-                  <div className="activity-item">
-                    <span className="activity-text">用户A 完成了任务</span>
-                    <span className="activity-time">2分钟前</span>
-                  </div>
-                  <div className="activity-item">
-                    <span className="activity-text">新任务已发布</span>
-                    <span className="activity-time">5分钟前</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Sider>
-        )}
       </Layout>
 
       {/* 移动端底部导航 */}
       {isMobile && (
-        <div className="modern-mobile-nav">
-          <div className="mobile-nav-item" onClick={() => navigate('/dashboard')}>
+        <div className="mobile-bottom-nav">
+          <div 
+            className={`bottom-nav-item ${location.pathname === '/dashboard' ? 'active' : ''}`}
+            onClick={() => navigate('/dashboard')}
+          >
             <HomeOutlined />
             <span>首页</span>
           </div>
-          <div className="mobile-nav-item" onClick={() => navigate('/my')}>
+          <div 
+            className={`bottom-nav-item ${location.pathname === '/my' ? 'active' : ''}`}
+            onClick={() => navigate('/my')}
+          >
             <UserOutlined />
-            <span>我的</span>
+            <span>工作台</span>
           </div>
-          <div className="mobile-nav-item" onClick={() => navigate('/bounty-tasks')}>
+          <div 
+            className={`bottom-nav-item ${location.pathname === '/bounty-tasks' ? 'active' : ''}`}
+            onClick={() => navigate('/bounty-tasks')}
+          >
             <GiftOutlined />
             <span>赏金</span>
           </div>
-          <div className="mobile-nav-item" onClick={() => navigate('/ranking')}>
+          <div 
+            className={`bottom-nav-item ${location.pathname === '/ranking' ? 'active' : ''}`}
+            onClick={() => navigate('/ranking')}
+          >
             <TrophyOutlined />
-            <span>排名</span>
+            <span>排行</span>
           </div>
         </div>
       )}

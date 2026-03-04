@@ -26,6 +26,8 @@ import './BottomNavLayout.css';
 const { Header, Content } = Layout;
 
 export const BottomNavLayout: React.FC = () => {
+  console.log('🔥 BottomNavLayout is now rendering! Layout change successful!');
+  
   const navigate = useNavigate();
   const location = useLocation();
   const { user, clearAuth } = useAuthStore();
@@ -165,6 +167,23 @@ export const BottomNavLayout: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }} className={`bottom-nav-layout theme-${themeMode} ${isCyberpunk ? 'cyberpunk-theme' : ''}`}>
+      {/* 临时调试标识 - 确认 BottomNavLayout 正在使用 */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#ff4d4f',
+        color: 'white',
+        textAlign: 'center',
+        padding: '8px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        zIndex: 99999
+      }}>
+        🔥 BottomNavLayout 已激活 - 布局切换成功！
+      </div>
+      
       <AnimationEffects 
         style={animationStyle} 
         enabled={enableAnimations} 
@@ -314,6 +333,15 @@ export const BottomNavLayout: React.FC = () => {
 
       {/* Bottom Navigation */}
       <div className="bottom-nav-bar">
+        {(() => {
+          console.log('🔍 Bottom nav rendering, currentTab:', currentTab, 'user permissions:', { 
+            isSuperAdmin: isSuperAdmin(), 
+            isPositionAdmin: isPositionAdmin(), 
+            isDeveloper: isDeveloper() 
+          });
+          return null;
+        })()}
+        
         {/* 我的模块 - 所有用户都有 */}
         <Button
           type={currentTab === 'mine' ? 'primary' : 'text'}
