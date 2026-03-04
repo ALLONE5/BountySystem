@@ -28,6 +28,12 @@ import {
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { 
+  DiscordCard, 
+  DiscordButton, 
+  DiscordTaskCard,
+  DiscordStatsCard 
+} from '../components/discord/DiscordComponents';
 import { taskApi } from '../api/task';
 import { positionApi, Position } from '../api/position';
 import { projectGroupApi } from '../api/projectGroup';

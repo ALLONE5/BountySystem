@@ -4,7 +4,7 @@
  */
 
 import { pool } from '../config/database.js';
-import { logger } from '../config/logger.js';
+import { logger } from '../utils/Logger.js';
 
 /**
  * Clean up all test data in the correct order to avoid foreign key violations

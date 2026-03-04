@@ -60,6 +60,11 @@ const TASK_STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
     text: '已完成',
     icon: 'CheckCircleOutlined',
   },
+  [TaskStatus.ABANDONED]: {
+    color: 'error',
+    text: '已放弃',
+    icon: 'CloseCircleOutlined',
+  },
 };
 
 /**

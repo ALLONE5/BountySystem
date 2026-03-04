@@ -7,23 +7,18 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../contexts/AuthContext';
 import { taskApi } from '../api/task';
 import { rankingApi } from '../api/ranking';
 import { TaskStats, Task } from '../types';
-import { colors, spacing } from '../styles/design-tokens';
 import { BountyHistoryDrawer } from '../components/BountyHistoryDrawer';
-import { useTheme } from '../contexts/ThemeContext';
-import { CyberCard, NeonButton, HolographicText } from '../components/cyberpunk';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
 
 export const DashboardPage: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { themeMode } = useTheme();
-  const isCyberpunk = themeMode === 'cyberpunk';
   const [stats, setStats] = useState<TaskStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [reportType, setReportType] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('monthly');
@@ -95,17 +90,17 @@ export const DashboardPage: React.FC = () => {
       setAllTimeHasData(allTimeRanking?.hasRankingData !== false);
 
       // Calculate stats from tasks
-      const publishedCompleted = publishedTasks.filter(t => t.status === 'completed').length;
-      const publishedInProgress = publishedTasks.filter(t => t.status === 'in_progress').length;
-      const assignedCompleted = assignedTasks.filter(t => t.status === 'completed').length;
-      const assignedInProgress = assignedTasks.filter(t => t.status === 'in_progress').length;
+      const publishedCompleted = publishedTasks.filter((t: Task) => t.status === 'completed').length;
+      const publishedInProgress = publishedTasks.filter((t: Task) => t.status === 'in_progress').length;
+      const assignedCompleted = assignedTasks.filter((t: Task) => t.status === 'completed').length;
+      const assignedInProgress = assignedTasks.filter((t: Task) => t.status === 'in_progress').length;
       const totalBountyEarned = assignedTasks
-        .filter(t => t.status === 'completed')
-        .reduce((sum, t) => sum + Number(t.bountyAmount || 0), 0);
+        .filter((t: Task) => t.status === 'completed')
+        .reduce((sum: number, t: Task) => sum + Number(t.bountyAmount || 0), 0);
 
       setStats({
         publishedTotal: publishedTasks.length,
-        publishedNotStarted: publishedTasks.filter(t => t.status === 'not_started').length,
+        publishedNotStarted: publishedTasks.filter((t: Task) => t.status === 'not_started').length,
         publishedInProgress,
         publishedCompleted,
         assignedTotal: assignedTasks.length,
@@ -187,8 +182,8 @@ export const DashboardPage: React.FC = () => {
       report += `- 统计周期内发布任务: ${filteredPublished.length}\n`;
       
       const earned = filteredAssigned
-        .filter(t => t.status === 'completed')
-        .reduce((sum, t) => sum + safeNumber(t.bountyAmount), 0);
+        .filter((t: Task) => t.status === 'completed')
+        .reduce((sum: number, t: Task) => sum + safeNumber(t.bountyAmount), 0);
       report += `- 周期内获得赏金: ${earned.toFixed(2)}元\n`;
       report += `\n`;
 
@@ -202,7 +197,7 @@ export const DashboardPage: React.FC = () => {
              'abandoned': '已放弃'
            };
            const statusStr = statusMap[task.status] || task.status;
-           report += `${index + 1}. ${task.name}\n`;
+           report += `${index + 1}. ${task.name || task.title}\n`;
            report += `   状态: ${statusStr} | 进度: ${task.progress || 0}%\n`;
            report += `   赏金: ${safeNumber(task.bountyAmount).toFixed(2)}元 | 截止: ${task.plannedEndDate ? dayjs(task.plannedEndDate).format('YYYY-MM-DD') : '-'}\n`;
            report += `\n`;
@@ -221,7 +216,7 @@ export const DashboardPage: React.FC = () => {
              'abandoned': '已放弃'
            };
            const statusStr = statusMap[task.status] || task.status;
-           report += `${index + 1}. ${task.name}\n`;
+           report += `${index + 1}. ${task.name || task.title}\n`;
            report += `   状态: ${statusStr} | 进度: ${task.progress || 0}%\n`;
            report += `   赏金: ${safeNumber(task.bountyAmount).toFixed(2)}元\n`;
            report += `\n`;
@@ -242,7 +237,7 @@ export const DashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
         <Spin size="large">
           <div style={{ padding: '20px', textAlign: 'center' }}>加载中...</div>
         </Spin>
@@ -250,121 +245,89 @@ export const DashboardPage: React.FC = () => {
     );
   }
 
-  const CardComponent = isCyberpunk ? CyberCard : Card;
-  const ButtonComponent = isCyberpunk ? NeonButton : Button;
-
   return (
-    <div className={`fade-in ${isCyberpunk ? 'cyberpunk-theme' : ''}`}>
-      <div className="page-header">
-        {isCyberpunk ? (
-          <HolographicText level={1} style={{ marginBottom: spacing.xs }}>
-            欢迎回来，{user?.username}！
-          </HolographicText>
-        ) : (
-          <Title level={2} style={{ marginBottom: spacing.xs }}>
-            欢迎回来，{user?.username}！
-          </Title>
-        )}
-        <Text type="secondary" style={{ color: isCyberpunk ? '#ffffff' : undefined }}>
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <Title level={2} style={{ marginBottom: '8px' }}>
+          欢迎回来，{user?.username}！
+        </Title>
+        <Typography.Text type="secondary">
           这是您的个人工作台
-        </Text>
+        </Typography.Text>
       </div>
       
       {/* 任务统计概览 */}
-      <Row gutter={[16, 16]} style={{ marginTop: spacing.lg }}>
+      <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
         <Col xs={24} sm={12} lg={6}>
-          <CardComponent 
-            {...(isCyberpunk ? { glowColor: 'cyan' as const } : {})}
+          <Card 
             hoverable 
             onClick={() => navigate('/tasks/published')}
-            style={{ 
-              cursor: 'pointer',
-              transition: 'all 0.3s',
-            }}
+            style={{ cursor: 'pointer' }}
           >
             <Statistic
               title="发布的任务"
               value={stats?.publishedTotal || 0}
-              prefix={<FileTextOutlined style={{ color: isCyberpunk ? '#00f2ff' : colors.primary }} />}
-              suffix={<RightOutlined style={{ fontSize: 14, color: isCyberpunk ? '#ff00e5' : colors.text.disabled }} />}
-              valueStyle={{ 
-                color: isCyberpunk ? '#00f2ff' : undefined, 
-                fontFamily: isCyberpunk ? 'Orbitron, monospace' : undefined 
-              }}
+              prefix={<FileTextOutlined style={{ color: '#1890ff' }} />}
+              suffix={<RightOutlined style={{ fontSize: 14, color: '#d9d9d9' }} />}
             />
             <div style={{ 
-              marginTop: spacing.sm, 
+              marginTop: '8px', 
               fontSize: 12, 
-              color: isCyberpunk ? '#ffffff' : colors.text.secondary,
+              color: '#8c8c8c',
               display: 'flex',
               justifyContent: 'space-between',
             }}>
               <span>进行中: {stats?.publishedInProgress || 0}</span>
               <span>已完成: {stats?.publishedCompleted || 0}</span>
             </div>
-          </CardComponent>
+          </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <CardComponent 
-            {...(isCyberpunk ? { glowColor: 'green' as const } : {})}
+          <Card 
             hoverable 
             onClick={() => navigate('/tasks/assigned')}
-            style={{ 
-              cursor: 'pointer',
-              transition: 'all 0.3s',
-            }}
+            style={{ cursor: 'pointer' }}
           >
             <Statistic
               title="承接的任务"
               value={stats?.assignedTotal || 0}
-              prefix={<CheckSquareOutlined style={{ color: isCyberpunk ? '#39ff14' : colors.success }} />}
-              suffix={<RightOutlined style={{ fontSize: 14, color: isCyberpunk ? '#ff00e5' : colors.text.disabled }} />}
-              valueStyle={{ 
-                color: isCyberpunk ? '#39ff14' : undefined, 
-                fontFamily: isCyberpunk ? 'Orbitron, monospace' : undefined 
-              }}
+              prefix={<CheckSquareOutlined style={{ color: '#52c41a' }} />}
+              suffix={<RightOutlined style={{ fontSize: 14, color: '#d9d9d9' }} />}
             />
             <div style={{ 
-              marginTop: spacing.sm, 
+              marginTop: '8px', 
               fontSize: 12, 
-              color: isCyberpunk ? '#ffffff' : colors.text.secondary,
+              color: '#8c8c8c',
               display: 'flex',
               justifyContent: 'space-between',
             }}>
               <span>进行中: {stats?.assignedInProgress || 0}</span>
               <span>已完成: {stats?.assignedCompleted || 0}</span>
             </div>
-          </CardComponent>
+          </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <CardComponent
-            {...(isCyberpunk ? { glowColor: 'magenta' as const } : {})}
+          <Card
             hoverable
             onClick={() => {
               if (!historyDrawerVisible && user?.id) {
                 setHistoryDrawerVisible(true);
               }
             }}
-            style={{ 
-              cursor: 'pointer',
-              transition: 'all 0.3s',
-            }}
+            style={{ cursor: 'pointer' }}
           >
             <Statistic
               title="当月赏金"
               value={monthlyHasData ? monthlyBounty : 0}
               prefix={monthlyHasData ? "$" : ""}
               precision={monthlyHasData ? 2 : 0}
-              valueStyle={{ 
-                color: isCyberpunk ? '#ff00e5' : colors.warning, 
-                fontFamily: isCyberpunk ? 'Orbitron, monospace' : undefined 
-              }}
+              valueStyle={{ color: '#faad14' }}
               formatter={monthlyHasData ? undefined : () => '当月未参与排名'}
             />
             <div style={{ 
-              marginTop: spacing.sm, 
+              marginTop: '8px', 
               fontSize: 12, 
-              color: isCyberpunk ? '#ffffff' : colors.text.secondary,
+              color: '#8c8c8c',
               display: 'flex',
               justifyContent: 'space-between',
             }}>
@@ -375,10 +338,10 @@ export const DashboardPage: React.FC = () => {
                 {allTimeHasData ? `累积赏金: ${allTimeBounty.toFixed(2)}` : '累积未参与排名'}
               </span>
             </div>
-          </CardComponent>
+          </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <CardComponent {...(isCyberpunk ? { glowColor: 'cyan' as const } : {})}>
+          <Card>
             <Statistic
               title="任务完成率"
               value={
@@ -387,25 +350,22 @@ export const DashboardPage: React.FC = () => {
                   : 0
               }
               suffix="%"
-              valueStyle={{ 
-                color: isCyberpunk ? '#00f2ff' : '#eb2f96', 
-                fontFamily: isCyberpunk ? 'Orbitron, monospace' : undefined 
-              }}
+              valueStyle={{ color: '#eb2f96' }}
             />
-          </CardComponent>
+          </Card>
         </Col>
       </Row>
 
       {/* 报告生成 */}
-      <CardComponent 
-        style={{ marginTop: spacing.lg }} 
+      <Card 
+        style={{ marginTop: '24px' }} 
         title={
-          <span style={{ color: isCyberpunk ? '#00f2ff' : undefined }}>
+          <span>
             <FileTextOutlined /> 生成任务报告
           </span>
         }
       >
-        <Space style={{ marginBottom: spacing.md }}>
+        <Space style={{ marginBottom: '16px' }}>
           <Select
             value={reportType}
             onChange={setReportType}
@@ -416,14 +376,14 @@ export const DashboardPage: React.FC = () => {
             <Option value="monthly">月报</Option>
             <Option value="total">总报</Option>
           </Select>
-          <ButtonComponent 
-            {...(isCyberpunk ? { neonColor: 'cyan' as const } : { type: 'primary' as const })}
+          <Button 
+            type="primary"
             icon={<FileTextOutlined />} 
             onClick={handleGenerateReport}
             loading={generatingReport}
           >
             生成任务报告
-          </ButtonComponent>
+          </Button>
         </Space>
         <Input.TextArea
           value={reportContent}
@@ -432,23 +392,20 @@ export const DashboardPage: React.FC = () => {
           readOnly
           style={{ 
             fontFamily: 'monospace',
-            backgroundColor: isCyberpunk ? 'rgba(26, 13, 26, 0.8)' : colors.background.light,
-            color: isCyberpunk ? '#ffffff' : undefined,
-            border: isCyberpunk ? '1px solid rgba(0, 242, 255, 0.4)' : undefined,
+            backgroundColor: '#fafafa',
           }}
         />
-        <Text 
+        <Typography.Text 
           type="secondary" 
           style={{ 
             display: 'block', 
-            marginTop: spacing.sm, 
+            marginTop: '8px', 
             fontSize: 12,
-            color: isCyberpunk ? '#ffffff' : undefined,
           }}
         >
           报告将包含所选时间段内的任务统计、完成情况和赏金收入等信息
-        </Text>
-      </CardComponent>
+        </Typography.Text>
+      </Card>
 
       {/* Bounty History Drawer */}
       {user?.id && (

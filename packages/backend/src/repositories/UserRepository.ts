@@ -3,7 +3,7 @@ import { BaseRepository, IRepository } from './BaseRepository.js';
 import { User, UserRole } from '../models/User.js';
 import { Validator } from '../utils/Validator.js';
 import { NotFoundError } from '../utils/errors.js';
-import { logger } from '../config/logger.js';
+import { logger } from '../utils/Logger.js';
 
 /**
  * User Statistics Interface

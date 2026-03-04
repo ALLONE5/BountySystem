@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useAuthStore } from '../../store/authStore';
 
 const { Title, Text } = Typography;
 
@@ -30,9 +31,10 @@ export const SimpleLoginPage: React.FC = () => {
         console.log('登录成功:', data);
         message.success('登录成功！');
         
-        // 存储token到localStorage
+        // 存储token到localStorage和zustand store
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        useAuthStore.getState().setAuth(data.token, data.user);
         
         // 跳转到仪表板
         setTimeout(() => {

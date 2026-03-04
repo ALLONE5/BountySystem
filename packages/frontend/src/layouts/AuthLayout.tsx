@@ -1,12 +1,28 @@
 import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
-import { Layout } from 'antd';
-import { useAuthStore } from '../store/authStore';
+import { Layout, Spin } from 'antd';
+import { useAuth } from '../contexts/AuthContext';
 
 const { Content } = Layout;
 
 export const AuthLayout: React.FC = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
+        <Content
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Spin size="large" />
+        </Content>
+      </Layout>
+    );
+  }
 
   // 如果已登录，重定向到仪表板
   if (isAuthenticated) {

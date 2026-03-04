@@ -1,15 +1,15 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { UserRole } from '../types';
+import { Spin } from 'antd';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: UserRole | UserRole[];
+  requiredRole?: string | string[];
 }
 
 // 检查用户是否有所需角色
-const hasRequiredRole = (userRole: UserRole, requiredRole?: UserRole | UserRole[]): boolean => {
+const hasRequiredRole = (userRole: string, requiredRole?: string | string[]): boolean => {
   if (!requiredRole) {
     return true;
   }
@@ -25,7 +25,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole,
 }) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/auth/login" replace />;

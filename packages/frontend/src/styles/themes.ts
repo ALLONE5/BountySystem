@@ -1,5 +1,5 @@
 // Design Tokens and Theme Configuration
-export type ThemeMode = 'light' | 'dark' | 'cyberpunk';
+export type ThemeMode = 'light' | 'dark' | 'cyberpunk' | 'discord' | 'midjourney';
 export type AnimationStyle = 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'cyberpunk' | 'matrix';
 
 export interface ThemeColors {
@@ -224,8 +224,118 @@ export const cyberpunkTheme: Theme = {
   },
 };
 
+// Discord Theme - "Discord 风格"
+export const discordTheme: Theme = {
+  mode: 'dark',
+  colors: {
+    bgPrimary: '#2f3136',
+    bgSecondary: '#36393f',
+    bgTertiary: '#40444b',
+    bgGlass: 'rgba(54, 57, 63, 0.9)',
+    
+    primary: '#5865f2',
+    secondary: '#4f545c',
+    accent: '#00d9ff',
+    
+    success: '#57f287',
+    warning: '#fee75c',
+    danger: '#ed4245',
+    info: '#00aff4',
+    
+    textPrimary: '#dcddde',
+    textSecondary: '#b9bbbe',
+    textTertiary: '#72767d',
+    textInverse: '#ffffff',
+    
+    borderPrimary: 'rgba(88, 101, 242, 0.3)',
+    borderSecondary: 'rgba(64, 68, 75, 0.6)',
+    divider: 'rgba(64, 68, 75, 0.48)',
+  },
+  fonts: {
+    display: '"Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif',
+    body: '"Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif',
+    mono: '"Consolas", "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace',
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    xxl: '3rem',
+  },
+  borderRadius: {
+    sm: '3px',
+    md: '5px',
+    lg: '8px',
+    full: '50%',
+  },
+  shadows: {
+    sm: '0 1px 0 rgba(4,4,5,0.2),0 1.5px 0 rgba(6,6,7,0.05),0 2px 0 rgba(4,4,5,0.05)',
+    md: '0 4px 4px rgba(0,0,0,0.16)',
+    lg: '0 8px 16px rgba(0,0,0,0.24)',
+    glow: '0 0 0 1px rgba(88,101,242,0.6), 0 0 0 3px rgba(88,101,242,0.2)',
+  },
+};
+
+// Midjourney Theme - "Midjourney 风格"
+export const midjourneyTheme: Theme = {
+  mode: 'light',
+  colors: {
+    bgPrimary: '#ffffff',
+    bgSecondary: '#f8f9fa',
+    bgTertiary: '#e9ecef',
+    bgGlass: 'rgba(248, 249, 250, 0.95)',
+    
+    primary: '#000000',
+    secondary: '#6c757d',
+    accent: '#007bff',
+    
+    success: '#28a745',
+    warning: '#ffc107',
+    danger: '#dc3545',
+    info: '#17a2b8',
+    
+    textPrimary: '#212529',
+    textSecondary: '#6c757d',
+    textTertiary: '#adb5bd',
+    textInverse: '#ffffff',
+    
+    borderPrimary: 'rgba(0, 0, 0, 0.125)',
+    borderSecondary: 'rgba(0, 0, 0, 0.0625)',
+    divider: 'rgba(0, 0, 0, 0.0625)',
+  },
+  fonts: {
+    display: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    body: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    mono: '"SF Mono", Monaco, Inconsolata, "Roboto Mono", "Source Code Pro", monospace',
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    xxl: '3rem',
+  },
+  borderRadius: {
+    sm: '0.25rem',
+    md: '0.5rem',
+    lg: '1rem',
+    full: '50%',
+  },
+  shadows: {
+    sm: '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)',
+    md: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)',
+    lg: '0 1rem 3rem rgba(0, 0, 0, 0.175)',
+    glow: '0 0 0 0.2rem rgba(0, 123, 255, 0.25)',
+  },
+};
+
 export const themes = {
   light: lightTheme,
   dark: darkTheme,
   cyberpunk: cyberpunkTheme,
+  discord: discordTheme,
+  midjourney: midjourneyTheme,
 };

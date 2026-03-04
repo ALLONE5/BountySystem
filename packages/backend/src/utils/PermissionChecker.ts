@@ -4,6 +4,9 @@ import type { IGroupRepository } from '../repositories/GroupRepository.js';
 import type { IPositionRepository } from '../repositories/PositionRepository.js';
 import { AuthorizationError } from './errors.js';
 import { UserRole } from '../models/User.js';
+import { logger } from './Logger.js';
+import { CacheService } from '../services/CacheService.js';
+import { CACHE_CONSTANTS } from '../constants/AppConstants.js';
 
 /**
  * Permission Checker Utility
@@ -16,7 +19,8 @@ export class PermissionChecker {
     private userRepository: IUserRepository,
     private taskRepository: ITaskRepository,
     private groupRepository: IGroupRepository,
-    private positionRepository: IPositionRepository
+    private positionRepository: IPositionRepository,
+    private cacheService?: CacheService
   ) {}
 
   /**
@@ -26,6 +30,13 @@ export class PermissionChecker {
    * Requirement 4.1: Validate user ownership or admin status for tasks
    */
   async canAccessTask(userId: string, taskId: string): Promise<boolean> {
+    // Check cache first
+    const cacheKey = `task_access_${userId}_${taskId}`;
+    const cached = await this.cacheService?.get<boolean>(cacheKey);
+    if (cached !== null && cached !== undefined) {
+      return cached;
+    }
+
     try {
       const user = await this.userRepository.findById(userId);
       if (!user) {
@@ -34,6 +45,8 @@ export class PermissionChecker {
 
       // Super admins can access all tasks
       if (user.role === UserRole.SUPER_ADMIN) {
+        // Cache admin access for longer period
+        await this.cacheService?.set(cacheKey, true, CACHE_CONSTANTS.USER_PERMISSIONS_TTL);
         return true;
       }
 
@@ -44,14 +57,18 @@ export class PermissionChecker {
 
       // Task creator can access their own tasks
       if (task.publisherId === userId) {
+        await this.cacheService?.set(cacheKey, true, CACHE_CONSTANTS.USER_PERMISSIONS_TTL);
         return true;
       }
 
       // Task assignee can access assigned tasks
       if (task.assigneeId === userId) {
+        await this.cacheService?.set(cacheKey, true, CACHE_CONSTANTS.USER_PERMISSIONS_TTL);
         return true;
       }
 
+      // Cache negative result for shorter period
+      await this.cacheService?.set(cacheKey, false, 300); // 5 minutes
       return false;
     } catch (error) {
       logger.error('Error checking task access', { 

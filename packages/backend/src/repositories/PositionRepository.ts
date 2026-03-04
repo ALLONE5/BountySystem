@@ -2,7 +2,7 @@ import { PoolClient } from 'pg';
 import { BaseRepository, IRepository } from './BaseRepository.js';
 import { Position, PositionApplication, ApplicationStatus } from '../models/Position.js';
 import { Validator } from '../utils/Validator.js';
-import { logger } from '../config/logger.js';
+import { logger } from '../utils/Logger.js';
 
 /**
  * Position Repository Interface

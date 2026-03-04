@@ -21,7 +21,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { config } = useSystemConfig();
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('cyberpunk');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('discord');
   const [animationStyle, setAnimationStyle] = useState<AnimationStyle>('cyberpunk');
   const [enableAnimations, setEnableAnimations] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -36,9 +36,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       setReducedMotion(config.reducedMotion ?? false);
       setAllowThemeSwitch(config.allowThemeSwitch ?? true);
 
-      // Get user preference or use cyberpunk as default
+      // Get user preference or use discord as default
       const savedTheme = localStorage.getItem('theme') as ThemeMode;
-      const initialTheme = savedTheme || 'cyberpunk'; // Force cyberpunk as default
+      const initialTheme = savedTheme || 'discord'; // Force discord as default
       
       setThemeModeState(initialTheme);
     }

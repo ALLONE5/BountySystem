@@ -4,7 +4,7 @@ import { BellOutlined } from '@ant-design/icons';
 import { Notification } from '../types';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { getUnreadCount } from '../api/notification';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from './AuthContext';
 
 interface NotificationContextType {
   unreadCount: number;
@@ -16,7 +16,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuth();
 
   // Load initial unread count only when authenticated
   useEffect(() => {

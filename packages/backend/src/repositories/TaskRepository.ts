@@ -3,7 +3,7 @@ import { BaseRepository, IRepository } from './BaseRepository.js';
 import { Task, TaskStatus, Visibility } from '../models/Task.js';
 import { Position } from '../models/Position.js';
 import { Validator } from '../utils/Validator.js';
-import { logger } from '../config/logger.js';
+import { logger } from '../utils/Logger.js';
 
 /**
  * Task Filters Interface

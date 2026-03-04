@@ -1,7 +1,8 @@
 import { RouterProvider } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import { router } from './router/minimal-working';
+import { router } from './router';
+import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { SystemConfigProvider } from './contexts/SystemConfigContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -9,10 +10,10 @@ import { useEffect } from 'react';
 import { initializeUserSettings } from './utils/timezone';
 import { getThemeConfig } from './theme';
 import './styles/global-theme.css';
+import './styles/discord-global.css';
 import './styles/search-bar.css';
 import './styles/collapse.css';
-/* CACHE BUSTER: 2026-03-03T01-48-17-109Z - MODERN UI FORCE REFRESH */
-import './styles/glassmorphism.css'; // 导入玻璃态样式
+import './styles/glassmorphism.css';
 
 // CACHE BUSTER: 2026-03-03-17:00:00 - Apply Modern UI Design
 console.log('🎨 APP.TSX MODERN UI APPLIED - 2026-03-03-17:00:00 🎨');
@@ -32,9 +33,11 @@ function AppContent() {
 
   return (
     <ConfigProvider locale={zhCN} theme={themeConfig}>
-      <NotificationProvider>
-        <RouterProvider router={router} />
-      </NotificationProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <RouterProvider router={router} />
+        </NotificationProvider>
+      </AuthProvider>
     </ConfigProvider>
   );
 }

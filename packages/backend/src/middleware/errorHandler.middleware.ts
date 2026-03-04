@@ -1,111 +1,190 @@
-import type { Request, Response, NextFunction } from 'express';
-import { ValidationError, NotFoundError, AuthenticationError, ForbiddenError } from '../utils/errors.js';
-import { z } from 'zod';
-import logger from '../config/logger.js';
+import { Request, Response, NextFunction } from 'express';
+import { logger } from '../utils/Logger.js';
+import { 
+  ValidationError, 
+  NotFoundError, 
+  AuthorizationError, 
+  ConflictError 
+} from '../utils/errors.js';
+import { ERROR_MESSAGES } from '../constants/AppConstants.js';
+
+export interface ErrorResponse {
+  error: string;
+  type: string;
+  details?: any;
+  timestamp: string;
+  path: string;
+  method: string;
+}
 
 /**
- * 全局错误处理中间件
- * 统一处理所有路由中抛出的错误
+ * Global error handling middleware
+ * Provides consistent error responses and logging
  */
 export const errorHandler = (
   error: Error,
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  // 记录错误日志
-  logger.error('Error occurred:', {
+): void => {
+  const timestamp = new Date().toISOString();
+  const path = req.path;
+  const method = req.method;
+
+  // Log error with context
+  logger.error('Request error occurred', {
     error: error.message,
     stack: error.stack,
-    path: req.path,
-    method: req.method,
+    path,
+    method,
+    userId: req.user?.id,
     body: req.body,
     query: req.query,
-    params: req.params,
+    params: req.params
   });
 
-  // Zod validation errors (400)
-  if (error instanceof z.ZodError) {
-    return res.status(400).json({
-      error: 'Validation failed',
-      type: 'ValidationError',
-      details: error.errors,
-    });
-  }
+  let statusCode = 500;
+  let errorResponse: ErrorResponse = {
+    error: ERROR_MESSAGES.INTERNAL_ERROR,
+    type: 'InternalServerError',
+    timestamp,
+    path,
+    method
+  };
 
-  // 验证错误 (400)
+  // Handle specific error types
   if (error instanceof ValidationError) {
-    return res.status(400).json({
+    statusCode = 400;
+    errorResponse = {
       error: error.message,
       type: 'ValidationError',
       details: error.details,
-    });
-  }
-
-  // 未找到错误 (404)
-  if (error instanceof NotFoundError) {
-    return res.status(404).json({
+      timestamp,
+      path,
+      method
+    };
+  } else if (error instanceof NotFoundError) {
+    statusCode = 404;
+    errorResponse = {
       error: error.message,
       type: 'NotFoundError',
-    });
-  }
-
-  // 未授权错误 (401)
-  if (error instanceof AuthenticationError) {
-    return res.status(401).json({
+      timestamp,
+      path,
+      method
+    };
+  } else if (error instanceof AuthorizationError) {
+    statusCode = 403;
+    errorResponse = {
       error: error.message,
-      type: 'AuthenticationError',
-    });
-  }
-
-  // 禁止访问错误 (403)
-  if (error instanceof ForbiddenError) {
-    return res.status(403).json({
+      type: 'AuthorizationError',
+      timestamp,
+      path,
+      method
+    };
+  } else if (error instanceof ConflictError) {
+    statusCode = 409;
+    errorResponse = {
       error: error.message,
-      type: 'ForbiddenError',
-    });
-  }
-
-  // JWT错误
-  if (error.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      error: 'Invalid token',
+      type: 'ConflictError',
+      timestamp,
+      path,
+      method
+    };
+  } else if (error.name === 'JsonWebTokenError') {
+    statusCode = 401;
+    errorResponse = {
+      error: ERROR_MESSAGES.UNAUTHORIZED,
       type: 'AuthenticationError',
-    });
-  }
-
-  if (error.name === 'TokenExpiredError') {
-    return res.status(401).json({
+      timestamp,
+      path,
+      method
+    };
+  } else if (error.name === 'TokenExpiredError') {
+    statusCode = 401;
+    errorResponse = {
       error: 'Token expired',
-      type: 'AuthenticationError',
-    });
+      type: 'TokenExpiredError',
+      timestamp,
+      path,
+      method
+    };
+  } else if (error.name === 'SyntaxError' && 'body' in error) {
+    statusCode = 400;
+    errorResponse = {
+      error: 'Invalid JSON in request body',
+      type: 'SyntaxError',
+      timestamp,
+      path,
+      method
+    };
   }
 
-  // 数据库错误
-  if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-    return res.status(400).json({
-      error: 'Database validation error',
-      type: 'DatabaseError',
-    });
+  // Don't expose internal errors in production
+  if (process.env.NODE_ENV === 'production' && statusCode === 500) {
+    errorResponse.error = ERROR_MESSAGES.INTERNAL_ERROR;
+    delete errorResponse.details;
   }
 
-  // 默认服务器错误 (500)
-  res.status(500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : error.message,
-    type: 'InternalServerError',
-    ...(process.env.NODE_ENV !== 'production' && { stack: error.stack }),
-  });
+  res.status(statusCode).json(errorResponse);
 };
 
 /**
- * 404错误处理中间件
- * 处理未匹配到任何路由的请求
+ * Async error wrapper
+ * Wraps async route handlers to catch and forward errors
  */
-export const notFoundHandler = (req: Request, res: Response) => {
-  res.status(404).json({
+export const asyncHandler = (
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
+) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+};
+
+/**
+ * 404 handler for unmatched routes
+ */
+export const notFoundHandler = (req: Request, res: Response): void => {
+  const errorResponse: ErrorResponse = {
     error: `Route ${req.method} ${req.path} not found`,
     type: 'NotFoundError',
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method
+  };
+
+  logger.warn('Route not found', {
+    path: req.path,
+    method: req.method,
+    userAgent: req.get('User-Agent'),
+    ip: req.ip
   });
+
+  res.status(404).json(errorResponse);
+};
+
+/**
+ * Validation error handler for request validation
+ */
+export const validationErrorHandler = (
+  errors: any[],
+  req: Request,
+  res: Response
+): void => {
+  const errorResponse: ErrorResponse = {
+    error: ERROR_MESSAGES.VALIDATION_FAILED,
+    type: 'ValidationError',
+    details: errors,
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method
+  };
+
+  logger.warn('Validation failed', {
+    path: req.path,
+    method: req.method,
+    errors,
+    body: req.body
+  });
+
+  res.status(400).json(errorResponse);
 };

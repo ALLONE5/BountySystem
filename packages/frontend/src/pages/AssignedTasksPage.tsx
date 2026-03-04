@@ -113,7 +113,7 @@ export const AssignedTasksPage: React.FC = () => {
 
   const handleUpdateProgress = (task: Task) => {
     setSelectedTask(task);
-    setProgressValue(task.progress);
+    setProgressValue(task.progress || 0);
     setProgressModalVisible(true);
   };
 
@@ -257,7 +257,7 @@ export const AssignedTasksPage: React.FC = () => {
     return `¥${Number(amount || 0).toFixed(2)}`;
   };
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return '-';
     return dayjs(date).format('YYYY-MM-DD');
   };
@@ -545,7 +545,7 @@ export const AssignedTasksPage: React.FC = () => {
                               
                               <Space>
                                 <DollarOutlined />
-                                <Text>赏金: {formatBounty(task.bountyAmount)}</Text>
+                                <Text>赏金: {formatBounty(task.bountyAmount || task.bounty)}</Text>
                               </Space>
                               
                               {task.estimatedHours && (

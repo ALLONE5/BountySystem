@@ -3,6 +3,7 @@ import { TaskGroup, GroupMember, GroupMemberDetail } from '../models/TaskGroup.j
 import { Validator } from '../utils/Validator.js';
 import { pool } from '../config/database.js';
 import { NotFoundError, ValidationError } from '../utils/errors.js';
+import { logger } from '../utils/Logger.js';
 
 /**
  * Group Repository Interface

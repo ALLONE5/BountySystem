@@ -2,26 +2,21 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message, Card } from 'antd';
 import { UserOutlined, LockOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
-import { authApi } from '../../api/auth';
-import { useAuthStore } from '../../store/authStore';
-import { LoginRequest } from '../../types';
-import { colors, spacing } from '../../styles/design-tokens';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Title, Text } = Typography;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
-  const onFinish = async (values: LoginRequest) => {
+  const onFinish = async (values: any) => {
     setLoading(true);
     setFormErrors({}); // Clear previous errors
     try {
-      const response = await authApi.login(values);
-      setAuth(response.token, response.user);
-      message.success('登录成功！');
+      await login(values.username, values.password);
       navigate('/dashboard');
     } catch (error: any) {
       const responseData = error.response?.data;
@@ -38,16 +33,16 @@ export const LoginPage: React.FC = () => {
       } 
       // Check for other error formats
       else {
-        const errorMessage = responseData?.error || responseData?.message || '登录失败，请检查用户名和密码';
+        const errorMessage = responseData?.error || responseData?.message || '登录失败，请检查邮箱和密码';
         
         // Check if it's a field-specific error
-        if (errorMessage.includes('用户名') || errorMessage.includes('username')) {
-          setFormErrors({ username: errorMessage });
+        if (errorMessage.includes('邮箱') || errorMessage.includes('email')) {
+          setFormErrors({ email: errorMessage });
         } else if (errorMessage.includes('密码') || errorMessage.includes('password')) {
           setFormErrors({ password: errorMessage });
-        } else if (errorMessage.includes('用户不存在') || errorMessage.includes('用户名或密码错误')) {
-          // For login errors, show on username field as it's the first field
-          setFormErrors({ username: errorMessage });
+        } else if (errorMessage.includes('用户不存在') || errorMessage.includes('邮箱或密码错误')) {
+          // For login errors, show on email field as it's the first field
+          setFormErrors({ email: errorMessage });
         } else {
           // Generic error, show at top
           message.error(errorMessage);
@@ -59,21 +54,23 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-center" style={{ 
+    <div style={{ 
       minHeight: '100vh',
-      background: `linear-gradient(135deg, ${colors.primary} 0%, #096dd9 100%)`,
+      background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
     }}>
       <Card 
         style={{ 
           width: '100%',
           maxWidth: 400,
-          margin: spacing.md,
+          margin: '16px',
         }}
-        className="fade-in"
       >
-        <div className="text-center mb-lg">
-          <TrophyOutlined style={{ fontSize: 48, color: colors.primary, marginBottom: spacing.md }} />
-          <Title level={2} style={{ marginBottom: spacing.xs }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <TrophyOutlined style={{ fontSize: 48, color: '#1890ff', marginBottom: '16px' }} />
+          <Title level={2} style={{ marginBottom: '8px' }}>
             赏金猎人平台
           </Title>
           <Text type="secondary">登录您的账户</Text>
@@ -82,16 +79,18 @@ export const LoginPage: React.FC = () => {
         <Form name="login" onFinish={onFinish} autoComplete="off" size="large">
           <Form.Item
             name="username"
-            rules={[{ required: true, message: '请输入用户名！' }]}
-            validateStatus={formErrors.username ? 'error' : ''}
-            help={formErrors.username || ''}
+            rules={[
+              { required: true, message: '请输入邮箱或用户名！' },
+            ]}
+            validateStatus={formErrors.email ? 'error' : ''}
+            help={formErrors.email || ''}
           >
             <Input
-              prefix={<UserOutlined style={{ color: colors.text.secondary }} />}
-              placeholder="用户名"
+              prefix={<UserOutlined style={{ color: '#8c8c8c' }} />}
+              placeholder="邮箱或用户名"
               onChange={() => {
-                if (formErrors.username) {
-                  setFormErrors(prev => ({ ...prev, username: '' }));
+                if (formErrors.email) {
+                  setFormErrors(prev => ({ ...prev, email: '' }));
                 }
               }}
             />
@@ -104,7 +103,7 @@ export const LoginPage: React.FC = () => {
             help={formErrors.password || ''}
           >
             <Input.Password
-              prefix={<LockOutlined style={{ color: colors.text.secondary }} />}
+              prefix={<LockOutlined style={{ color: '#8c8c8c' }} />}
               placeholder="密码"
               onChange={() => {
                 if (formErrors.password) {
@@ -114,7 +113,7 @@ export const LoginPage: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: spacing.sm }}>
+          <Form.Item style={{ marginBottom: '16px' }}>
             <Button
               type="primary"
               htmlType="submit"
@@ -125,7 +124,7 @@ export const LoginPage: React.FC = () => {
             </Button>
           </Form.Item>
 
-          <div className="text-center">
+          <div style={{ textAlign: 'center' }}>
             <Text type="secondary">
               还没有账号？ <Link to="/auth/register">立即注册</Link>
             </Text>

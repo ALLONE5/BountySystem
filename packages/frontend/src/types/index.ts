@@ -1,4 +1,17 @@
-// 用户角色
+// Authentication Types
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  avatarUrl?: string;
+  avatarId?: string;
+  bounty: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// User Role Types
 export enum UserRole {
   USER = 'user',
   POSITION_ADMIN = 'position_admin',
@@ -6,150 +19,89 @@ export enum UserRole {
   DEVELOPER = 'developer'
 }
 
-// 任务状态
-export enum TaskStatus {
-  NOT_STARTED = 'not_started',
-  AVAILABLE = 'available',
-  PENDING_ACCEPTANCE = 'pending_acceptance',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed'
-}
-
-// 邀请状态
-export enum InvitationStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected'
-}
-
-// 可见性
-export enum Visibility {
-  PUBLIC = 'public',
-  POSITION_ONLY = 'position_only',
-  PRIVATE = 'private'
-}
-
-// 交易类型
-export enum TransactionType {
-  TASK_COMPLETION = 'task_completion',
-  EXTRA_REWARD = 'extra_reward',
-  ASSISTANT_SHARE = 'assistant_share',
-  REFUND = 'refund'
-}
-
-// 用户接口
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  avatarId: string;
-  avatarUrl?: string;
-  role: UserRole;
-  balance: number;
-  positions: Position[];
-  managedPositions?: Position[];
-  createdAt: Date;
-  lastLogin: Date;
-}
-
-// 岗位接口
-export interface Position {
-  id: string;
-  name: string;
-  description: string;
-  adminIds: string[];
-  requiredSkills: string[];
-}
-
-// 任务接口
-export interface Task {
-  id: string;
-  name: string;
-  description: string | null;
-  parentId: string | null;
-  depth: number;
-  isExecutable: boolean;
-  tags: string[];
-  createdAt: Date;
-  plannedStartDate: Date;
-  plannedEndDate: Date;
-  actualStartDate: Date | null;
-  actualEndDate: Date | null;
-  estimatedHours: number;
-  complexity: number;
-  priority: number;
-  status: TaskStatus;
-  positionId: string | null;
-  positionName?: string;
-  visibility: Visibility;
-  bountyAmount: number;
-  bountyAlgorithmVersion: string;
-  bountyPayerId?: string | null;
-  isPublished: boolean;
-  publishedAt?: Date | null;
-  publishedBy?: string | null;
-  publisherId: string;
-  assigneeId: string | null;
-  groupId: string | null;
-  groupName?: string;
-  projectGroupId?: string | null;
-  projectGroupName?: string;
-  dependencies: string[];
-  progress: number;
-  publisher?: User;
-  assignee?: User;
-  invitedUserId?: string | null;
-  invitationStatus?: InvitationStatus | null;
-}
-
-// 通知接口
-export interface Notification {
-  id: string;
-  userId: string | null;
-  type: string;
-  title: string;
-  message: string;
-  relatedTaskId: string | null;
-  isRead: boolean;
-  createdAt: Date;
-  senderId: string | null;
-}
-
-// 排名接口
-export interface Ranking {
-  userId: string;
-  period: 'monthly' | 'quarterly' | 'all_time';
-  year: number;
-  month: number | null;
-  quarter: number | null;
-  totalBounty: number;
-  completedTasksCount?: number;
-  rank: number;
-  calculatedAt: Date;
-  user?: User;
-  hasRankingData?: boolean;
-}
-
-// 认证响应
 export interface AuthResponse {
-  token: string;
   user: User;
+  token: string;
 }
 
-// 登录请求
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
-// 注册请求
 export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
 }
 
-// 任务统计
+// Task Types
+export interface Task {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  bounty: number;
+  bountyAmount?: number;
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled' | 'not_started' | 'abandoned' | TaskStatus;
+  priority: 'low' | 'medium' | 'high' | number;
+  publisherId: string;
+  assigneeId?: string;
+  projectGroupId?: string;
+  parentTaskId?: string;
+  parentId?: string;
+  deadline?: string;
+  plannedStartDate?: string;
+  plannedEndDate?: string;
+  actualStartDate?: string;
+  actualEndDate?: string;
+  estimatedHours?: number;
+  progress?: number;
+  complexity?: number;
+  visibility?: string | Visibility;
+  positionId?: string;
+  positionName?: string;
+  groupName?: string;
+  groupId?: string;
+  projectGroupName?: string;
+  depth?: number;
+  invitedUserId?: string;
+  invitationStatus?: InvitationStatus;
+  isPublished?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  publisher?: User;
+  assignee?: User;
+  projectGroup?: ProjectGroup;
+  subtasks?: Task[];
+  tags?: string[];
+}
+
+// Task Status Types
+export enum TaskStatus {
+  NOT_STARTED = 'not_started',
+  AVAILABLE = 'available',
+  PENDING_ACCEPTANCE = 'pending_acceptance',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  ABANDONED = 'abandoned'
+}
+
+// Invitation Status Types
+export enum InvitationStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected'
+}
+
+// Visibility Types
+export enum Visibility {
+  PUBLIC = 'public',
+  POSITION_ONLY = 'position_only',
+  PRIVATE = 'private'
+}
+
+// Task Statistics Types
 export interface TaskStats {
   publishedTotal: number;
   publishedNotStarted: number;
@@ -161,15 +113,149 @@ export interface TaskStats {
   totalBountyEarned: number;
 }
 
-// 任务组群
+// Project Group Types
+export interface ProjectGroup {
+  id: string;
+  name: string;
+  description: string;
+  ownerId: string;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+  owner?: User;
+  members?: User[];
+  tasks?: Task[];
+}
+
+// Task Group Types
 export interface TaskGroup {
   id: string;
   name: string;
+  description?: string;
   creatorId: string;
-  memberIds: string[];
+  memberIds?: string[];
   members?: User[];
-  tasks?: Task[];
-  createdAt: Date;
-  creatorName?: string;
-  creatorAvatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Notification Types
+export interface Notification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  relatedTaskId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// API Response Types
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+export interface PaginatedResponse<T = any> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Form Types
+export interface TaskFormData {
+  title: string;
+  description: string;
+  bounty: number;
+  priority: 'low' | 'medium' | 'high';
+  deadline?: string;
+  projectGroupId?: string;
+  tags?: string[];
+}
+
+export interface UserFormData {
+  username: string;
+  email: string;
+  role?: string;
+  avatarUrl?: string;
+}
+
+export interface ProjectGroupFormData {
+  name: string;
+  description: string;
+  isPublic: boolean;
+}
+
+// Filter and Search Types
+export interface TaskFilters {
+  status?: string[];
+  priority?: string[];
+  publisherId?: string;
+  assigneeId?: string;
+  projectGroupId?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface UserFilters {
+  role?: string[];
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+// Theme Types
+export type ThemeMode = 'light' | 'dark' | 'cyberpunk' | 'discord' | 'midjourney';
+
+// System Config Types
+export interface SystemConfig {
+  id: string;
+  key: string;
+  value: string;
+  description?: string;
+  type: 'string' | 'number' | 'boolean' | 'json';
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Bounty Transaction Types
+export enum TransactionType {
+  TASK_COMPLETION = 'task_completion',
+  EXTRA_REWARD = 'extra_reward',
+  ASSISTANT_SHARE = 'assistant_share',
+  REFUND = 'refund'
+}
+
+// Bounty Transaction Interface
+export interface BountyTransaction {
+  id: string;
+  fromUserId?: string;
+  toUserId: string;
+  amount: number;
+  type: TransactionType;
+  description?: string;
+  taskId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Ranking Types
+export interface Ranking {
+  id: string;
+  userId: string;
+  username: string;
+  avatarUrl?: string;
+  totalBounty: number;
+  rank: number;
+  createdAt: string;
+  updatedAt: string;
 }

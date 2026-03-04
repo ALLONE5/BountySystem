@@ -1,0 +1,150 @@
+
+/* Discord Global Styles */
+:root {
+  /* Discord Color Palette */
+  --discord-bg-primary: #2f3136;
+  --discord-bg-secondary: #36393f;
+  --discord-bg-tertiary: #40444b;
+  --discord-bg-quaternary: #4f545c;
+  --discord-border: #40444b;
+  --discord-accent: #5865f2;
+  --discord-success: #57f287;
+  --discord-warning: #fee75c;
+  --discord-danger: #ed4245;
+  --discord-text-primary: #dcddde;
+  --discord-text-secondary: #b9bbbe;
+  --discord-text-muted: #72767d;
+  --discord-text-link: #00aff4;
+}
+
+/* Global Discord Theme Application */
+body[data-theme="discord"] {
+  background: var(--discord-bg-primary) !important;
+  color: var(--discord-text-primary) !important;
+  font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+/* Ant Design Component Overrides for Discord Theme */
+body[data-theme="discord"] .ant-layout {
+  background: var(--discord-bg-primary) !important;
+}
+
+body[data-theme="discord"] .ant-card {
+  background: var(--discord-bg-secondary) !important;
+  border: 1px solid var(--discord-border) !important;
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] .ant-card-head {
+  background: transparent !important;
+  border-bottom: 1px solid var(--discord-border) !important;
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] .ant-btn-primary {
+  background: var(--discord-accent) !important;
+  border-color: var(--discord-accent) !important;
+}
+
+body[data-theme="discord"] .ant-btn-primary:hover {
+  background: #4752c4 !important;
+  border-color: #4752c4 !important;
+}
+
+body[data-theme="discord"] .ant-menu {
+  background: transparent !important;
+  color: var(--discord-text-secondary) !important;
+}
+
+body[data-theme="discord"] .ant-menu-item {
+  color: var(--discord-text-secondary) !important;
+}
+
+body[data-theme="discord"] .ant-menu-item:hover {
+  background: var(--discord-bg-tertiary) !important;
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] .ant-menu-item-selected {
+  background: var(--discord-accent) !important;
+  color: #ffffff !important;
+}
+
+body[data-theme="discord"] .ant-input {
+  background: var(--discord-bg-tertiary) !important;
+  border: 1px solid var(--discord-border) !important;
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] .ant-input::placeholder {
+  color: var(--discord-text-muted) !important;
+}
+
+body[data-theme="discord"] .ant-select-selector {
+  background: var(--discord-bg-tertiary) !important;
+  border: 1px solid var(--discord-border) !important;
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] .ant-table {
+  background: var(--discord-bg-secondary) !important;
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] .ant-table-thead > tr > th {
+  background: var(--discord-bg-tertiary) !important;
+  border-bottom: 1px solid var(--discord-border) !important;
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--discord-border) !important;
+  color: var(--discord-text-secondary) !important;
+}
+
+body[data-theme="discord"] .ant-table-tbody > tr:hover > td {
+  background: var(--discord-bg-tertiary) !important;
+}
+
+/* Discord Scrollbar */
+body[data-theme="discord"] ::-webkit-scrollbar {
+  width: 8px;
+}
+
+body[data-theme="discord"] ::-webkit-scrollbar-track {
+  background: var(--discord-bg-secondary);
+}
+
+body[data-theme="discord"] ::-webkit-scrollbar-thumb {
+  background: var(--discord-bg-quaternary);
+  border-radius: 4px;
+}
+
+body[data-theme="discord"] ::-webkit-scrollbar-thumb:hover {
+  background: #5c6269;
+}
+
+/* Discord Typography */
+body[data-theme="discord"] h1,
+body[data-theme="discord"] h2,
+body[data-theme="discord"] h3,
+body[data-theme="discord"] h4,
+body[data-theme="discord"] h5,
+body[data-theme="discord"] h6 {
+  color: var(--discord-text-primary) !important;
+}
+
+body[data-theme="discord"] p,
+body[data-theme="discord"] span,
+body[data-theme="discord"] div {
+  color: var(--discord-text-secondary);
+}
+
+/* Discord Links */
+body[data-theme="discord"] a {
+  color: var(--discord-text-link) !important;
+}
+
+body[data-theme="discord"] a:hover {
+  text-decoration: underline;
+}

@@ -23,6 +23,12 @@ import { useAuthStore } from '../store/authStore';
 import { getTaskStatusConfig } from '../utils/statusConfig';
 import { useTheme } from '../contexts/ThemeContext';
 import { CyberCard, NeonButton } from '../components/cyberpunk';
+import { 
+  DiscordCard, 
+  DiscordButton, 
+  DiscordTaskCard 
+} from '../components/discord/DiscordComponents';
+import { logger } from '../utils/logger';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -143,7 +149,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       setInternalTasks(uniqueTasks);
     } catch (error) {
       message.error('加载任务失败');
-      console.error(error);
+      logger.error('Failed to load tasks', { error });
     } finally {
       setInternalLoading(false);
     }
@@ -220,7 +226,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
           setDrawerVisible(false);
         } catch (error) {
           message.error('完成任务失败');
-          console.error('Failed to complete task:', error);
+          logger.error('Failed to complete task', { error });
           throw error; // 让 Modal 知道操作失败
         }
       },
@@ -262,7 +268,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       setDrawerVisible(true);
     } catch (error) {
       message.error('加载任务详情失败');
-      console.error(error);
+      logger.error('Failed to load task details', { error });
     }
   };
 

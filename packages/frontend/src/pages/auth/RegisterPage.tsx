@@ -2,31 +2,34 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
-import { authApi } from '../../api/auth';
-import { useAuthStore } from '../../store/authStore';
-import { RegisterRequest } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Title, Text } = Typography;
 
+interface RegisterFormData {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const { register } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: RegisterFormData) => {
     setLoading(true);
     setFormErrors({}); // Clear previous errors
     try {
       // Only send required fields to backend (exclude confirmPassword)
-      const registerData: RegisterRequest = {
+      const registerData = {
         username: values.username,
         email: values.email,
         password: values.password,
       };
-      const response = await authApi.register(registerData);
-      setAuth(response.token, response.user);
-      message.success('注册成功！');
+      await register(registerData);
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Registration error:', error);
