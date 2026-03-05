@@ -928,7 +928,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
     if (loadingSubtaskDetail) {
       return (
         <div style={{ width: 600, padding: 40, textAlign: 'center' }}>
-          <Space direction="vertical">
+          <Space orientation="vertical">
             <div>加载中...</div>
           </Space>
         </div>
@@ -938,7 +938,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
     if (!subtaskInPopover) {
       return (
         <div style={{ width: 600, padding: 40, textAlign: 'center' }}>
-          <Space direction="vertical">
+          <Space orientation="vertical">
             <div>加载中...</div>
           </Space>
         </div>
@@ -1952,7 +1952,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
         cancelText="取消"
         okButtonProps={{ danger: true, loading: invitationActionLoading }}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Text>您确定要拒绝任务 "{task?.name}" 吗？</Text>
           
           <div>
@@ -1987,14 +1987,14 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
           </Button>
         ] : undefined}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           {task?.groupId ? (
             // View mode: Show current group information
             <>
               <Text>此任务已关联到以下群组：</Text>
               
               <div style={{ padding: 16, background: '#f0f2f5', borderRadius: 4 }}>
-                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                   <div>
                     <Text strong style={{ fontSize: 16 }}>
                       <TeamOutlined /> {task.groupName || '未知群组'}

@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Typography,
   Card,
   Table,
   Tabs,
   Avatar,
-  Tag,
-  Space,
   Select,
   Row,
   Col,
-  Statistic,
   Spin,
 } from 'antd';
 import {
@@ -25,8 +21,6 @@ import { useAuthStore } from '../store/authStore';
 import { Ranking } from '../types';
 import './RankingPage.css';
 
-const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 const { Option } = Select;
 
 export const RankingPage: React.FC = () => {
@@ -34,6 +28,7 @@ export const RankingPage: React.FC = () => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [myRanking, setMyRanking] = useState<Ranking | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'monthly' | 'quarterly' | 'all_time'>('monthly');
   const [period, setPeriod] = useState<'monthly' | 'quarterly' | 'all_time'>('monthly');
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -42,6 +37,11 @@ export const RankingPage: React.FC = () => {
   useEffect(() => {
     loadRankings();
   }, [period, year, month, quarter]);
+
+  // 当 activeTab 改变时，更新 period
+  useEffect(() => {
+    setPeriod(activeTab);
+  }, [activeTab]);
 
   const loadRankings = async () => {
     try {
@@ -250,12 +250,12 @@ export const RankingPage: React.FC = () => {
       {/* 排名列表 */}
       <Card className="ranking-list-card">
         <Tabs
-          activeKey={period}
-          onChange={(key) => setPeriod(key as any)}
+          activeKey={activeTab}
+          onChange={(key) => setActiveTab(key as 'monthly' | 'quarterly' | 'all_time')}
           className="ranking-tabs"
           tabBarExtraContent={
             <div className="tab-controls">
-              {period !== 'all_time' && (
+              {activeTab !== 'all_time' && (
                 <>
                   <Select
                     value={year}
@@ -268,7 +268,7 @@ export const RankingPage: React.FC = () => {
                       </Option>
                     ))}
                   </Select>
-                  {period === 'monthly' && (
+                  {activeTab === 'monthly' && (
                     <Select
                       value={month}
                       onChange={setMonth}
@@ -281,7 +281,7 @@ export const RankingPage: React.FC = () => {
                       ))}
                     </Select>
                   )}
-                  {period === 'quarterly' && (
+                  {activeTab === 'quarterly' && (
                     <Select
                       value={quarter}
                       onChange={setQuarter}
@@ -297,60 +297,73 @@ export const RankingPage: React.FC = () => {
               )}
             </div>
           }
-        >
-          <TabPane tab="本月排名" key="monthly">
-            <Table
-              columns={columns}
-              dataSource={rankings}
-              rowKey={(record) => `${record.userId}-${record.period}`}
-              loading={loading}
-              pagination={{
-                showSizeChanger: true,
-                showTotal: (total) => `共 ${total} 名用户`,
-                pageSize: 20,
-              }}
-              rowClassName={(record) =>
-                record.userId === user?.id ? 'highlight-row' : ''
-              }
-              className="ranking-table"
-            />
-          </TabPane>
-          <TabPane tab="本季度排名" key="quarterly">
-            <Table
-              columns={columns}
-              dataSource={rankings}
-              rowKey={(record) => `${record.userId}-${record.period}`}
-              loading={loading}
-              pagination={{
-                showSizeChanger: true,
-                showTotal: (total) => `共 ${total} 名用户`,
-                pageSize: 20,
-              }}
-              rowClassName={(record) =>
-                record.userId === user?.id ? 'highlight-row' : ''
-              }
-              className="ranking-table"
-            />
-          </TabPane>
-          <TabPane tab="总累积排名" key="all_time">
-            <Table
-              columns={columns}
-              dataSource={rankings}
-              rowKey={(record) => `${record.userId}-${record.period}`}
-              loading={loading}
-              pagination={{
-                showSizeChanger: true,
-                showTotal: (total) => `共 ${total} 名用户`,
-                pageSize: 20,
-              }}
-              rowClassName={(record) =>
-                record.userId === user?.id ? 'highlight-row' : ''
-              }
-              className="ranking-table"
-            />
-          </TabPane>
-        </Tabs>
-      </Card>
-    </div>
-  );
-};
+          items={[
+            {
+              key: 'monthly',
+              label: '本月排名',
+              children: (
+                <Table
+                  columns={columns}
+                  dataSource={rankings}
+                  rowKey={(record) => `${record.userId}-${record.period}`}
+                  loading={loading}
+                  pagination={{
+                    showSizeChanger: true,
+                    showTotal: (total) => `共 ${total} 名用户`,
+                    pageSize: 20,
+                  }}
+                  rowClassName={(record) =>
+                    record.userId === user?.id ? 'highlight-row' : ''
+                  }
+                  className="ranking-table"
+                />
+              )
+            },
+            {
+              key: 'quarterly',
+              label: '本季度排名',
+              children: (
+                <Table
+                  columns={columns}
+                  dataSource={rankings}
+                  rowKey={(record) => `${record.userId}-${record.period}`}
+                  loading={loading}
+                  pagination={{
+                    showSizeChanger: true,
+                    showTotal: (total) => `共 ${total} 名用户`,
+                    pageSize: 20,
+                  }}
+                  rowClassName={(record) =>
+                    record.userId === user?.id ? 'highlight-row' : ''
+                  }
+                  className="ranking-table"
+                />
+              )
+            },
+            {
+              key: 'all_time',
+              label: '总累积排名',
+              children: (
+                <Table
+                  columns={columns}
+                  dataSource={rankings}
+                  rowKey={(record) => `${record.userId}-${record.period}`}
+                  loading={loading}
+                  pagination={{
+                    showSizeChanger: true,
+                    showTotal: (total) => `共 ${total} 名用户`,
+                    pageSize: 20,
+                  }}
+                  rowClassName={(record) =>
+                    record.userId === user?.id ? 'highlight-row' : ''
+                  }
+                  className="ranking-table"
+                />
+              )
+            }
+          ]}
+        />
+        </Card>
+      </div>
+    );
+  };

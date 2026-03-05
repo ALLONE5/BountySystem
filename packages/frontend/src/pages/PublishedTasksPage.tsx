@@ -29,10 +29,10 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { taskApi } from '../api/task';
-import { positionApi, Position } from '../api/position';
+import { positionApi } from '../api/position';
 import { projectGroupApi } from '../api/projectGroup';
 import { userApi } from '../api/user';
-import { Task, TaskStatus, Visibility, User } from '../types';
+import { Task, TaskStatus, Visibility, User, Position } from '../types';
 import { TaskViews } from '../components/TaskViews';
 import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
 // TaskListPage uses statusConfig for consistent status display

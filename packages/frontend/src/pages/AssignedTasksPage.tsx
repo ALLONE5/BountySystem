@@ -534,7 +534,7 @@ export const AssignedTasksPage: React.FC = () => {
                           </Space>
                         }
                         description={
-                          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                          <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                             <Text type="secondary">{task.description || '无描述'}</Text>
                             
                             <Space wrap>
@@ -629,7 +629,7 @@ export const AssignedTasksPage: React.FC = () => {
         cancelText="取消"
         okButtonProps={{ danger: true, loading: actionLoading === selectedTask?.id }}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Text>您确定要拒绝任务 "{selectedTask?.name}" 吗？</Text>
           
           <div>
@@ -679,14 +679,14 @@ export const AssignedTasksPage: React.FC = () => {
           </Button>
         ] : undefined}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           {taskToConvert?.groupId ? (
             // View mode: Show current group information
             <>
               <Text>此任务已关联到以下群组：</Text>
               
               <div style={{ padding: 16, background: '#f0f2f5', borderRadius: 4 }}>
-                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                   <div>
                     <Text strong style={{ fontSize: 16 }}>
                       <TeamOutlined /> {taskToConvert.groupName || '未知群组'}

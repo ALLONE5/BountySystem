@@ -318,7 +318,7 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
 
     return (
       <Alert
-        message="加载失败"
+        title="加载失败"
         description={state.error}
         type="error"
         showIcon

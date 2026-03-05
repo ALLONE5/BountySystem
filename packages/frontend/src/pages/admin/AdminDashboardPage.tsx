@@ -10,7 +10,6 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
-import { useAuth } from '../../contexts/AuthContext';
 import './AdminDashboardPage.css';
 
 interface SystemStats {
@@ -31,7 +30,6 @@ interface OnlineUser {
 }
 
 export const AdminDashboardPage: React.FC = () => {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<SystemStats>({
     totalUsers: 0,
@@ -121,7 +119,7 @@ export const AdminDashboardPage: React.FC = () => {
               title="总用户数"
               value={stats.totalUsers}
               prefix={<UserOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
             <div className="stat-extra">
               <span className="online-count">
@@ -137,7 +135,7 @@ export const AdminDashboardPage: React.FC = () => {
               title="任务总数"
               value={stats.totalTasks}
               prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
             <div className="stat-extra">
               <span className="active-count">
@@ -154,7 +152,7 @@ export const AdminDashboardPage: React.FC = () => {
               value={stats.totalBounty}
               prefix={<DollarOutlined />}
               precision={2}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ content: { color: '#faad14' } }}
             />
             <div className="stat-extra">
               <span className="currency">CNY</span>
@@ -168,7 +166,7 @@ export const AdminDashboardPage: React.FC = () => {
               title="完成任务"
               value={stats.completedTasks}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' } }}
             />
             <div className="stat-extra">
               <Progress 

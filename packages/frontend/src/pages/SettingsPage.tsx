@@ -270,7 +270,7 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Space orientation="vertical" style={{ width: '100%' }} size="large">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
               <div>
                 <Text strong style={{ fontSize: 15 }}>任务被承接</Text>

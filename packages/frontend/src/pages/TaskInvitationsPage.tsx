@@ -120,7 +120,7 @@ export const TaskInvitationsPage: React.FC = () => {
   return (
     <div style={{ padding: '24px' }}>
       <Card>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <div>
             <Title level={2}>任务邀请</Title>
             <Text type="secondary">
@@ -186,7 +186,7 @@ export const TaskInvitationsPage: React.FC = () => {
                       </Space>
                     }
                     description={
-                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                      <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                         <Text type="secondary">{task.description || '无描述'}</Text>
                         
                         <Space wrap>
@@ -247,7 +247,7 @@ export const TaskInvitationsPage: React.FC = () => {
         cancelText="取消"
         okButtonProps={{ danger: true, loading: actionLoading === selectedTask?.id }}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Text>您确定要拒绝任务 "{selectedTask?.name}" 吗？</Text>
           
           <div>

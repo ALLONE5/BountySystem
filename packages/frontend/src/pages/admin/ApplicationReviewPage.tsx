@@ -17,7 +17,6 @@ import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { TableCard } from '../../components/common/TableCard';
 import { StatusTag } from '../../components/common/StatusTag';
 const { TextArea } = Input;
-const { TabPane } = Tabs;
 
 export const ApplicationReviewPage: React.FC = () => {
   const [applications, setApplications] = useState<PositionApplication[]>([]);
@@ -244,12 +243,17 @@ export const ApplicationReviewPage: React.FC = () => {
         }}
         cardProps={{
           extra: (
-            <Tabs activeKey={activeTab} onChange={setActiveTab} style={{ marginBottom: -8 }}>
-              <TabPane tab={`待审核 (${pendingCount})`} key="pending" />
-              <TabPane tab={`已批准 (${approvedCount})`} key="approved" />
-              <TabPane tab={`已拒绝 (${rejectedCount})`} key="rejected" />
-              <TabPane tab={`全部 (${applications.length})`} key="all" />
-            </Tabs>
+            <Tabs 
+              activeKey={activeTab} 
+              onChange={setActiveTab} 
+              style={{ marginBottom: -8 }}
+              items={[
+                { key: 'pending', label: `待审核 (${pendingCount})` },
+                { key: 'approved', label: `已批准 (${approvedCount})` },
+                { key: 'rejected', label: `已拒绝 (${rejectedCount})` },
+                { key: 'all', label: `全部 (${applications.length})` }
+              ]}
+            />
           ),
         }}
       />

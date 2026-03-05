@@ -318,7 +318,7 @@ export const GroupsPage: React.FC = () => {
                 avatar={<TeamOutlined style={{ fontSize: 32, color: '#1890ff' }} />}
                 title={<AntText strong style={{ fontSize: 16 }}>{group.name}</AntText>}
                 description={
-                  <Space direction="vertical" size={4}>
+                  <Space orientation="vertical" size={4}>
                     <AntText type="secondary">
                       <UserOutlined /> 成员数: {group.members?.length || group.memberIds?.length || 0}
                     </AntText>

@@ -11,8 +11,6 @@ import { KanbanPage } from './KanbanPage';
 import { CalendarPage } from './CalendarPage';
 import { TaskListPage } from './TaskListPage';
 
-const { TabPane } = Tabs;
-
 // Task Visualization Page with tabs for different views
 export const TaskVisualizationPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('gantt');
@@ -25,60 +23,65 @@ export const TaskVisualizationPage: React.FC = () => {
           onChange={setActiveTab}
           size="large"
           tabBarStyle={{ marginBottom: 0 }}
-        >
-          <TabPane
-            tab={
-              <span>
-                <BarChartOutlined />
-                甘特图
-              </span>
+          items={[
+            {
+              key: 'gantt',
+              label: (
+                <span>
+                  <BarChartOutlined />
+                  甘特图
+                </span>
+              ),
+              children: (
+                <div style={{ marginTop: '16px' }}>
+                  <GanttChartPage hideFilters={true} />
+                </div>
+              )
+            },
+            {
+              key: 'kanban',
+              label: (
+                <span>
+                  <AppstoreOutlined />
+                  看板
+                </span>
+              ),
+              children: (
+                <div style={{ marginTop: '16px' }}>
+                  <KanbanPage />
+                </div>
+              )
+            },
+            {
+              key: 'calendar',
+              label: (
+                <span>
+                  <CalendarOutlined />
+                  日历
+                </span>
+              ),
+              children: (
+                <div style={{ marginTop: '16px' }}>
+                  <CalendarPage hideFilters={true} />
+                </div>
+              )
+            },
+            {
+              key: 'list',
+              label: (
+                <span>
+                  <UnorderedListOutlined />
+                  列表
+                </span>
+              ),
+              children: (
+                <div style={{ marginTop: '16px' }}>
+                  <TaskListPage hideFilters={true} />
+                </div>
+              )
             }
-            key="gantt"
-          >
-            <div style={{ marginTop: '16px' }}>
-              <GanttChartPage hideFilters={true} />
-            </div>
-          </TabPane>
-          <TabPane
-            tab={
-              <span>
-                <AppstoreOutlined />
-                看板
-              </span>
-            }
-            key="kanban"
-          >
-            <div style={{ marginTop: '16px' }}>
-              <KanbanPage />
-            </div>
-          </TabPane>
-          <TabPane
-            tab={
-              <span>
-                <CalendarOutlined />
-                日历
-              </span>
-            }
-            key="calendar"
-          >
-            <div style={{ marginTop: '16px' }}>
-              <CalendarPage hideFilters={true} />
-            </div>
-          </TabPane>
-          <TabPane
-            tab={
-              <span>
-                <UnorderedListOutlined />
-                列表
-              </span>
-            }
-            key="list"
-          >
-            <div style={{ marginTop: '16px' }}>
-              <TaskListPage hideFilters={true} />
-            </div>
-          </TabPane>
-        </Tabs>
+          ]}
+        />
       </Card>
     </div>
   );

@@ -294,7 +294,7 @@ export const ProfilePage: React.FC = () => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
               {/* 角色和注册时间 */}
               <div>
                 <div style={{ marginBottom: 8 }}>
@@ -316,10 +316,10 @@ export const ProfilePage: React.FC = () => {
                 </div>
                 {userPositions.length > 0 ? (
                   <div style={{ marginBottom: 16 }}>
-                    <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                    <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                       {userPositions.map((pos) => (
                         <Card key={pos.id} size="small" style={{ borderLeft: '4px solid #52c41a' }}>
-                          <Space direction="vertical" size={0}>
+                          <Space orientation="vertical" size={0}>
                             <Text strong style={{ fontSize: 16 }}>{pos.name}</Text>
                             {pos.description && (
                               <Text type="secondary" style={{ fontSize: 12 }}>{pos.description}</Text>

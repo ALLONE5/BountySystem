@@ -155,7 +155,7 @@ export const NotificationBroadcastPage: React.FC = () => {
           </Form.Item>
 
           <Alert
-            message={getTargetDescription()}
+            title={getTargetDescription()}
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
@@ -238,7 +238,7 @@ export const NotificationBroadcastPage: React.FC = () => {
       </Card>
 
       <Card style={{ marginTop: 24 }} title="使用说明">
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" style={{ width: '100%' }}>
           <Text>
             <strong>所有用户：</strong>通知将发送给系统中的所有注册用户
           </Text>

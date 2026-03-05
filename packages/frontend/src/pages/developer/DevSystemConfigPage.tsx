@@ -127,7 +127,7 @@ export const DevSystemConfigPage: React.FC = () => {
       </div>
 
       <Alert
-        message="开发者系统配置"
+        title="开发者系统配置"
         description="作为开发用户，您可以管理系统的核心配置。修改配置可能会影响所有用户的使用体验，请谨慎操作。"
         type="info"
         showIcon
@@ -161,7 +161,7 @@ export const DevSystemConfigPage: React.FC = () => {
             name="logoUrl"
             label="网站Logo"
           >
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               <Input placeholder="Logo URL" />
               <Upload
                 name="logo"
@@ -350,7 +350,7 @@ export const DevSystemConfigPage: React.FC = () => {
         {/* UI主题设置 */}
         <Card title={<Text strong><BgColorsOutlined /> UI主题设置</Text>} style={{ marginBottom: 24 }}>
           <Alert
-            message="主题设置说明"
+            title="主题设置说明"
             description="这些设置将影响所有用户的界面外观和动画效果。用户可以在支持的情况下切换主题模式。"
             type="info"
             showIcon

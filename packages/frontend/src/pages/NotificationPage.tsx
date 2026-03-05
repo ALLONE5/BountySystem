@@ -37,7 +37,6 @@ import { taskApi } from '../api/task';
 import { useNotificationContext } from '../contexts/NotificationContext';
 
 const { Title, Text, Paragraph } = Typography;
-const { TabPane } = Tabs;
 const { TextArea } = Input;
 
 export const NotificationPage: React.FC = () => {
@@ -280,29 +279,35 @@ export const NotificationPage: React.FC = () => {
       </div>
 
       <Card>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key as 'all' | 'unread')}>
-            <TabPane
-              tab={
-                <span style={{ fontSize: 15 }}>
-                  全部通知
-                  {activeTab === 'all' && unreadCount > 0 && (
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
+          <Tabs 
+            activeKey={activeTab} 
+            onChange={(key) => setActiveTab(key as 'all' | 'unread')}
+            items={[
+              {
+                key: 'all',
+                label: (
+                  <span style={{ fontSize: 15 }}>
+                    全部通知
+                    {activeTab === 'all' && unreadCount > 0 && (
+                      <Badge count={unreadCount} style={{ marginLeft: 8 }} />
+                    )}
+                  </span>
+                ),
+                children: null
+              },
+              {
+                key: 'unread',
+                label: (
+                  <span style={{ fontSize: 15 }}>
+                    未读通知
                     <Badge count={unreadCount} style={{ marginLeft: 8 }} />
-                  )}
-                </span>
+                  </span>
+                ),
+                children: null
               }
-              key="all"
-            />
-            <TabPane
-              tab={
-                <span style={{ fontSize: 15 }}>
-                  未读通知
-                  <Badge count={unreadCount} style={{ marginLeft: 8 }} />
-                </span>
-              }
-              key="unread"
-            />
-          </Tabs>
+            ]}
+          />
 
           {loading ? (
             <div style={{ textAlign: 'center', padding: '50px 0' }}>
@@ -403,7 +408,7 @@ export const NotificationPage: React.FC = () => {
                       </Space>
                     }
                     description={
-                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                      <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                         <Paragraph
                           style={{ margin: 0, fontSize: 14 }}
                           ellipsis={{ rows: 2, expandable: true }}
@@ -437,7 +442,7 @@ export const NotificationPage: React.FC = () => {
         cancelText="取消"
         okButtonProps={{ danger: true, loading: actionLoading === selectedNotification?.id }}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Text>您确定要拒绝这个任务邀请吗？</Text>
           
           <div>

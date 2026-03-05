@@ -36,7 +36,7 @@ export const DevSystemMonitorPage: React.FC = () => {
               title="服务器状态"
               value="正常"
               prefix={<DesktopOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -47,7 +47,7 @@ export const DevSystemMonitorPage: React.FC = () => {
               title="数据库连接"
               value={metrics.databaseConnections}
               prefix={<DatabaseOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              styles={{ content: { color: '#1890ff' } }}
             />
           </Card>
         </Col>
@@ -58,7 +58,7 @@ export const DevSystemMonitorPage: React.FC = () => {
               title="系统运行时间"
               value={metrics.uptime}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              styles={{ content: { color: '#722ed1' } }}
             />
           </Card>
         </Col>

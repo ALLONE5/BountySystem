@@ -93,7 +93,7 @@ export const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
             </Descriptions.Item>
             <Descriptions.Item label="岗位">
               {user.positions && user.positions.length > 0 ? (
-                <Space direction="vertical" size="small">
+                <Space orientation="vertical" size="small">
                   {user.positions.map((position) => (
                     <Tag key={position.id} color="blue">{position.name}</Tag>
                   ))}
@@ -105,7 +105,7 @@ export const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
             {user.role === UserRole.POSITION_ADMIN && (
               <Descriptions.Item label="管理岗位">
                 {user.managedPositions && user.managedPositions.length > 0 ? (
-                  <Space direction="vertical" size="small">
+                  <Space orientation="vertical" size="small">
                     {user.managedPositions.map((position) => (
                       <Tag key={position.id} color="purple">{position.name}</Tag>
                     ))}

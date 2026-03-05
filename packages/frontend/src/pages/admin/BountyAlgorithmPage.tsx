@@ -209,7 +209,7 @@ export const BountyAlgorithmPage: React.FC = () => {
       />
 
       <Alert
-        message="赏金算法说明"
+        title="赏金算法说明"
         description={
           <div>
             <Paragraph>

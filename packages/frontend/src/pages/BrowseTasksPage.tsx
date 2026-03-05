@@ -247,7 +247,7 @@ export const BrowseTasksPage: React.FC = () => {
             }}>
               ${Number(task.bountyAmount || 0).toFixed(2)}
             </div>
-            <Space direction="vertical" size={4} style={{ width: '100%' }}>
+            <Space orientation="vertical" size={4} style={{ width: '100%' }}>
               <Text type="secondary" style={{ fontSize: 12 }}>
                 <ClockCircleOutlined /> {dayjs(task.plannedEndDate).format('MM-DD')}
               </Text>
