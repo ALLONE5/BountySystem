@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Avatar, Dropdown, Button, Tooltip, Input } from 'antd';
+import { Layout, Avatar, Dropdown, Button, Tooltip } from 'antd';
 import {
   HomeOutlined,
   UserOutlined,
@@ -527,29 +527,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
           </div>
 
           {/* User Profile Section */}
-          {!collapsed && (
-            <div className="sidebar-user">
-              <Dropdown
-                menu={{ items: userMenuItems }}
-                placement="topRight"
-                trigger={['click']}
-              >
-                <div className="user-profile">
-                  <Avatar
-                    size={44}
-                    src={user?.avatarUrl}
-                    icon={<UserOutlined />}
-                    className="user-avatar"
-                  />
-                  <div className="user-info">
-                    <div className="user-name">{user?.username}</div>
-                    <div className="user-role">{user?.role === 'super_admin' ? '超级管理员' : user?.role === 'position_admin' ? '职位管理员' : user?.role === 'developer' ? '开发者' : '用户'}</div>
-                  </div>
-                  <div className="user-status"></div>
-                </div>
-              </Dropdown>
-            </div>
-          )}
         </Sider>
 
         {/* 主内容区域 */}
@@ -574,13 +551,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
             </div>
 
             <div className="header-actions">
-              <div className="header-search">
-                <Input
-                  placeholder="搜索任务、用户或项目..."
-                  allowClear
-                />
-              </div>
-
               <Tooltip title={themeMode === 'light' ? '切换到暗色模式' : '切换到亮色模式'}>
                 <Button
                   type="text"
@@ -617,12 +587,10 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                     icon={<UserOutlined />}
                     className="user-avatar"
                   />
-                  {!isMobile && (
-                    <div className="user-info">
-                      <div className="username">{user?.username}</div>
-                      <div className="user-status">在线</div>
-                    </div>
-                  )}
+                  <div className="user-info">
+                    <div className="username">{user?.username}</div>
+                    <div className="user-role">{user?.role === 'super_admin' ? '超级管理员' : user?.role === 'position_admin' ? '职位管理员' : user?.role === 'developer' ? '开发者' : '用户'}</div>
+                  </div>
                 </div>
               </Dropdown>
             </div>
