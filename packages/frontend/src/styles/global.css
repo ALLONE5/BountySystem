@@ -81,10 +81,10 @@
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
-  --space-md: 12px;
-  --space-lg: 20px;
-  --space-xl: 28px;
-  --space-2xl: 40px;
+  --space-md: 14px;
+  --space-lg: 22px;
+  --space-xl: 30px;
+  --space-2xl: 44px;
 
   /* Border Radius */
   --radius-sm: 6px;

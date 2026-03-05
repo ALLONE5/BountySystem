@@ -230,8 +230,8 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
         <Sider
           className="modern-sidebar"
           collapsed={collapsed}
-          collapsedWidth={isMobile ? 0 : 56}
-          width={220}
+          collapsedWidth={isMobile ? 0 : 64}
+          width={240}
           theme="light"
         >
           {/* Logo Section */}
@@ -268,29 +268,78 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                 <div key={item.key}>
                   {item.children ? (
                     <div className="menu-group">
-                      <div 
-                        className={`menu-item menu-item-expandable ${expandedMenus.includes('workspace') ? 'expanded' : ''}`}
-                        onClick={() => collapsed ? navigate('/my/tasks') : toggleMenuExpansion('workspace')}
-                      >
-                        <div className="menu-item-icon">{item.icon}</div>
-                        {!collapsed && (
-                          <>
+                      {collapsed ? (
+                        <div 
+                          className="custom-dropdown-trigger"
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const dropdown = document.createElement('div');
+                            dropdown.className = 'custom-dropdown-menu workspace-dropdown';
+                            dropdown.innerHTML = `
+                              <div class="custom-dropdown-item" onclick="window.location.href='/my/bounties'">我的悬赏</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/my/tasks'">我的任务</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/my/groups'">我的组群</div>
+                            `;
+                            dropdown.style.position = 'fixed';
+                            dropdown.style.left = `${rect.right + 8}px`;
+                            dropdown.style.top = `${rect.top + rect.height / 2}px`;
+                            dropdown.style.transform = 'translateY(-50%)';
+                            dropdown.style.zIndex = '1070';
+                            document.body.appendChild(dropdown);
+                            
+                            let isHoveringTrigger = true;
+                            let isHoveringDropdown = false;
+                            
+                            const removeDropdown = () => {
+                              setTimeout(() => {
+                                if (!isHoveringTrigger && !isHoveringDropdown && dropdown.parentNode) {
+                                  dropdown.parentNode.removeChild(dropdown);
+                                }
+                              }, 100);
+                            };
+                            
+                            e.currentTarget.onmouseleave = () => {
+                              isHoveringTrigger = false;
+                              removeDropdown();
+                            };
+                            
+                            dropdown.onmouseenter = () => {
+                              isHoveringDropdown = true;
+                            };
+                            
+                            dropdown.onmouseleave = () => {
+                              isHoveringDropdown = false;
+                              removeDropdown();
+                            };
+                          }}
+                        >
+                          <div className={`menu-item menu-item-expandable ${expandedMenus.includes('workspace') ? 'expanded' : ''}`}>
+                            <div className="menu-item-icon">{item.icon}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div 
+                            className={`menu-item menu-item-expandable ${expandedMenus.includes('workspace') ? 'expanded' : ''}`}
+                            onClick={() => toggleMenuExpansion('workspace')}
+                          >
+                            <div className="menu-item-icon">{item.icon}</div>
                             <div className="menu-item-text">{item.label}</div>
                             <div className="menu-item-arrow">
                               {expandedMenus.includes('workspace') ? '▼' : '▶'}
                             </div>
-                          </>
-                        )}
-                      </div>
-                      {!collapsed && expandedMenus.includes('workspace') && item.children.map((child) => (
-                        <div
-                          key={child.key}
-                          className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
-                          onClick={child.onClick}
-                        >
-                          <div className="menu-item-text">{child.label}</div>
-                        </div>
-                      ))}
+                          </div>
+                          {expandedMenus.includes('workspace') && item.children.map((child) => (
+                            <div
+                              key={child.key}
+                              className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
+                              onClick={child.onClick}
+                            >
+                              <div className="menu-item-text">{child.label}</div>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   ) : (
                     <div
@@ -311,29 +360,81 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                 {getAdminMenuItems().map((item) => (
                   <div key={item.key}>
                     <div className="menu-group">
-                      <div 
-                        className={`menu-item menu-item-expandable ${expandedMenus.includes('admin') ? 'expanded' : ''}`}
-                        onClick={() => collapsed ? navigate('/admin/dashboard') : toggleMenuExpansion('admin')}
-                      >
-                        <div className="menu-item-icon">{item.icon}</div>
-                        {!collapsed && (
-                          <>
+                      {collapsed ? (
+                        <div 
+                          className="custom-dropdown-trigger"
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const dropdown = document.createElement('div');
+                            dropdown.className = 'custom-dropdown-menu admin-dropdown';
+                            dropdown.innerHTML = `
+                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/dashboard'">监控仪表盘</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/users'">用户管理</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/groups'">组群管理</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/tasks'">任务管理</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/approval'">申请审核</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/bounty-algorithm'">赏金算法</div>
+                            `;
+                            dropdown.style.position = 'fixed';
+                            dropdown.style.left = `${rect.right + 8}px`;
+                            dropdown.style.top = `${rect.top + rect.height / 2}px`;
+                            dropdown.style.transform = 'translateY(-50%)';
+                            dropdown.style.zIndex = '1070';
+                            document.body.appendChild(dropdown);
+                            
+                            let isHoveringTrigger = true;
+                            let isHoveringDropdown = false;
+                            
+                            const removeDropdown = () => {
+                              setTimeout(() => {
+                                if (!isHoveringTrigger && !isHoveringDropdown && dropdown.parentNode) {
+                                  dropdown.parentNode.removeChild(dropdown);
+                                }
+                              }, 100);
+                            };
+                            
+                            e.currentTarget.onmouseleave = () => {
+                              isHoveringTrigger = false;
+                              removeDropdown();
+                            };
+                            
+                            dropdown.onmouseenter = () => {
+                              isHoveringDropdown = true;
+                            };
+                            
+                            dropdown.onmouseleave = () => {
+                              isHoveringDropdown = false;
+                              removeDropdown();
+                            };
+                          }}
+                        >
+                          <div className={`menu-item menu-item-expandable ${expandedMenus.includes('admin') ? 'expanded' : ''}`}>
+                            <div className="menu-item-icon">{item.icon}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div 
+                            className={`menu-item menu-item-expandable ${expandedMenus.includes('admin') ? 'expanded' : ''}`}
+                            onClick={() => toggleMenuExpansion('admin')}
+                          >
+                            <div className="menu-item-icon">{item.icon}</div>
                             <div className="menu-item-text">{item.label}</div>
                             <div className="menu-item-arrow">
                               {expandedMenus.includes('admin') ? '▼' : '▶'}
                             </div>
-                          </>
-                        )}
-                      </div>
-                      {!collapsed && expandedMenus.includes('admin') && item.children?.map((child) => (
-                        <div
-                          key={child.key}
-                          className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
-                          onClick={child.onClick}
-                        >
-                          <div className="menu-item-text">{child.label}</div>
-                        </div>
-                      ))}
+                          </div>
+                          {expandedMenus.includes('admin') && item.children?.map((child) => (
+                            <div
+                              key={child.key}
+                              className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
+                              onClick={child.onClick}
+                            >
+                              <div className="menu-item-text">{child.label}</div>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -346,29 +447,78 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                 {getDeveloperMenuItems().map((item) => (
                   <div key={item.key}>
                     <div className="menu-group">
-                      <div 
-                        className={`menu-item menu-item-expandable ${expandedMenus.includes('developer') ? 'expanded' : ''}`}
-                        onClick={() => collapsed ? navigate('/dev/system-config') : toggleMenuExpansion('developer')}
-                      >
-                        <div className="menu-item-icon">{item.icon}</div>
-                        {!collapsed && (
-                          <>
+                      {collapsed ? (
+                        <div 
+                          className="custom-dropdown-trigger"
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const dropdown = document.createElement('div');
+                            dropdown.className = 'custom-dropdown-menu developer-dropdown';
+                            dropdown.innerHTML = `
+                              <div class="custom-dropdown-item" onclick="window.location.href='/dev/system-config'">系统配置</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/dev/audit-logs'">审计日志</div>
+                              <div class="custom-dropdown-item" onclick="window.location.href='/dev/system-monitor'">系统监控</div>
+                            `;
+                            dropdown.style.position = 'fixed';
+                            dropdown.style.left = `${rect.right + 8}px`;
+                            dropdown.style.top = `${rect.top + rect.height / 2}px`;
+                            dropdown.style.transform = 'translateY(-50%)';
+                            dropdown.style.zIndex = '1070';
+                            document.body.appendChild(dropdown);
+                            
+                            let isHoveringTrigger = true;
+                            let isHoveringDropdown = false;
+                            
+                            const removeDropdown = () => {
+                              setTimeout(() => {
+                                if (!isHoveringTrigger && !isHoveringDropdown && dropdown.parentNode) {
+                                  dropdown.parentNode.removeChild(dropdown);
+                                }
+                              }, 100);
+                            };
+                            
+                            e.currentTarget.onmouseleave = () => {
+                              isHoveringTrigger = false;
+                              removeDropdown();
+                            };
+                            
+                            dropdown.onmouseenter = () => {
+                              isHoveringDropdown = true;
+                            };
+                            
+                            dropdown.onmouseleave = () => {
+                              isHoveringDropdown = false;
+                              removeDropdown();
+                            };
+                          }}
+                        >
+                          <div className={`menu-item menu-item-expandable ${expandedMenus.includes('developer') ? 'expanded' : ''}`}>
+                            <div className="menu-item-icon">{item.icon}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div 
+                            className={`menu-item menu-item-expandable ${expandedMenus.includes('developer') ? 'expanded' : ''}`}
+                            onClick={() => toggleMenuExpansion('developer')}
+                          >
+                            <div className="menu-item-icon">{item.icon}</div>
                             <div className="menu-item-text">{item.label}</div>
                             <div className="menu-item-arrow">
                               {expandedMenus.includes('developer') ? '▼' : '▶'}
                             </div>
-                          </>
-                        )}
-                      </div>
-                      {!collapsed && expandedMenus.includes('developer') && item.children?.map((child) => (
-                        <div
-                          key={child.key}
-                          className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
-                          onClick={child.onClick}
-                        >
-                          <div className="menu-item-text">{child.label}</div>
-                        </div>
-                      ))}
+                          </div>
+                          {expandedMenus.includes('developer') && item.children?.map((child) => (
+                            <div
+                              key={child.key}
+                              className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
+                              onClick={child.onClick}
+                            >
+                              <div className="menu-item-text">{child.label}</div>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -503,13 +653,37 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
             <HomeOutlined />
             <span>首页</span>
           </div>
-          <div
-            className={`bottom-nav-item ${location.pathname.startsWith('/my') ? 'active' : ''}`}
-            onClick={() => navigate('/my/tasks')}
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: '/my/bounties',
+                  label: '我的悬赏',
+                  onClick: () => navigate('/my/bounties'),
+                },
+                {
+                  key: '/my/tasks',
+                  label: '我的任务',
+                  onClick: () => navigate('/my/tasks'),
+                },
+                {
+                  key: '/my/groups',
+                  label: '我的组群',
+                  onClick: () => navigate('/my/groups'),
+                },
+              ],
+              className: "mobile-bottom-nav-dropdown"
+            }}
+            placement="topCenter"
+            trigger={['click']}
           >
-            <UserOutlined />
-            <span>工作台</span>
-          </div>
+            <div
+              className={`bottom-nav-item ${location.pathname.startsWith('/my') ? 'active' : ''}`}
+            >
+              <UserOutlined />
+              <span>工作台</span>
+            </div>
+          </Dropdown>
           <div
             className={`bottom-nav-item ${location.pathname === '/bounty-tasks' ? 'active' : ''}`}
             onClick={() => navigate('/bounty-tasks')}
