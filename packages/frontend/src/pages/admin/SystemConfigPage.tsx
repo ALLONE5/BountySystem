@@ -374,7 +374,7 @@ export const SystemConfigPage: React.FC = () => {
             <Switch />
           </Form.Item>
 
-          <Divider orientation="left">动画效果设置</Divider>
+          <Divider>动画效果设置</Divider>
 
           <Form.Item
             name="enableAnimations"

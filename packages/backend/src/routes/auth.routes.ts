@@ -6,6 +6,7 @@ import { SystemConfigService } from '../services/SystemConfigService.js';
 import { JWTService } from '../utils/jwt.js';
 import { ValidationError, AuthenticationError, ConflictError } from '../utils/errors.js';
 import { auditLogin } from '../middleware/audit.middleware.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 import { AuthResponse } from '../models/User.js';
 import {
   loginRateLimiter,
@@ -177,9 +178,9 @@ router.post(
  * GET /api/auth/me
  * Get current user information (requires authentication)
  */
-router.get('/me', asyncHandler(async (req: Request, res: Response) => {
+router.get('/me', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Get user from request (set by auth middleware)
-  const userId = (req as any).user?.userId;
+  const userId = req.user?.userId;
 
   if (!userId) {
     throw new AuthenticationError('Not authenticated');

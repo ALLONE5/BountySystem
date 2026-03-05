@@ -22,7 +22,7 @@ export const MyWorkspacePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
 
   // 个人资料数据
-  const [profileData, setProfileData] = useState({
+  const [profileData] = useState({
     totalBounty: 12450,
     completedTasks: 89,
     publishedTasks: 156,
@@ -32,7 +32,7 @@ export const MyWorkspacePage: React.FC = () => {
   });
 
   // 我的悬赏数据
-  const [myBounties, setMyBounties] = useState([
+  const [myBounties] = useState([
     {
       id: '1',
       title: '前端界面优化',
@@ -59,7 +59,7 @@ export const MyWorkspacePage: React.FC = () => {
   ]);
 
   // 我的任务数据
-  const [myTasks, setMyTasks] = useState([
+  const [myTasks] = useState([
     {
       id: '3',
       title: 'API接口开发',
@@ -87,7 +87,7 @@ export const MyWorkspacePage: React.FC = () => {
   ]);
 
   // 我的组群数据
-  const [myGroups, setMyGroups] = useState([
+  const [myGroups] = useState([
     {
       id: '1',
       name: '前端开发团队',

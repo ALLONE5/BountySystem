@@ -36,6 +36,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const authStore = useAuthStore();
 
   const isAuthenticated = !!user;
 
@@ -43,26 +44,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          // Sync token to zustand store
-          useAuthStore.getState().setAuth(token, null as any);
-          const userData = await authApi.getCurrentUser();
-          setUser(userData);
-          // Update zustand store with user data
-          useAuthStore.getState().setAuth(token, userData);
+        // First check zustand store for persisted auth state
+        const persistedToken = authStore.token;
+        const persistedUser = authStore.user;
+        
+        if (persistedToken && persistedUser) {
+          // Use persisted user data first
+          setUser(persistedUser);
+          
+          // Then verify token is still valid by calling /auth/me
+          try {
+            const userData = await authApi.getCurrentUser();
+            setUser(userData);
+            // Update store with fresh user data
+            authStore.setAuth(persistedToken, userData);
+          } catch (error) {
+            // Token is invalid, clear everything
+            log.warn('Persisted token is invalid, clearing auth state');
+            localStorage.removeItem('token');
+            authStore.clearAuth();
+            setUser(null);
+          }
+        } else {
+          // Fallback to localStorage check
+          const token = localStorage.getItem('token');
+          if (token) {
+            try {
+              const userData = await authApi.getCurrentUser();
+              setUser(userData);
+              authStore.setAuth(token, userData);
+            } catch (error) {
+              log.error('Auth check failed', error);
+              localStorage.removeItem('token');
+              authStore.clearAuth();
+            }
+          }
         }
       } catch (error) {
-        log.error('Auth check failed', error);
+        log.error('Auth initialization failed', error);
         localStorage.removeItem('token');
-        useAuthStore.getState().clearAuth();
+        authStore.clearAuth();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     checkAuth();
-  }, []);
+  }, [authStore]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -72,7 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Store in both localStorage and zustand store
       localStorage.setItem('token', response.token);
-      useAuthStore.getState().setAuth(response.token, response.user);
+      authStore.setAuth(response.token, response.user);
       setUser(response.user);
       
       message.success('登录成功');
@@ -95,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Store in both localStorage and zustand store
       localStorage.setItem('token', response.token);
-      useAuthStore.getState().setAuth(response.token, response.user);
+      authStore.setAuth(response.token, response.user);
       setUser(response.user);
       
       message.success('注册成功');
@@ -109,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
-    useAuthStore.getState().clearAuth();
+    authStore.clearAuth();
     setUser(null);
     message.success('已退出登录');
     window.location.href = '/auth/login';

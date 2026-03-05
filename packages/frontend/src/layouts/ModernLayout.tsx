@@ -24,7 +24,7 @@ import './ModernLayout.css';
 const { Header, Sider, Content } = Layout;
 
 interface ModernLayoutProps {
-  showInfoPanel?: boolean;
+  // Layout component uses Outlet for children
 }
 
 export const ModernLayout: React.FC<ModernLayoutProps> = () => {
