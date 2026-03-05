@@ -1,25 +1,5 @@
 import { createExtendedApi, createApiMethod, createApiMethodWithParams } from './createApiClient';
-
-export interface Position {
-  id: string;
-  name: string;
-  description?: string;
-  requiredSkills?: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PositionApplication {
-  id: string;
-  userId: string;
-  positionId: string;
-  reason?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  reviewerId?: string;
-  reviewComment?: string;
-  createdAt: string;
-  reviewedAt?: string;
-}
+import { Position, PositionApplication } from '../types';
 
 // 使用工厂函数创建API客户端
 const baseCrudApi = createExtendedApi<Position>({

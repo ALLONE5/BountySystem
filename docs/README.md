@@ -1,6 +1,6 @@
 # 项目文档索引
 
-**最后更新**: 2026-02-09
+**最后更新**: 2026-03-05
 
 欢迎查阅赏金猎人平台的文档。本文档提供了所有文档的索引和导航。
 
@@ -49,27 +49,30 @@
 
 ---
 
-## 📖 分析文档
+## 🔧 运维指南
 
-### 代码分析
-- **[analysis/BACKEND_CODE_REVIEW_AND_REFACTORING_PLAN.md](analysis/BACKEND_CODE_REVIEW_AND_REFACTORING_PLAN.md)** - 后端代码审查和重构计划
-- **[analysis/DATABASE_MODEL_SERVICE_MAPPING.md](analysis/DATABASE_MODEL_SERVICE_MAPPING.md)** - 数据库模型和服务映射
-- **[analysis/TASK_RELATIONSHIP_FIELDS_ANALYSIS.md](analysis/TASK_RELATIONSHIP_FIELDS_ANALYSIS.md)** - 任务关系字段分析
-- **[analysis/TASK_RELATIONSHIP_DESIGN_COMPARISON.md](analysis/TASK_RELATIONSHIP_DESIGN_COMPARISON.md)** - 任务关系设计对比
+### 运维操作
+- **[operations/OPERATIONS_GUIDE.md](operations/OPERATIONS_GUIDE.md)** - 运维指南
+  - 环境配置、部署指南
+  - 日常运维、监控告警
+  - 故障排除、性能优化
 
 ---
 
-## 📝 其他文档
+## 📖 系统设计文档
 
-### 用户系统
-- **[USER_BALANCE_SYSTEM.md](USER_BALANCE_SYSTEM.md)** - 用户余额系统
+### 核心系统
+- **[SYSTEM_DESIGN.md](SYSTEM_DESIGN.md)** - 系统设计文档（整合）
+  - 赏金交易系统设计
+  - 用户余额系统设计
+  - 排名系统详细说明
+  - 系统设计决策说明
 
-### 功能总结
-- **[FEATURES_SUMMARY.md](FEATURES_SUMMARY.md)** - 功能总结
-
-### 文档结构
-- **[DOCUMENTATION_STRUCTURE.md](DOCUMENTATION_STRUCTURE.md)** - 文档结构说明
-- **[DOCUMENTATION_CLEANUP_2026_02_09.md](DOCUMENTATION_CLEANUP_2026_02_09.md)** - 文档清理记录
+### 技术分析
+- **[analysis/TECHNICAL_ANALYSIS.md](analysis/TECHNICAL_ANALYSIS.md)** - 技术分析文档（整合）
+  - 后端代码审查和重构计划
+  - 数据库模型和服务映射
+  - 任务关系设计分析
 
 ---
 
@@ -86,13 +89,19 @@
 - 组群管理 → [FEATURES_GUIDE.md#组群管理](FEATURES_GUIDE.md#组群管理)
 
 #### 赏金和排名
-- 排名系统 → [FEATURES_GUIDE.md#排名和赏金系统](FEATURES_GUIDE.md#排名和赏金系统)
-- 用户余额 → [USER_BALANCE_SYSTEM.md](USER_BALANCE_SYSTEM.md)
+- 排名系统 → [SYSTEM_DESIGN.md#排名系统](SYSTEM_DESIGN.md#排名系统)
+- 赏金系统 → [SYSTEM_DESIGN.md#赏金交易系统](SYSTEM_DESIGN.md#赏金交易系统)
+- 用户余额 → [SYSTEM_DESIGN.md#用户余额系统](SYSTEM_DESIGN.md#用户余额系统)
 
 #### 开发相关
 - 代码规范 → [CODE_QUALITY_GUIDE.md#开发规范](CODE_QUALITY_GUIDE.md#开发规范)
 - 日志记录 → [CODE_QUALITY_GUIDE.md#日志记录最佳实践](CODE_QUALITY_GUIDE.md#日志记录最佳实践)
 - 数据库设计 → [DATABASE_MODELS_OVERVIEW.md](DATABASE_MODELS_OVERVIEW.md)
+
+#### 运维相关
+- 部署指南 → [operations/OPERATIONS_GUIDE.md#部署指南](operations/OPERATIONS_GUIDE.md#部署指南)
+- 故障排除 → [operations/OPERATIONS_GUIDE.md#故障排除](operations/OPERATIONS_GUIDE.md#故障排除)
+- 性能优化 → [operations/OPERATIONS_GUIDE.md#性能优化](operations/OPERATIONS_GUIDE.md#性能优化)
 
 ---
 
@@ -101,9 +110,9 @@
 ### 文档数量
 - **核心文档**: 4 个
 - **数据库和架构**: 2 个
-- **分析文档**: 4 个
-- **其他文档**: 4 个
-- **总计**: 14 个主要文档
+- **运维指南**: 1 个
+- **系统设计**: 2 个
+- **总计**: 9 个主要文档
 
 ### 文档覆盖
 - ✅ 项目架构和技术栈
@@ -111,7 +120,8 @@
 - ✅ 功能说明和使用指南
 - ✅ 代码质量和最佳实践
 - ✅ 数据库设计和模型
-- ✅ 分析和重构计划
+- ✅ 系统设计和技术分析
+- ✅ 运维部署和故障排除
 
 ---
 
@@ -174,5 +184,5 @@
 ---
 
 **文档索引维护**: 本文档提供所有文档的导航和索引  
-**最后更新**: 2026-02-09  
+**最后更新**: 2026-03-05  
 **维护者**: 开发团队

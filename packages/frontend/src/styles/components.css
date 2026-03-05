@@ -1,0 +1,430 @@
+/**
+ * 通用组件样式
+ * 提取各页面中重复的设计模式和组件样式
+ */
+
+/* ============================================
+   页面布局组件
+   ============================================ */
+
+/* 页面容器 */
+.page-container {
+  padding: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-container-narrow {
+  max-width: 1200px;
+}
+
+/* 页面头部 */
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-header-centered {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.page-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+/* 页面标题 */
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.page-title-large {
+  font-size: 36px;
+  font-weight: 800;
+  background: var(--color-gradient-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* 页面标题组合 */
+.page-title-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.page-title-icon {
+  font-size: 36px;
+  color: var(--color-warning);
+  filter: drop-shadow(0 0 12px var(--color-warning)50);
+}
+
+/* ============================================
+   卡片组件
+   ============================================ */
+
+/* 基础卡片 */
+.base-card {
+  background: var(--color-bg-glass);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.base-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 统计卡片 */
+.stat-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  opacity: 0.8;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary)30;
+}
+
+/* 仪表板卡片 */
+.dashboard-card {
+  background: var(--color-bg-glass);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  height: 100%;
+}
+
+/* 监控卡片 */
+.monitoring-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.monitoring-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary)20;
+}
+
+/* 排行榜卡片 */
+.ranking-card {
+  background: var(--color-bg-glass);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.ranking-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ============================================
+   列表组件
+   ============================================ */
+
+/* 任务列表 */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item {
+  padding: 16px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-primary);
+}
+
+.task-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.task-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+/* 排行榜列表 */
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+}
+
+/* 用户列表 */
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border-light);
+  transition: all 0.2s ease;
+}
+
+.user-item:last-child {
+  border-bottom: none;
+}
+
+.user-item:hover {
+  background: var(--color-hover);
+  border-radius: var(--radius-md);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* ============================================
+   排名组件
+   ============================================ */
+
+.rank-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+}
+
+.rank-1 {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+}
+
+.rank-2 {
+  background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+}
+
+.rank-3 {
+  background: linear-gradient(135deg, #CD7F32, #B8860B);
+}
+
+.rank-other {
+  background: var(--color-primary);
+}
+
+/* ============================================
+   用户信息组件
+   ============================================ */
+
+.user-info {
+  flex: 1;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.user-bounty {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.user-description {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================
+   状态组件
+   ============================================ */
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: currentColor;
+  color: white !important;
+  opacity: 0.9;
+}
+
+/* ============================================
+   操作组件
+   ============================================ */
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.action-button {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  font-weight: 600;
+}
+
+/* ============================================
+   网格布局
+   ============================================ */
+
+.stats-grid {
+  margin-bottom: 32px;
+}
+
+.content-grid {
+  gap: 24px;
+}
+
+/* ============================================
+   响应式设计
+   ============================================ */
+
+@media (max-width: 768px) {
+  .page-header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-title-large {
+    font-size: 28px;
+  }
+
+  .content-grid {
+    flex-direction: column;
+  }
+
+  .task-item {
+    padding: 12px;
+  }
+
+  .ranking-item {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-title-large {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+
+  .task-item {
+    padding: 10px;
+  }
+
+  .action-button {
+    height: 40px;
+  }
+}
+
+/* ============================================
+   动画效果
+   ============================================ */
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card,
+.monitoring-card,
+.dashboard-card {
+  animation: cardFadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes statusBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.status-badge {
+  animation: statusBlink 2s ease-in-out infinite;
+}

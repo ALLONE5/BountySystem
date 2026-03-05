@@ -35,7 +35,6 @@ import { AvatarManagementPage } from '../pages/admin/AvatarManagementPage';
 import { PositionManagementPage } from '../pages/admin/PositionManagementPage';
 import { BountyAlgorithmPage } from '../pages/admin/BountyAlgorithmPage';
 import { NotificationBroadcastPage } from '../pages/admin/NotificationBroadcastPage';
-import { SystemConfigPage } from '../pages/admin/SystemConfigPage';
 import { AuditLogPage } from '../pages/admin/AuditLogPage';
 
 // 开发者页面
@@ -229,10 +228,6 @@ export const router = createBrowserRouter(
         {
           path: 'admin/notifications',
           element: <NotificationBroadcastPage />,
-        },
-        {
-          path: 'admin/system-config',
-          element: <SystemConfigPage />,
         },
         {
           path: 'admin/audit-logs',

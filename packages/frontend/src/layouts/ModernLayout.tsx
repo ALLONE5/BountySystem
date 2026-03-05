@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSystemConfig } from '../contexts/SystemConfigContext';
+import { useNotificationContext } from '../contexts/NotificationContext';
 import '../styles/glassmorphism.css';
 import './ModernLayout.css';
 
@@ -33,6 +34,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
   const { user, logout } = useAuth();
   const { themeMode, toggleTheme } = useTheme();
   const { config: systemConfig } = useSystemConfig();
+  const { unreadCount } = useNotificationContext();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
@@ -144,11 +146,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
             key: '/admin/bounty-algorithm',
             label: '赏金算法',
             onClick: () => navigate('/admin/bounty-algorithm'),
-          },
-          {
-            key: '/admin/system-config',
-            label: '系统配置',
-            onClick: () => navigate('/admin/system-config'),
           },
         ],
       },
@@ -277,7 +274,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
               </Tooltip>
 
               <Tooltip title="通知">
-                <Badge count={5} size="small" offset={[-2, 2]}>
+                <Badge count={unreadCount} size="small" offset={[-2, 2]}>
                   <Button
                     type="text"
                     icon={<BellOutlined />}

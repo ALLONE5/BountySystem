@@ -60,9 +60,29 @@ export const auditLogApi = {
     return response.data.data;
   },
 
+  // Get audit logs for developers (limited access)
+  async getDevLogs(filters: AuditLogFilters = {}): Promise<AuditLogResponse> {
+    const params = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, value.toString());
+      }
+    });
+
+    const response = await apiClient.get(`/dev/audit/logs?${params.toString()}`);
+    return response.data.data;
+  },
+
   // Get specific audit log by ID
   async getLogById(id: string): Promise<AuditLog> {
     const response = await apiClient.get(`/admin/audit/logs/${id}`);
+    return response.data.data;
+  },
+
+  // Get specific audit log by ID (developer access)
+  async getDevLogById(id: string): Promise<AuditLog> {
+    const response = await apiClient.get(`/dev/audit/logs/${id}`);
     return response.data.data;
   },
 
@@ -90,9 +110,23 @@ export const auditLogApi = {
     return response.data.data;
   },
 
+  // Get audit statistics (developer access)
+  async getDevStatistics(days: number = 30): Promise<AuditStatistics> {
+    const response = await apiClient.get(`/dev/audit/statistics?days=${days}`);
+    return response.data.data;
+  },
+
   // Export audit logs to CSV
   async exportLogs(filters: Omit<AuditLogFilters, 'page' | 'pageSize'> = {}): Promise<Blob> {
     const response = await apiClient.post('/admin/audit/export', filters, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  // Export audit logs to CSV (developer access - limited to 30 days)
+  async exportDevLogs(filters: Omit<AuditLogFilters, 'page' | 'pageSize'> = {}): Promise<Blob> {
+    const response = await apiClient.post('/dev/audit/export', filters, {
       responseType: 'blob',
     });
     return response.data;

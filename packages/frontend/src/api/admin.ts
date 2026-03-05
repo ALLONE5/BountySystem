@@ -1,24 +1,5 @@
 import { createApiMethod, createApiMethodWithParams } from './createApiClient';
-import { User, Task, UserRole } from '../types';
-
-// Position Application interface
-export interface PositionApplication {
-  id: string;
-  userId: string;
-  positionId: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  reviewedBy: string | null;
-  reviewComment: string | null;
-  createdAt: Date;
-  reviewedAt: Date | null;
-  user?: User;
-  position?: {
-    id: string;
-    name: string;
-    description: string;
-  };
-}
+import { User, Task, UserRole, PositionApplication, ReviewApplicationRequest } from '../types';
 
 // Update user request
 export interface UpdateUserRequest {
@@ -42,12 +23,6 @@ export interface UpdateTaskRequest {
   priority?: number;
   positionId?: string;
   visibility?: string;
-}
-
-// Review application request
-export interface ReviewApplicationRequest {
-  approved: boolean;
-  reviewComment?: string;
 }
 
 export const adminApi = {

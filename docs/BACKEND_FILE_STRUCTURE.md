@@ -279,12 +279,13 @@ packages/backend/
 
 | 文件 | 用途 |
 |------|------|
-| `seed-test-data.js` | 填充测试数据 |
+| `seed-enhanced-test-data.js` | 填充增强测试数据（包含子任务和组群任务） |
+| `seed-bounty-transactions.cjs` | 填充赏金交易数据 |
+| `populate-group-members.js` | 填充组群成员关系 |
 | `populate-group-tasks.js` | 填充组群任务 |
-| `populate-subtasks-for-ui-test.js` | 填充子任务用于UI测试 |
-| `populate-rankings.js` | 填充排名数据 |
+| `rebuild-rankings.js` | 重建排名数据 |
 | `inject_project_groups.ts` | 注入项目组数据 |
-| `verify_injection.ts` | 验证数据注入 |
+| `clean-orphaned-notifications.cjs` | 清理孤立通知 |
 
 ### 用户管理脚本
 

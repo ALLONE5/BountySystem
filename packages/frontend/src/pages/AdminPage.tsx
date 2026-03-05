@@ -10,7 +10,6 @@ import {
   TagsOutlined,
   CalculatorOutlined,
   BellOutlined,
-  SettingOutlined,
 } from '@ant-design/icons';
 import { UserManagementPage } from './admin/UserManagementPage';
 import { GroupManagementPage } from './admin/GroupManagementPage';
@@ -121,19 +120,6 @@ export const AdminPage: React.FC = () => {
       <Card
         className="glass-card"
         title="管理功能"
-        extra={
-          <Space>
-            {isSuperAdmin() && (
-              <Button
-                type="primary"
-                icon={<SettingOutlined />}
-                onClick={() => navigate('/admin/system-config')}
-              >
-                系统配置
-              </Button>
-            )}
-          </Space>
-        }
         style={{ marginBottom: 16 }}
       >
         <Tabs

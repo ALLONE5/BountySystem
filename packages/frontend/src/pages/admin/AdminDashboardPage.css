@@ -1,6 +1,6 @@
 /**
  * Admin Dashboard - 现代化监控仪表盘样式
- * 支持亮色和暗色主题，更加生动的色彩设计
+ * 使用统一组件样式，减少重复代码
  */
 
 /* ============================================
@@ -51,38 +51,28 @@
 }
 
 /* ============================================
-   统计卡片样式
+   统计卡片样式 - 使用统一组件样式
    ============================================ */
 
 .stats-row {
   margin-bottom: 32px;
 }
 
-.stat-card {
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  position: relative;
+/* 特定卡片颜色 */
+.users-card::before {
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
 }
 
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-  opacity: 0.8;
+.tasks-card::before {
+  background: linear-gradient(90deg, #52c41a, #73d13d);
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--color-primary)30;
+.bounty-card::before {
+  background: linear-gradient(90deg, #faad14, #ffc53d);
+}
+
+.completion-card::before {
+  background: linear-gradient(90deg, #722ed1, #9254de);
 }
 
 .stat-card .ant-card-body {
@@ -128,43 +118,12 @@
   color: var(--color-success);
 }
 
-/* 特定卡片颜色 */
-.users-card::before {
-  background: linear-gradient(90deg, #1890ff, #40a9ff);
-}
-
-.tasks-card::before {
-  background: linear-gradient(90deg, #52c41a, #73d13d);
-}
-
-.bounty-card::before {
-  background: linear-gradient(90deg, #faad14, #ffc53d);
-}
-
-.completion-card::before {
-  background: linear-gradient(90deg, #722ed1, #9254de);
-}
-
 /* ============================================
-   监控面板样式
+   监控面板样式 - 使用统一组件样式
    ============================================ */
 
 .monitoring-row {
   margin-bottom: 32px;
-}
-
-.monitoring-card {
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
-  height: 100%;
-}
-
-.monitoring-card:hover {
-  box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary)20;
 }
 
 .monitoring-card .ant-card-head {
@@ -191,7 +150,7 @@
 }
 
 /* ============================================
-   在线用户列表
+   在线用户列表 - 使用统一组件样式
    ============================================ */
 
 .online-users-card .ant-card-body {
@@ -200,56 +159,11 @@
   overflow-y: auto;
 }
 
-.online-user-item {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--color-border-light);
-  transition: all 0.2s ease;
-}
-
-.online-user-item:last-child {
-  border-bottom: none;
-}
-
-.online-user-item:hover {
-  background: var(--color-hover);
-  border-radius: var(--radius-md);
-  padding-left: 8px;
-  padding-right: 8px;
-}
-
 .user-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4px;
-}
-
-.username {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.status-badge {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  background: currentColor;
-  color: white !important;
-  opacity: 0.9;
-}
-
-.user-description {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--color-text-tertiary);
-}
-
-.user-description .anticon {
-  font-size: 12px;
 }
 
 /* ============================================
@@ -457,30 +371,8 @@
 }
 
 /* ============================================
-   动画效果
+   动画效果 - 使用统一组件样式
    ============================================ */
-
-/* 卡片加载动画 */
-@keyframes cardFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.stat-card,
-.monitoring-card {
-  animation: cardFadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.stat-card:nth-child(1) { animation-delay: 0.1s; }
-.stat-card:nth-child(2) { animation-delay: 0.2s; }
-.stat-card:nth-child(3) { animation-delay: 0.3s; }
-.stat-card:nth-child(4) { animation-delay: 0.4s; }
 
 /* 数值跳动动画 */
 @keyframes numberPulse {
@@ -508,20 +400,6 @@
 
 .metric-item .ant-progress-bg {
   animation: progressGlow 2s ease-in-out infinite;
-}
-
-/* 状态指示器闪烁 */
-@keyframes statusBlink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-.status-badge {
-  animation: statusBlink 2s ease-in-out infinite;
 }
 
 /* ============================================

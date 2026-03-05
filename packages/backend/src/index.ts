@@ -19,6 +19,7 @@ import systemConfigRoutes from './routes/systemConfig.routes.js';
 import publicSystemConfigRoutes from './routes/publicSystemConfig.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import auditLogRoutes from './routes/auditLog.routes.js';
+import devAuditLogRoutes from './routes/devAuditLog.routes.js';
 import schedulerRoutes from './routes/scheduler.routes.js';
 import metricsRoutes from './routes/metrics.routes.js';
 import publicRoutes from './routes/public.routes.js';
@@ -129,6 +130,9 @@ app.use('/api/system-config', publicSystemConfigRoutes);
 
 // Audit log routes
 app.use('/api/admin/audit', auditLogRoutes);
+
+// Developer audit log routes
+app.use('/api/dev/audit', devAuditLogRoutes);
 
 // Upload routes
 app.use('/api/upload', uploadRoutes);

@@ -1,151 +1,170 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Tag, Input, Select, DatePicker, Button, Space, message, Spin } from 'antd';
+import { Card, Table, Tag, Input, Select, DatePicker, Button, Space, message, Spin, Drawer, Descriptions, Typography } from 'antd';
 import {
   ReloadOutlined,
   DownloadOutlined,
   FilterOutlined,
   EyeOutlined,
-  ExclamationCircleOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined,
-  InfoCircleOutlined
+  CloseCircleOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { auditLogApi, AuditLog, AuditLogFilters } from '../../api/auditLog';
 import './DevAuditLogPage.css';
 
 const { Search } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-
-interface AuditLog {
-  id: string;
-  timestamp: string;
-  userId: string;
-  userName: string;
-  action: string;
-  resource: string;
-  resourceId: string;
-  method: string;
-  endpoint: string;
-  ipAddress: string;
-  userAgent: string;
-  status: 'success' | 'error' | 'warning' | 'info';
-  details: string;
-  duration: number;
-}
+const { Text } = Typography;
 
 export const DevAuditLogPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [filteredLogs, setFilteredLogs] = useState<AuditLog[]>([]);
-  const [filters, setFilters] = useState({
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 20,
+    total: 0,
+  });
+  const [filters, setFilters] = useState<AuditLogFilters>({
     search: '',
-    status: '',
     action: '',
-    dateRange: null as [dayjs.Dayjs, dayjs.Dayjs] | null,
+    resource: '',
+    success: undefined,
+    startDate: undefined,
+    endDate: undefined,
   });
 
   useEffect(() => {
     loadAuditLogs();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [logs, filters]);
+  }, [filters, pagination.current, pagination.pageSize]);
 
   const loadAuditLogs = async () => {
     try {
       setLoading(true);
+      const data = await auditLogApi.getDevLogs({
+        ...filters,
+        page: pagination.current,
+        pageSize: pagination.pageSize,
+      });
       
-      // 模拟审计日志数据
-      const mockLogs: AuditLog[] = [
-        {
-          id: '1',
-          timestamp: dayjs().subtract(5, 'minute').toISOString(),
-          userId: 'user1',
-          userName: '张三',
-          action: 'CREATE_TASK',
-          resource: 'Task',
-          resourceId: 'task123',
-          method: 'POST',
-          endpoint: '/api/tasks',
-          ipAddress: '192.168.1.100',
-          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          status: 'success',
-          details: '创建新任务: UI界面重构',
-          duration: 245,
-        },
-        {
-          id: '2',
-          timestamp: dayjs().subtract(15, 'minute').toISOString(),
-          userId: 'admin1',
-          userName: '管理员',
-          action: 'UPDATE_USER_ROLE',
-          resource: 'User',
-          resourceId: 'user456',
-          method: 'PUT',
-          endpoint: '/api/users/456/role',
-          ipAddress: '192.168.1.101',
-          userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-          status: 'success',
-          details: '更新用户角色: user -> position_admin',
-          duration: 156,
-        },
-      ];
-
-      setLogs(mockLogs);
-    } catch (error) {
+      setLogs(data.logs);
+      setPagination(prev => ({
+        ...prev,
+        total: data.pagination.total,
+      }));
+    } catch (error: any) {
+      console.error('Failed to load audit logs:', error);
       message.error('加载审计日志失败');
+      
+      // 如果是权限问题，显示友好提示
+      if (error.response?.status === 403) {
+        message.warning('当前用户暂无审计日志查看权限，请联系管理员');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const applyFilters = () => {
-    let filtered = [...logs];
-
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(log =>
-        log.userName.toLowerCase().includes(searchLower) ||
-        log.action.toLowerCase().includes(searchLower) ||
-        log.resource.toLowerCase().includes(searchLower) ||
-        log.details.toLowerCase().includes(searchLower) ||
-        log.ipAddress.includes(searchLower)
-      );
+  const handleViewDetails = async (log: AuditLog) => {
+    try {
+      const detailedLog = await auditLogApi.getDevLogById(log.id);
+      setSelectedLog(detailedLog);
+      setDetailsVisible(true);
+    } catch (error: any) {
+      console.error('Failed to load log details:', error);
+      message.error('加载日志详情失败');
     }
-
-    if (filters.status) {
-      filtered = filtered.filter(log => log.status === filters.status);
-    }
-
-    if (filters.action) {
-      filtered = filtered.filter(log => log.action === filters.action);
-    }
-
-    if (filters.dateRange) {
-      const [start, end] = filters.dateRange;
-      filtered = filtered.filter(log => {
-        const logDate = dayjs(log.timestamp);
-        return logDate.isAfter(start) && logDate.isBefore(end);
-      });
-    }
-
-    setFilteredLogs(filtered);
   };
 
-  const getStatusTag = (status: string) => {
-    const statusMap = {
-      'success': { color: 'success', icon: <CheckCircleOutlined />, text: '成功' },
-      'error': { color: 'error', icon: <CloseCircleOutlined />, text: '错误' },
-      'warning': { color: 'warning', icon: <ExclamationCircleOutlined />, text: '警告' },
-      'info': { color: 'processing', icon: <InfoCircleOutlined />, text: '信息' },
-    };
-    const config = statusMap[status as keyof typeof statusMap] || { color: 'default', icon: null, text: status };
-    return (
-      <Tag color={config.color} icon={config.icon}>
-        {config.text}
+  const handleExport = async () => {
+    try {
+      setLoading(true);
+      const blob = await auditLogApi.exportDevLogs(filters);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `dev_audit_logs_${dayjs().format('YYYY-MM-DD')}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      message.success('审计日志导出成功');
+    } catch (error: any) {
+      console.error('Failed to export logs:', error);
+      if (error.response?.status === 403) {
+        message.warning('当前用户暂无导出权限');
+      } else {
+        message.error('导出审计日志失败');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTableChange = (paginationConfig: any) => {
+    setPagination({
+      current: paginationConfig.current,
+      pageSize: paginationConfig.pageSize,
+      total: pagination.total,
+    });
+  };
+
+  const handleFilterChange = (key: keyof AuditLogFilters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+    setPagination(prev => ({
+      ...prev,
+      current: 1, // Reset to first page when filtering
+    }));
+  };
+
+  const handleDateRangeChange = (dates: any) => {
+    if (dates && dates.length === 2) {
+      setFilters(prev => ({
+        ...prev,
+        startDate: dates[0].toISOString(),
+        endDate: dates[1].toISOString(),
+      }));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        startDate: undefined,
+        endDate: undefined,
+      }));
+    }
+    setPagination(prev => ({
+      ...prev,
+      current: 1,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      action: '',
+      resource: '',
+      success: undefined,
+      startDate: undefined,
+      endDate: undefined,
+    });
+  };
+
+  const getStatusTag = (success: boolean) => {
+    return success ? (
+      <Tag color="success" icon={<CheckCircleOutlined />}>
+        成功
+      </Tag>
+    ) : (
+      <Tag color="error" icon={<CloseCircleOutlined />}>
+        失败
       </Tag>
     );
   };
@@ -164,6 +183,18 @@ export const DevAuditLogPage: React.FC = () => {
     const color = actionColors[actionType as keyof typeof actionColors] || 'default';
     
     return <Tag color={color}>{action}</Tag>;
+  };
+
+  const getResourceColor = (resource: string) => {
+    const resourceColors: Record<string, string> = {
+      USER: 'blue',
+      TASK: 'green',
+      POSITION: 'orange',
+      GROUP: 'purple',
+      AUTH: 'cyan',
+      SYSTEM: 'red',
+    };
+    return resourceColors[resource] || 'default';
   };
 
   const columns: ColumnsType<AuditLog> = [
@@ -189,7 +220,7 @@ export const DevAuditLogPage: React.FC = () => {
       width: 120,
       render: (_, record) => (
         <div>
-          <div style={{ fontWeight: 600 }}>{record.userName}</div>
+          <div style={{ fontWeight: 600 }}>{record.username}</div>
           <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
             {record.userId}
           </div>
@@ -209,17 +240,17 @@ export const DevAuditLogPage: React.FC = () => {
       width: 120,
       render: (_, record) => (
         <div>
-          <div>{record.resource}</div>
+          <Tag color={getResourceColor(record.resource)}>{record.resource}</Tag>
           <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-            {record.resourceId}
+            {record.resourceId || '-'}
           </div>
         </div>
       ),
     },
     {
       title: '状态',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'success',
+      key: 'success',
       width: 100,
       render: getStatusTag,
     },
@@ -230,18 +261,14 @@ export const DevAuditLogPage: React.FC = () => {
       width: 120,
     },
     {
-      title: '耗时',
-      dataIndex: 'duration',
-      key: 'duration',
-      width: 80,
-      render: (duration) => `${duration}ms`,
-      sorter: (a, b) => a.duration - b.duration,
-    },
-    {
       title: '详情',
-      dataIndex: 'details',
       key: 'details',
       ellipsis: true,
+      render: (_, record) => (
+        <span style={{ fontSize: 12 }}>
+          {typeof record.details === 'string' ? record.details : JSON.stringify(record.details)}
+        </span>
+      ),
     },
     {
       title: '操作',
@@ -257,39 +284,6 @@ export const DevAuditLogPage: React.FC = () => {
       ),
     },
   ];
-
-  const handleViewDetails = (_record: AuditLog) => {
-    message.info('查看详情功能待实现');
-  };
-
-  const handleExport = () => {
-    message.info('导出功能待实现');
-  };
-
-  const handleSearch = (value: string) => {
-    setFilters(prev => ({ ...prev, search: value }));
-  };
-
-  const handleStatusFilter = (value: string) => {
-    setFilters(prev => ({ ...prev, status: value }));
-  };
-
-  const handleActionFilter = (value: string) => {
-    setFilters(prev => ({ ...prev, action: value }));
-  };
-
-  const handleDateRangeChange = (dates: any) => {
-    setFilters(prev => ({ ...prev, dateRange: dates }));
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      search: '',
-      status: '',
-      action: '',
-      dateRange: null,
-    });
-  };
 
   if (loading) {
     return (
@@ -333,35 +327,51 @@ export const DevAuditLogPage: React.FC = () => {
             placeholder="搜索用户、操作、资源或IP地址"
             allowClear
             style={{ width: 300 }}
-            onSearch={handleSearch}
-            onChange={(e) => handleSearch(e.target.value)}
+            onSearch={(value) => handleFilterChange('search', value)}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
           />
           
           <Select
             placeholder="状态"
             allowClear
             style={{ width: 120 }}
-            onChange={handleStatusFilter}
-            value={filters.status || undefined}
+            onChange={(value) => handleFilterChange('success', value)}
+            value={filters.success}
           >
-            <Option value="success">成功</Option>
-            <Option value="error">错误</Option>
-            <Option value="warning">警告</Option>
-            <Option value="info">信息</Option>
+            <Option value="true">成功</Option>
+            <Option value="false">失败</Option>
           </Select>
 
           <Select
             placeholder="操作类型"
             allowClear
             style={{ width: 150 }}
-            onChange={handleActionFilter}
+            onChange={(value) => handleFilterChange('action', value)}
             value={filters.action || undefined}
           >
+            <Option value="CREATE_USER">创建用户</Option>
+            <Option value="UPDATE_USER">更新用户</Option>
+            <Option value="DELETE_USER">删除用户</Option>
             <Option value="CREATE_TASK">创建任务</Option>
-            <Option value="UPDATE_USER_ROLE">更新角色</Option>
+            <Option value="UPDATE_TASK">更新任务</Option>
             <Option value="DELETE_TASK">删除任务</Option>
+            <Option value="LOGIN">登录</Option>
             <Option value="LOGIN_FAILED">登录失败</Option>
-            <Option value="SYSTEM_BACKUP">系统备份</Option>
+          </Select>
+
+          <Select
+            placeholder="资源类型"
+            allowClear
+            style={{ width: 120 }}
+            onChange={(value) => handleFilterChange('resource', value)}
+            value={filters.resource || undefined}
+          >
+            <Option value="USER">用户</Option>
+            <Option value="TASK">任务</Option>
+            <Option value="POSITION">岗位</Option>
+            <Option value="GROUP">组群</Option>
+            <Option value="AUTH">认证</Option>
+            <Option value="SYSTEM">系统</Option>
           </Select>
 
           <RangePicker
@@ -369,7 +379,6 @@ export const DevAuditLogPage: React.FC = () => {
             format="YYYY-MM-DD HH:mm"
             placeholder={['开始时间', '结束时间']}
             onChange={handleDateRangeChange}
-            value={filters.dateRange}
           />
 
           <Button
@@ -385,21 +394,87 @@ export const DevAuditLogPage: React.FC = () => {
       <Card className="logs-table-card">
         <Table
           columns={columns}
-          dataSource={filteredLogs}
+          dataSource={logs}
           rowKey="id"
+          loading={loading}
           pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) => 
               `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
-            pageSize: 50,
             pageSizeOptions: ['20', '50', '100', '200'],
           }}
+          onChange={handleTableChange}
           scroll={{ x: 1200 }}
           size="small"
           className="audit-logs-table"
         />
       </Card>
+
+      {/* 详情抽屉 */}
+      <Drawer
+        title="审计日志详情"
+        placement="right"
+        size="default"
+        onClose={() => setDetailsVisible(false)}
+        open={detailsVisible}
+      >
+        {selectedLog && (
+          <div>
+            <Descriptions column={1} bordered>
+              <Descriptions.Item label="日志ID">
+                <Text code>{selectedLog.id}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="用户">
+                {selectedLog.username} ({selectedLog.userId})
+              </Descriptions.Item>
+              <Descriptions.Item label="操作">
+                <Tag color={getActionTag(selectedLog.action).props.color}>
+                  {selectedLog.action}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="资源">
+                <Tag color={getResourceColor(selectedLog.resource)}>
+                  {selectedLog.resource}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="资源ID">
+                <Text code>{selectedLog.resourceId || '-'}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="时间">
+                {dayjs(selectedLog.timestamp).format('YYYY-MM-DD HH:mm:ss')}
+              </Descriptions.Item>
+              <Descriptions.Item label="IP地址">
+                {selectedLog.ipAddress}
+              </Descriptions.Item>
+              <Descriptions.Item label="状态">
+                <Tag color={selectedLog.success ? 'success' : 'error'}>
+                  {selectedLog.success ? '成功' : '失败'}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="User Agent">
+                <Text style={{ fontSize: '12px', wordBreak: 'break-all' }}>
+                  {selectedLog.userAgent}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="详细信息">
+                <pre style={{ 
+                  backgroundColor: '#f5f5f5', 
+                  padding: '12px', 
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  overflow: 'auto'
+                }}>
+                  {JSON.stringify(selectedLog.details, null, 2)}
+                </pre>
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+        )}
+      </Drawer>
     </div>
   );
 };

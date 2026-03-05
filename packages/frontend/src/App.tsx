@@ -12,6 +12,7 @@ import { getThemeConfig } from './theme';
 import './styles/global.css';
 import './styles/global-theme.css';
 import './styles/glassmorphism.css';
+import './styles/components.css';
 
 // Import Google Fonts
 const fontLink = document.createElement('link');

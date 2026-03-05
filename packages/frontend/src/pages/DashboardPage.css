@@ -4,160 +4,17 @@
   margin: 0 auto;
 }
 
-.dashboard-page .page-header {
-  margin-bottom: 32px;
-}
-
-.dashboard-page .header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
-}
-
-.dashboard-page .page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 8px 0;
-}
-
-.dashboard-page .page-subtitle {
-  font-size: 16px;
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-
-.dashboard-page .stats-grid {
-  margin-bottom: 32px;
-}
-
-.dashboard-page .stat-card {
-  background: var(--color-bg-glass);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  transition: all 0.3s ease;
-}
-
-.dashboard-page .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.dashboard-page .content-grid {
-  gap: 24px;
-}
-
-.dashboard-page .dashboard-card {
-  background: var(--color-bg-glass);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  height: 100%;
-}
-
-.dashboard-page .quick-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dashboard-page .action-button {
-  width: 100%;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  font-weight: 600;
-}
-
+/* 仪表板特定样式 */
 .dashboard-page .recent-tasks-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.dashboard-page .task-item {
-  padding: 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-secondary);
-  transition: all 0.3s ease;
-}
-
-.dashboard-page .task-item:hover {
-  background: var(--color-bg-hover);
-  border-color: var(--color-primary);
-}
-
-.dashboard-page .task-title {
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 8px;
-}
-
-.dashboard-page .task-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: var(--color-text-tertiary);
-}
-
 .dashboard-page .ranking-preview {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.dashboard-page .ranking-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  background: var(--color-bg-secondary);
-}
-
-.dashboard-page .rank-number {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: white;
-}
-
-.dashboard-page .rank-1 {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-}
-
-.dashboard-page .rank-2 {
-  background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
-}
-
-.dashboard-page .rank-3 {
-  background: linear-gradient(135deg, #CD7F32, #B8860B);
-}
-
-.dashboard-page .rank-other {
-  background: var(--color-primary);
-}
-
-.dashboard-page .user-info {
-  flex: 1;
-}
-
-.dashboard-page .username {
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.dashboard-page .user-bounty {
-  font-size: 12px;
-  color: var(--color-text-secondary);
 }
 
 @media (max-width: 768px) {

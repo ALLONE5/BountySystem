@@ -277,3 +277,36 @@ export interface Ranking {
     lastLogin?: Date | null;
   };
 }
+
+// Position Application Types
+export interface PositionApplication {
+  id: string;
+  userId: string;
+  positionId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  applicationReason?: string;
+  reviewComment?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
+  position?: Position;
+}
+
+export interface ReviewApplicationRequest {
+  approved: boolean;
+  reviewComment?: string;
+}
+
+// Position Types
+export interface Position {
+  id: string;
+  name: string;
+  description: string;
+  requirements?: string;
+  responsibilities?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

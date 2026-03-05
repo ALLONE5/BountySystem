@@ -4,39 +4,9 @@
   margin: 0 auto;
 }
 
-.ranking-page .page-header {
-  margin-bottom: 40px;
-  text-align: center;
-}
-
+/* 排行榜特定样式 */
 .ranking-page .header-content {
   padding: 32px 0;
-}
-
-.ranking-page .header-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.ranking-page .header-title h1 {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  margin: 0;
-  background: var(--color-gradient-secondary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1.2;
-}
-
-.ranking-page .header-icon {
-  font-size: 36px;
-  color: var(--color-warning);
-  filter: drop-shadow(0 0 12px var(--color-warning)50);
 }
 
 .ranking-page .header-subtitle {
