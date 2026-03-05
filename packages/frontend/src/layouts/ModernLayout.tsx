@@ -37,6 +37,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
   const { unreadCount } = useNotificationContext();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
   // 响应式检测
   useEffect(() => {
@@ -52,6 +53,27 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // 初始化展开的菜单
+  useEffect(() => {
+    const path = location.pathname;
+    const newExpanded = [];
+    if (path.startsWith('/admin/')) newExpanded.push('admin');
+    if (path.startsWith('/dev/')) newExpanded.push('developer');
+    if (path.startsWith('/my/')) newExpanded.push('workspace');
+    setExpandedMenus(newExpanded);
+  }, [location.pathname]);
+
+  // 切换菜单展开状态
+  const toggleMenuExpansion = (key: string) => {
+    if (collapsed) return; // 折叠状态下不允许展开子菜单
+    
+    setExpandedMenus(prev => 
+      prev.includes(key) 
+        ? prev.filter(k => k !== key)
+        : [...prev, key]
+    );
+  };
 
   // 主导航菜单项 - 根据用户角色动态显示
   const getMainMenuItems = () => {
@@ -208,8 +230,8 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
         <Sider
           className="modern-sidebar"
           collapsed={collapsed}
-          collapsedWidth={isMobile ? 0 : 72}
-          width={280}
+          collapsedWidth={isMobile ? 0 : 56}
+          width={220}
           theme="light"
         >
           {/* Logo Section */}
@@ -246,11 +268,21 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                 <div key={item.key}>
                   {item.children ? (
                     <div className="menu-group">
-                      <div className="menu-item" onClick={() => {}}>
+                      <div 
+                        className={`menu-item menu-item-expandable ${expandedMenus.includes('workspace') ? 'expanded' : ''}`}
+                        onClick={() => collapsed ? navigate('/my/tasks') : toggleMenuExpansion('workspace')}
+                      >
                         <div className="menu-item-icon">{item.icon}</div>
-                        {!collapsed && <div className="menu-item-text">{item.label}</div>}
+                        {!collapsed && (
+                          <>
+                            <div className="menu-item-text">{item.label}</div>
+                            <div className="menu-item-arrow">
+                              {expandedMenus.includes('workspace') ? '▼' : '▶'}
+                            </div>
+                          </>
+                        )}
                       </div>
-                      {!collapsed && item.children.map((child) => (
+                      {!collapsed && expandedMenus.includes('workspace') && item.children.map((child) => (
                         <div
                           key={child.key}
                           className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
@@ -279,11 +311,21 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                 {getAdminMenuItems().map((item) => (
                   <div key={item.key}>
                     <div className="menu-group">
-                      <div className="menu-item" onClick={() => {}}>
+                      <div 
+                        className={`menu-item menu-item-expandable ${expandedMenus.includes('admin') ? 'expanded' : ''}`}
+                        onClick={() => collapsed ? navigate('/admin/dashboard') : toggleMenuExpansion('admin')}
+                      >
                         <div className="menu-item-icon">{item.icon}</div>
-                        {!collapsed && <div className="menu-item-text">{item.label}</div>}
+                        {!collapsed && (
+                          <>
+                            <div className="menu-item-text">{item.label}</div>
+                            <div className="menu-item-arrow">
+                              {expandedMenus.includes('admin') ? '▼' : '▶'}
+                            </div>
+                          </>
+                        )}
                       </div>
-                      {!collapsed && item.children?.map((child) => (
+                      {!collapsed && expandedMenus.includes('admin') && item.children?.map((child) => (
                         <div
                           key={child.key}
                           className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
@@ -304,11 +346,21 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                 {getDeveloperMenuItems().map((item) => (
                   <div key={item.key}>
                     <div className="menu-group">
-                      <div className="menu-item" onClick={() => {}}>
+                      <div 
+                        className={`menu-item menu-item-expandable ${expandedMenus.includes('developer') ? 'expanded' : ''}`}
+                        onClick={() => collapsed ? navigate('/dev/system-config') : toggleMenuExpansion('developer')}
+                      >
                         <div className="menu-item-icon">{item.icon}</div>
-                        {!collapsed && <div className="menu-item-text">{item.label}</div>}
+                        {!collapsed && (
+                          <>
+                            <div className="menu-item-text">{item.label}</div>
+                            <div className="menu-item-arrow">
+                              {expandedMenus.includes('developer') ? '▼' : '▶'}
+                            </div>
+                          </>
+                        )}
                       </div>
-                      {!collapsed && item.children?.map((child) => (
+                      {!collapsed && expandedMenus.includes('developer') && item.children?.map((child) => (
                         <div
                           key={child.key}
                           className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
@@ -385,6 +437,16 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                   icon={themeMode === 'light' ? <MoonOutlined /> : <SunOutlined />}
                   onClick={toggleTheme}
                   className="theme-toggle-btn"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 'var(--radius-lg)',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-secondary)',
+                  }}
                 />
               </Tooltip>
 
