@@ -24,6 +24,7 @@ import { getTaskStatusConfig } from '../utils/statusConfig';
 import { useTheme } from '../contexts/ThemeContext';
 import { log } from '../utils/logger';
 import { logger } from '../utils/logger';
+import './TaskListPage.css';
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -310,36 +311,21 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
         
         return (
           <div 
-            style={{ 
-              cursor: 'pointer',
-              padding: '4px',
-              borderRadius: '4px',
-              backgroundColor: isPendingAcceptance ? '#fff7e6' : 'transparent',
-              border: isPendingAcceptance ? '1px solid #ffd591' : 'none'
-            }} 
+            className={`task-name-cell ${isPendingAcceptance ? 'pending-acceptance' : ''}`}
             onClick={() => handleViewTask(record)}
           >
-            <div style={{ 
-              fontWeight: 'bold', 
-              marginBottom: '4px', 
-              color: isPendingAcceptance ? '#fa8c16' : '#1890ff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
+            <div className={`task-name-title ${isPendingAcceptance ? 'pending' : ''}`}>
               {isPendingAcceptance && <ClockCircleOutlined />}
               {text}
               {subtaskCount > 0 && (
                 <Badge 
                   count={subtaskCount} 
-                  style={{ 
-                    backgroundColor: '#52c41a',
-                  }} 
+                  className="subtask-badge"
                   title={`${subtaskCount}个子任务`}
                 />
               )}
             </div>
-            <div style={{ fontSize: '12px', color: '#999' }}>
+            <div className="task-description">
               {record.description && record.description.length > 50
                 ? record.description.substring(0, 50) + '...'
                 : record.description || '无描述'}
@@ -357,7 +343,9 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       render: (status: TaskStatus) => {
         const statusConfig = getTaskStatusConfig(status);
         return (
-          <Tag color={statusConfig.color}>{statusConfig.text}</Tag>
+          <Tag color={statusConfig.color} className="status-tag">
+            {statusConfig.text}
+          </Tag>
         );
       },
     },
@@ -368,7 +356,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       width: 120,
       sorter: (a, b) => (a.bountyAmount || 0) - (b.bountyAmount || 0),
       render: (amount: number) => (
-        <Tag icon={<DollarOutlined />} color="gold">
+        <Tag icon={<DollarOutlined />} className="bounty-tag">
           ${amount}
         </Tag>
       ),
@@ -381,10 +369,10 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       sorter: (a, b) =>
         new Date(a.plannedEndDate || 0).getTime() - new Date(b.plannedEndDate || 0).getTime(),
       render: (date: Date) => (
-        <Space>
+        <div className="date-display">
           <ClockCircleOutlined />
           <span>{dayjs(date).format('YYYY-MM-DD')}</span>
-        </Space>
+        </div>
       ),
     },
     {
@@ -398,7 +386,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
         return aPriority - bPriority;
       },
       render: (priority: number) => (
-        <Tag icon={<FlagOutlined />} color={getPriorityColor(priority)}>
+        <Tag icon={<FlagOutlined />} color={getPriorityColor(priority)} className="priority-tag">
           P{priority}
         </Tag>
       ),
@@ -410,7 +398,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       width: 100,
       sorter: (a, b) => (a.complexity || 0) - (b.complexity || 0),
       render: (complexity: number) => (
-        <Tag>{getComplexityText(complexity)}</Tag>
+        <Tag className="task-tag">{getComplexityText(complexity)}</Tag>
       ),
     },
     {
@@ -428,17 +416,17 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       width: 150,
       sorter: (a, b) => (a.progress || 0) - (b.progress || 0),
       render: (progress: number) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="progress-container">
           <Progress
             percent={progress}
             size="small"
-            style={{ flex: 1, margin: 0 }}
+            className="progress-bar"
             strokeColor={{
               '0%': '#108ee9',
               '100%': '#87d068',
             }}
           />
-          <span style={{ fontSize: '12px', minWidth: '40px' }}>{progress}%</span>
+          <span className="progress-text">{progress}%</span>
         </div>
       ),
     },
@@ -448,16 +436,16 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       key: 'tags',
       width: 150,
       render: (tags: string[]) => (
-        <>
+        <div className="tags-container">
           {tags && tags.slice(0, 2).map(tag => (
-            <Tag key={tag} style={{ marginBottom: '4px' }}>
+            <Tag key={tag} className="task-tag">
               {tag}
             </Tag>
           ))}
           {tags && tags.length > 2 && (
-            <Tag style={{ marginBottom: '4px' }}>+{tags.length - 2}</Tag>
+            <Tag className="task-tag tags-more">+{tags.length - 2}</Tag>
           )}
-        </>
+        </div>
       ),
     },
     {
@@ -467,7 +455,11 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       width: 150,
       sorter: (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      render: (date: Date) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      render: (date: Date) => (
+        <div className="date-display">
+          {dayjs(date).format('YYYY-MM-DD HH:mm')}
+        </div>
+      ),
     },
   ];
 
@@ -512,6 +504,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
               type="primary"
               size="small"
               icon={<SendOutlined />}
+              className="action-btn action-btn-primary"
               onClick={(e) => {
                 e.stopPropagation();
                 onPublishTask(record);
@@ -542,7 +535,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
         // 待接受标签
         if (isPendingAcceptance) {
           buttons.push(
-            <Tag key="pending" color="warning" icon={<ClockCircleOutlined />}>
+            <Tag key="pending" className="pending-tag" icon={<ClockCircleOutlined />}>
               待接受
             </Tag>
           );
@@ -555,6 +548,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
               key="assign"
               type={isPublishedTasksPage ? "default" : "link"}
               size="small"
+              className="action-btn"
               onClick={(e) => {
                 e.stopPropagation();
                 onAssignTask(record);
@@ -572,6 +566,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
               key="accept"
               type="primary"
               size="small"
+              className="action-btn action-btn-primary"
               onClick={(e) => {
                 e.stopPropagation();
                 onAcceptTask(record.id);
@@ -596,7 +591,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
                 type="primary"
                 size="small"
                 icon={<CheckOutlined />}
-                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+                className="action-btn action-btn-success"
                 onClick={(e) => {
                   e.stopPropagation();
                   onCompleteTask(record.id);
@@ -615,6 +610,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
               key="joinGroup"
               size="small"
               icon={<TeamOutlined />}
+              className="action-btn"
               onClick={(e) => {
                 e.stopPropagation();
                 onJoinGroup(record);
@@ -650,6 +646,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
               danger
               size="small"
               icon={<DeleteOutlined />}
+              className="action-btn action-btn-danger"
               onClick={(e) => {
                 e.stopPropagation();
                 Modal.confirm({
@@ -667,7 +664,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
           );
         }
 
-        return buttons.length > 0 ? <Space size="small">{buttons}</Space> : null;
+        return buttons.length > 0 ? <div className="action-buttons">{buttons}</div> : null;
       },
     });
   }

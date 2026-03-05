@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Select, message, Spin, Input } from 'antd';
+import { Card, Button, Select, message, Spin, Input, Avatar } from 'antd';
 import {
   FileTextOutlined,
   CheckSquareOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -240,62 +241,86 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="dashboard-page">
-      <div className="dashboard-header">
-        <div className="welcome-section">
-          <h1 className="welcome-title">
-            欢迎回来，{user?.username}！
-          </h1>
-          <p className="welcome-subtitle">
-            这是您的个人工作台，查看最新的任务动态和统计信息
-          </p>
+    <div className="dashboard-container">
+      {/* Hero Section */}
+      <div className="dashboard-hero">
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1 className="hero-title">
+              欢迎回来，{user?.username}！
+            </h1>
+            <p className="hero-subtitle">
+              这是您的个人工作台，查看最新的任务动态和统计信息
+            </p>
+            <div className="hero-actions">
+              <Button 
+                type="primary" 
+                className="hero-btn hero-btn-primary"
+                onClick={() => navigate('/bounty-tasks')}
+              >
+                浏览任务市场
+              </Button>
+              <Button 
+                className="hero-btn hero-btn-secondary"
+                onClick={() => navigate('/tasks/published')}
+              >
+                查看我的任务
+              </Button>
+            </div>
+          </div>
+          <div className="hero-visual">
+            <Avatar 
+              size={120}
+              src={user?.avatarUrl}
+              icon={<UserOutlined />}
+              className="hero-avatar"
+            >
+              {user?.username?.charAt(0).toUpperCase()}
+            </Avatar>
+          </div>
         </div>
       </div>
       
       {/* 统计卡片网格 */}
       <div className="stats-grid">
-        <Card 
-          className="stat-card stat-card-primary"
-          hoverable 
-          onClick={() => navigate('/tasks/published')}
-        >
-          <div className="stat-content">
-            <div className="stat-icon">
+        <Card className="stat-card" onClick={() => navigate('/tasks/published')}>
+          <div className="stat-header">
+            <div className="stat-icon primary">
               <FileTextOutlined />
             </div>
-            <div className="stat-info">
-              <div className="stat-value">{stats?.publishedTotal || 0}</div>
-              <div className="stat-label">发布的任务</div>
-              <div className="stat-details">
-                <span>进行中 {stats?.publishedInProgress || 0}</span>
-                <span>已完成 {stats?.publishedCompleted || 0}</span>
-              </div>
+            <div className="stat-trend up">
+              <span>↗ +12%</span>
+            </div>
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">{stats?.publishedTotal || 0}</div>
+            <div className="stat-label">发布的任务</div>
+            <div className="stat-description">
+              进行中 {stats?.publishedInProgress || 0} · 已完成 {stats?.publishedCompleted || 0}
             </div>
           </div>
         </Card>
 
-        <Card 
-          className="stat-card stat-card-success"
-          hoverable 
-          onClick={() => navigate('/tasks/assigned')}
-        >
-          <div className="stat-content">
-            <div className="stat-icon">
+        <Card className="stat-card" onClick={() => navigate('/tasks/assigned')}>
+          <div className="stat-header">
+            <div className="stat-icon success">
               <CheckSquareOutlined />
             </div>
-            <div className="stat-info">
-              <div className="stat-value">{stats?.assignedTotal || 0}</div>
-              <div className="stat-label">承接的任务</div>
-              <div className="stat-details">
-                <span>进行中 {stats?.assignedInProgress || 0}</span>
-                <span>已完成 {stats?.assignedCompleted || 0}</span>
-              </div>
+            <div className="stat-trend up">
+              <span>↗ +8%</span>
+            </div>
+          </div>
+          <div className="stat-content">
+            <div className="stat-value">{stats?.assignedTotal || 0}</div>
+            <div className="stat-label">承接的任务</div>
+            <div className="stat-description">
+              进行中 {stats?.assignedInProgress || 0} · 已完成 {stats?.assignedCompleted || 0}
             </div>
           </div>
         </Card>
 
         <Card
-          className="stat-card stat-card-warning"
+          className="stat-card"
           hoverable
           onClick={() => {
             if (!historyDrawerVisible && user?.id) {

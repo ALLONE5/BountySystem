@@ -29,28 +29,22 @@ export const RankingPage: React.FC = () => {
   const [myRanking, setMyRanking] = useState<Ranking | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'monthly' | 'quarterly' | 'all_time'>('monthly');
-  const [period, setPeriod] = useState<'monthly' | 'quarterly' | 'all_time'>('monthly');
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [quarter, setQuarter] = useState(Math.ceil((new Date().getMonth() + 1) / 3));
 
   useEffect(() => {
     loadRankings();
-  }, [period, year, month, quarter]);
-
-  // 当 activeTab 改变时，更新 period
-  useEffect(() => {
-    setPeriod(activeTab);
-  }, [activeTab]);
+  }, [activeTab, year, month, quarter]);
 
   const loadRankings = async () => {
     try {
       setLoading(true);
-      const params: any = { period, year };
+      const params: any = { period: activeTab, year };
       
-      if (period === 'monthly') {
+      if (activeTab === 'monthly') {
         params.month = month;
-      } else if (period === 'quarterly') {
+      } else if (activeTab === 'quarterly') {
         params.quarter = quarter;
       }
 
@@ -149,9 +143,9 @@ export const RankingPage: React.FC = () => {
   ];
 
   const getPeriodText = () => {
-    if (period === 'monthly') {
+    if (activeTab === 'monthly') {
       return `${year}年${month}月`;
-    } else if (period === 'quarterly') {
+    } else if (activeTab === 'quarterly') {
       return `${year}年第${quarter}季度`;
     }
     return '总累积';
@@ -160,9 +154,9 @@ export const RankingPage: React.FC = () => {
   const renderMyRankingCard = () => {
     if (!myRanking) {
       const periodText = () => {
-        if (period === 'monthly') {
+        if (activeTab === 'monthly') {
           return `${year}年${month}月未参与排名`;
-        } else if (period === 'quarterly') {
+        } else if (activeTab === 'quarterly') {
           return `${year}年第${quarter}季度未参与排名`;
         }
         return '总累积期间未参与排名';
@@ -224,7 +218,7 @@ export const RankingPage: React.FC = () => {
   };
 
   return (
-    <div className="ranking-page">
+    <div className="ranking-page animate-fade-in-up">
       {/* 页面头部 */}
       <div className="page-header">
         <div className="header-content">
@@ -239,7 +233,7 @@ export const RankingPage: React.FC = () => {
       {/* 我的排名卡片 */}
       <div className="my-ranking-section">
         {loading ? (
-          <Card className="ranking-card loading-card">
+          <Card className="loading-card">
             <Spin size="large" />
           </Card>
         ) : (
@@ -363,7 +357,7 @@ export const RankingPage: React.FC = () => {
             }
           ]}
         />
-        </Card>
-      </div>
-    );
-  };
+      </Card>
+    </div>
+  );
+};

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Avatar, Badge, Dropdown, Space, Button, Tooltip } from 'antd';
+import { Layout, Avatar, Dropdown, Button, Tooltip, Input } from 'antd';
 import {
   HomeOutlined,
   UserOutlined,
@@ -22,7 +22,7 @@ import { useNotificationContext } from '../contexts/NotificationContext';
 import '../styles/glassmorphism.css';
 import './ModernLayout.css';
 
-const { Header, Sider, Content } = Layout;
+const { Sider } = Layout;
 
 interface ModernLayoutProps {
   // Layout component uses Outlet for children
@@ -37,7 +37,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
   const { unreadCount } = useNotificationContext();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   // 响应式检测
   useEffect(() => {
@@ -53,11 +52,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // 初始化展开的菜单项
-  useEffect(() => {
-    setOpenKeys(getOpenKeys());
-  }, [location.pathname]);
 
   // 主导航菜单项 - 根据用户角色动态显示
   const getMainMenuItems = () => {
@@ -110,7 +104,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
   // 管理员菜单项
   const getAdminMenuItems = () => {
     if (user?.role !== 'super_admin' && user?.role !== 'position_admin') return [];
-    
+
     return [
       {
         key: 'admin',
@@ -155,7 +149,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
   // 开发者菜单项
   const getDeveloperMenuItems = () => {
     if (user?.role !== 'developer') return [];
-    
+
     return [
       {
         key: 'developer',
@@ -207,63 +201,184 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
     },
   ];
 
-  // 获取当前选中的菜单项
-  const getSelectedKeys = () => {
-    const path = location.pathname;
-    if (path.startsWith('/admin/')) return [path];
-    return [path];
-  };
-
-  // 获取展开的菜单项
-  const getOpenKeys = () => {
-    const path = location.pathname;
-    const openKeys = [];
-    if (path.startsWith('/admin/')) openKeys.push('admin');
-    if (path.startsWith('/dev/')) openKeys.push('developer');
-    if (path.startsWith('/my/')) openKeys.push('workspace');
-    return openKeys;
-  };
-
   return (
-    <Layout className={`modern-layout theme-${themeMode}`}>
-      {/* 顶部导航栏 - Modern 风格 */}
-      <Header className="modern-header">
-        <div className="header-content">
-          <div className="header-left">
-            <Button
-              type="text"
-              icon={<MenuOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              className="sidebar-toggle"
-            />
-            <div className="app-logo">
-              {systemConfig?.logoUrl ? (
-                <img 
-                  src={systemConfig.logoUrl.startsWith('http') 
-                    ? systemConfig.logoUrl 
-                    : `http://localhost:3000${systemConfig.logoUrl}`
-                  } 
-                  alt="Logo" 
-                  className="logo-image"
-                  style={{ height: '32px', width: 'auto' }}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="logo-icon">OCT</div>
+    <div className="modern-layout" data-theme={themeMode}>
+      <Layout className="modern-layout">
+        {/* 左侧导航栏 - Modern 风格 */}
+        <Sider
+          className="modern-sidebar"
+          collapsed={collapsed}
+          collapsedWidth={isMobile ? 0 : 72}
+          width={280}
+          theme="light"
+        >
+          {/* Logo Section */}
+          <div className="sidebar-logo">
+            <div className="logo-container" onClick={() => navigate('/dashboard')}>
+              <div className="logo-icon">
+                {systemConfig?.logoUrl ? (
+                  <img
+                    src={systemConfig.logoUrl.startsWith('http')
+                      ? systemConfig.logoUrl
+                      : `http://localhost:3000${systemConfig.logoUrl}`
+                    }
+                    alt="Logo"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  'BH'
+                )}
+              </div>
+              {!collapsed && (
+                <div className="logo-text">{systemConfig?.siteName || '赏金平台'}</div>
               )}
-              <div className="logo-text">{systemConfig?.siteName || '赏金平台'}</div>
             </div>
           </div>
 
-          <div className="header-center">
-            {/* 搜索框已移除 */}
+          {/* Navigation Menu */}
+          <div className="sidebar-menu">
+            <div className="menu-section">
+              <div className="menu-section-title">主要功能</div>
+              {getMainMenuItems().map((item) => (
+                <div key={item.key}>
+                  {item.children ? (
+                    <div className="menu-group">
+                      <div className="menu-item" onClick={() => {}}>
+                        <div className="menu-item-icon">{item.icon}</div>
+                        {!collapsed && <div className="menu-item-text">{item.label}</div>}
+                      </div>
+                      {!collapsed && item.children.map((child) => (
+                        <div
+                          key={child.key}
+                          className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
+                          onClick={child.onClick}
+                        >
+                          <div className="menu-item-text">{child.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div
+                      className={`menu-item ${location.pathname === item.key ? 'active' : ''}`}
+                      onClick={item.onClick}
+                    >
+                      <div className="menu-item-icon">{item.icon}</div>
+                      {!collapsed && <div className="menu-item-text">{item.label}</div>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {getAdminMenuItems().length > 0 && (
+              <div className="menu-section">
+                <div className="menu-section-title">管理功能</div>
+                {getAdminMenuItems().map((item) => (
+                  <div key={item.key}>
+                    <div className="menu-group">
+                      <div className="menu-item" onClick={() => {}}>
+                        <div className="menu-item-icon">{item.icon}</div>
+                        {!collapsed && <div className="menu-item-text">{item.label}</div>}
+                      </div>
+                      {!collapsed && item.children?.map((child) => (
+                        <div
+                          key={child.key}
+                          className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
+                          onClick={child.onClick}
+                        >
+                          <div className="menu-item-text">{child.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {getDeveloperMenuItems().length > 0 && (
+              <div className="menu-section">
+                <div className="menu-section-title">开发工具</div>
+                {getDeveloperMenuItems().map((item) => (
+                  <div key={item.key}>
+                    <div className="menu-group">
+                      <div className="menu-item" onClick={() => {}}>
+                        <div className="menu-item-icon">{item.icon}</div>
+                        {!collapsed && <div className="menu-item-text">{item.label}</div>}
+                      </div>
+                      {!collapsed && item.children?.map((child) => (
+                        <div
+                          key={child.key}
+                          className={`menu-item menu-item-child ${location.pathname === child.key ? 'active' : ''}`}
+                          onClick={child.onClick}
+                        >
+                          <div className="menu-item-text">{child.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="header-right">
-            <Space size="large">
-              {/* 主题切换按钮 */}
+          {/* User Profile Section */}
+          {!collapsed && (
+            <div className="sidebar-user">
+              <Dropdown
+                menu={{ items: userMenuItems }}
+                placement="topRight"
+                trigger={['click']}
+              >
+                <div className="user-profile">
+                  <Avatar
+                    size={44}
+                    src={user?.avatarUrl}
+                    icon={<UserOutlined />}
+                    className="user-avatar"
+                  />
+                  <div className="user-info">
+                    <div className="user-name">{user?.username}</div>
+                    <div className="user-role">{user?.role === 'super_admin' ? '超级管理员' : user?.role === 'position_admin' ? '职位管理员' : user?.role === 'developer' ? '开发者' : '用户'}</div>
+                  </div>
+                  <div className="user-status"></div>
+                </div>
+              </Dropdown>
+            </div>
+          )}
+        </Sider>
+
+        {/* 主内容区域 */}
+        <Layout className="main-content">
+          {/* 顶部导航栏 */}
+          <div className="content-header">
+            <div className="header-left">
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+                className="sidebar-toggle"
+              />
+              <h1 className="header-title">
+                {location.pathname === '/dashboard' && '工作台'}
+                {location.pathname === '/ranking' && '赏金排行'}
+                {location.pathname === '/bounty-tasks' && '任务市场'}
+                {location.pathname.startsWith('/my/') && '我的工作台'}
+                {location.pathname.startsWith('/admin/') && '管理中心'}
+                {location.pathname.startsWith('/dev/') && '开发管理'}
+              </h1>
+            </div>
+
+            <div className="header-actions">
+              <div className="header-search">
+                <Input
+                  placeholder="搜索任务、用户或项目..."
+                  allowClear
+                />
+              </div>
+
               <Tooltip title={themeMode === 'light' ? '切换到暗色模式' : '切换到亮色模式'}>
                 <Button
                   type="text"
@@ -273,17 +388,11 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                 />
               </Tooltip>
 
-              <Tooltip title="通知">
-                <Badge count={unreadCount} size="small" offset={[-2, 2]}>
-                  <Button
-                    type="text"
-                    icon={<BellOutlined />}
-                    onClick={() => navigate('/notifications')}
-                    className="header-action-btn"
-                  />
-                </Badge>
-              </Tooltip>
-              
+              <div className="header-notifications" onClick={() => navigate('/notifications')}>
+                <BellOutlined style={{ fontSize: 18 }} />
+                {unreadCount > 0 && <div className="notification-badge">{unreadCount}</div>}
+              </div>
+
               <Dropdown
                 menu={{ items: userMenuItems }}
                 placement="bottomRight"
@@ -304,65 +413,49 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                   )}
                 </div>
               </Dropdown>
-            </Space>
+            </div>
           </div>
-        </div>
-      </Header>
 
-      <Layout className="modern-layout-body">
-        {/* 左侧导航栏 - Modern 风格 */}
-        <Sider
-          className="modern-sidebar"
-          collapsed={collapsed}
-          collapsedWidth={isMobile ? 0 : 72}
-          width={240}
-          theme="dark"
-        >
-          <div className="sidebar-content">
-            <Menu
-              mode="inline"
-              selectedKeys={getSelectedKeys()}
-              openKeys={openKeys}
-              onOpenChange={setOpenKeys}
-              items={[...getMainMenuItems(), ...getAdminMenuItems(), ...getDeveloperMenuItems()]}
-              className="modern-menu"
-            />
-          </div>
-        </Sider>
-
-        {/* 主内容区域 */}
-        <Content className="modern-content">
-          <div className="content-container">
+          {/* 主内容 */}
+          <div className="content-body">
             <Outlet />
           </div>
-        </Content>
+        </Layout>
       </Layout>
+
+      {/* 移动端遮罩层 */}
+      {isMobile && !collapsed && (
+        <div
+          className="sidebar-overlay visible"
+          onClick={() => setCollapsed(true)}
+        />
+      )}
 
       {/* 移动端底部导航 */}
       {isMobile && (
         <div className="mobile-bottom-nav">
-          <div 
+          <div
             className={`bottom-nav-item ${location.pathname === '/dashboard' ? 'active' : ''}`}
             onClick={() => navigate('/dashboard')}
           >
             <HomeOutlined />
             <span>首页</span>
           </div>
-          <div 
-            className={`bottom-nav-item ${location.pathname === '/my' ? 'active' : ''}`}
-            onClick={() => navigate('/my')}
+          <div
+            className={`bottom-nav-item ${location.pathname.startsWith('/my') ? 'active' : ''}`}
+            onClick={() => navigate('/my/tasks')}
           >
             <UserOutlined />
             <span>工作台</span>
           </div>
-          <div 
+          <div
             className={`bottom-nav-item ${location.pathname === '/bounty-tasks' ? 'active' : ''}`}
             onClick={() => navigate('/bounty-tasks')}
           >
             <GiftOutlined />
             <span>赏金</span>
           </div>
-          <div 
+          <div
             className={`bottom-nav-item ${location.pathname === '/ranking' ? 'active' : ''}`}
             onClick={() => navigate('/ranking')}
           >
@@ -371,6 +464,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
           </div>
         </div>
       )}
-    </Layout>
+    </div>
   );
 };
