@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
-  }, [authStore]);
+  }, []); // 移除 authStore 依赖，只在组件挂载时执行一次
 
   const login = async (email: string, password: string) => {
     try {

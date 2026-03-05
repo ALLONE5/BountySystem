@@ -11,7 +11,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { useAuth } from '../contexts/AuthContext';
 import { taskApi } from '../api/task';
 import { rankingApi } from '../api/ranking';
-import { TaskStats, Task } from '../types';
+import { TaskStats } from '../types';
 import { BountyHistoryDrawer } from '../components/BountyHistoryDrawer';
 import './DashboardPage.css';
 
@@ -27,8 +27,6 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [reportType, setReportType] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('monthly');
   const [generatingReport, setGeneratingReport] = useState(false);
-  const [publishedTasksList, setPublishedTasksList] = useState<Task[]>([]);
-  const [assignedTasksList, setAssignedTasksList] = useState<Task[]>([]);
   const [reportContent, setReportContent] = useState<string>('');
   const [historyDrawerVisible, setHistoryDrawerVisible] = useState(false);
   const [monthlyBounty, setMonthlyBounty] = useState(0);
@@ -37,6 +35,7 @@ export const DashboardPage: React.FC = () => {
   const [monthlyHasData, setMonthlyHasData] = useState(true);
   const [quarterlyHasData, setQuarterlyHasData] = useState(true);
   const [allTimeHasData, setAllTimeHasData] = useState(true);
+  const [assignedTasksList, setAssignedTasksList] = useState<any[]>([]);
 
   useEffect(() => {
     loadStats();
@@ -51,8 +50,9 @@ export const DashboardPage: React.FC = () => {
       const currentMonth = now.getMonth() + 1;
       const currentQuarter = Math.ceil(currentMonth / 3);
 
-      // Load both published and assigned tasks to calculate stats
-      const [publishedTasks, assignedTasks, monthlyRanking, quarterlyRanking, allTimeRanking] = await Promise.all([
+      // Load task statistics and ranking data in parallel
+      const [taskStats, , assignedTasks, monthlyRanking, quarterlyRanking, allTimeRanking] = await Promise.all([
+        taskApi.getTaskStats(),
         taskApi.getPublishedTasks(),
         taskApi.getAssignedTasks(),
         user ? rankingApi.getMyRanking(user.id, { 
@@ -77,7 +77,7 @@ export const DashboardPage: React.FC = () => {
         }) : Promise.resolve(null),
       ]);
 
-      setPublishedTasksList(publishedTasks);
+      // Set task lists for detailed analysis (used in other parts of the component)
       setAssignedTasksList(assignedTasks);
 
       // Set bounty data from rankings
@@ -90,25 +90,8 @@ export const DashboardPage: React.FC = () => {
       setQuarterlyHasData(!!quarterlyRanking);
       setAllTimeHasData(!!allTimeRanking);
 
-      // Calculate stats from tasks
-      const publishedCompleted = publishedTasks.filter((t: Task) => t.status === 'completed').length;
-      const publishedInProgress = publishedTasks.filter((t: Task) => t.status === 'in_progress').length;
-      const assignedCompleted = assignedTasks.filter((t: Task) => t.status === 'completed').length;
-      const assignedInProgress = assignedTasks.filter((t: Task) => t.status === 'in_progress').length;
-      const totalBountyEarned = assignedTasks
-        .filter((t: Task) => t.status === 'completed')
-        .reduce((sum: number, t: Task) => sum + Number(t.bountyAmount || 0), 0);
-
-      setStats({
-        publishedTotal: publishedTasks.length,
-        publishedNotStarted: publishedTasks.filter((t: Task) => t.status === 'not_started').length,
-        publishedInProgress,
-        publishedCompleted,
-        assignedTotal: assignedTasks.length,
-        assignedInProgress,
-        assignedCompleted,
-        totalBountyEarned,
-      });
+      // Use the statistics from the API instead of calculating locally
+      setStats(taskStats);
     } catch (error) {
       message.error('加载统计数据失败');
     } finally {
@@ -120,112 +103,11 @@ export const DashboardPage: React.FC = () => {
     try {
       setGeneratingReport(true);
       
-      const now = dayjs();
-      let startDate = now;
-      let endDate = now;
-      let reportTitle = "任务总报";
+      const reportContent = await taskApi.generateReport({
+        type: reportType,
+      });
 
-      switch (reportType) {
-        case 'daily':
-          startDate = now.startOf('day');
-          endDate = now.endOf('day');
-          reportTitle = `任务日报 (${now.format('YYYY-MM-DD')})`;
-          break;
-        case 'weekly':
-          startDate = now.startOf('week');
-          endDate = now.endOf('week');
-          reportTitle = `任务周报 (${startDate.format('MM-DD')} 至 ${endDate.format('MM-DD')})`;
-          break;
-        case 'monthly':
-          startDate = now.startOf('month');
-          endDate = now.endOf('month');
-          reportTitle = `任务月报 (${now.format('YYYY-MM')})`;
-          break;
-        default:
-          startDate = dayjs(0);
-          endDate = now.add(100, 'year');
-          reportTitle = "任务总报";
-      }
-
-      const filterTask = (task: Task) => {
-        if (reportType === 'total') return true;
-        
-        const created = dayjs(task.createdAt);
-        // Check if created within the period
-        const isCreatedInPeriod = created.isAfter(startDate.subtract(1, 'second')) && created.isBefore(endDate.add(1, 'second'));
-        
-        // Check if completed within the period
-        let isCompletedInPeriod = false;
-        if (task.status === 'completed' && task.actualEndDate) {
-             const completed = dayjs(task.actualEndDate);
-             isCompletedInPeriod = completed.isAfter(startDate.subtract(1, 'second')) && completed.isBefore(endDate.add(1, 'second'));
-        }
-        
-        return isCreatedInPeriod || isCompletedInPeriod;
-      };
-
-      const filteredAssigned = assignedTasksList.filter(filterTask);
-      const filteredPublished = publishedTasksList.filter(filterTask);
-
-      const safeNumber = (value: any) => {
-        const n = Number(value);
-        return Number.isFinite(n) ? n : 0;
-      };
-
-      // Generate Text Report
-      let report = `${reportTitle}\n`;
-      report += `生成时间: ${now.format('YYYY-MM-DD HH:mm:ss')}\n`;
-      report += `----------------------------------------\n\n`;
-
-      report += `【一、统计概览】\n`;
-      report += `- 统计周期内承接任务: ${filteredAssigned.length}\n`;
-      report += `- 统计周期内发布任务: ${filteredPublished.length}\n`;
-      
-      const earned = filteredAssigned
-        .filter((t: Task) => t.status === 'completed')
-        .reduce((sum: number, t: Task) => sum + safeNumber(t.bountyAmount), 0);
-      report += `- 周期内获得赏金: ${earned.toFixed(2)}元\n`;
-      report += `\n`;
-
-      report += `【二、承接任务详情】\n`;
-      if (filteredAssigned.length > 0) {
-        filteredAssigned.forEach((task, index) => {
-           const statusMap: Record<string, string> = {
-             'not_started': '未开始',
-             'in_progress': '进行中',
-             'completed': '已完成',
-             'abandoned': '已放弃'
-           };
-           const statusStr = statusMap[task.status] || task.status;
-           report += `${index + 1}. ${task.name || task.title}\n`;
-           report += `   状态: ${statusStr} | 进度: ${task.progress || 0}%\n`;
-           report += `   赏金: ${safeNumber(task.bountyAmount).toFixed(2)}元 | 截止: ${task.plannedEndDate ? dayjs(task.plannedEndDate).format('YYYY-MM-DD') : '-'}\n`;
-           report += `\n`;
-        });
-      } else {
-        report += `(无相关记录)\n\n`;
-      }
-
-      report += `【三、发布任务详情】\n`;
-      if (filteredPublished.length > 0) {
-        filteredPublished.forEach((task, index) => {
-           const statusMap: Record<string, string> = {
-             'not_started': '未开始',
-             'in_progress': '进行中',
-             'completed': '已完成',
-             'abandoned': '已放弃'
-           };
-           const statusStr = statusMap[task.status] || task.status;
-           report += `${index + 1}. ${task.name || task.title}\n`;
-           report += `   状态: ${statusStr} | 进度: ${task.progress || 0}%\n`;
-           report += `   赏金: ${safeNumber(task.bountyAmount).toFixed(2)}元\n`;
-           report += `\n`;
-        });
-      } else {
-        report += `(无相关记录)\n`;
-      }
-
-      setReportContent(report);
+      setReportContent(reportContent);
       message.success('报告已生成，请在下方查看');
     } catch (error: any) {
       message.error(`生成报告失败: ${error?.message || '未知错误'}`);

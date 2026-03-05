@@ -83,15 +83,15 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
   /**
    * Fetch transaction history from API
    */
-  const fetchTransactionHistory = async () => {
+  const fetchTransactionHistory = async (page: number, type: TransactionType | 'all', size: number) => {
     setState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
       const response = await bountyApi.getUserTransactionHistory(
         userId,
-        state.currentPage,
-        state.pageSize,
-        state.selectedType === 'all' ? undefined : state.selectedType
+        page,
+        size,
+        type === 'all' ? undefined : type
       );
       
       setState(prev => ({
@@ -116,9 +116,9 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
    */
   useEffect(() => {
     if (visible && userId) {
-      fetchTransactionHistory();
+      fetchTransactionHistory(state.currentPage, state.selectedType, state.pageSize);
     }
-  }, [visible, userId, state.currentPage, state.selectedType]);
+  }, [visible, userId, state.currentPage, state.selectedType, state.pageSize]);
 
   /**
    * Effect: Reset state when drawer closes
@@ -160,7 +160,7 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
    * Handle retry after error
    */
   const handleRetry = () => {
-    fetchTransactionHistory();
+    fetchTransactionHistory(state.currentPage, state.selectedType, state.pageSize);
   };
 
   /**

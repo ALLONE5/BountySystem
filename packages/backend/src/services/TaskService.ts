@@ -72,6 +72,7 @@ export class TaskService {
             avatarUrl: row['publisher.avatarUrl'],
             role: row['publisher.role'],
             balance: row['publisher.balance'] || 0,
+            notificationPreferences: null, // 在任务查询中不需要通知偏好
             createdAt: row['publisher.createdAt'],
             lastLogin: row['publisher.lastLogin'],
           }
@@ -86,6 +87,7 @@ export class TaskService {
             avatarUrl: row['assignee.avatarUrl'],
             role: row['assignee.role'],
             balance: row['assignee.balance'] || 0,
+            notificationPreferences: null, // 在任务查询中不需要通知偏好
             createdAt: row['assignee.createdAt'],
             lastLogin: row['assignee.lastLogin'],
           }
@@ -2156,4 +2158,64 @@ export class TaskService {
     const result = await pool.query(query, [userId]);
     return this.mapTasksWithUsers(result.rows);
   }
+  /**
+   * Get task statistics for a user
+   * Returns aggregated statistics for published and assigned tasks
+   */
+  async getTaskStats(userId: string): Promise<{
+    publishedTotal: number;
+    publishedNotStarted: number;
+    publishedInProgress: number;
+    publishedCompleted: number;
+    assignedTotal: number;
+    assignedInProgress: number;
+    assignedCompleted: number;
+    totalBountyEarned: number;
+  }> {
+    const query = `
+      WITH published_stats AS (
+        SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN status = 'not_started' THEN 1 END) as not_started,
+          COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed
+        FROM tasks 
+        WHERE publisher_id = $1
+      ),
+      assigned_stats AS (
+        SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
+          COALESCE(SUM(CASE WHEN status = 'completed' THEN bounty_amount ELSE 0 END), 0) as total_bounty_earned
+        FROM tasks 
+        WHERE assignee_id = $1
+      )
+      SELECT 
+        p.total as published_total,
+        p.not_started as published_not_started,
+        p.in_progress as published_in_progress,
+        p.completed as published_completed,
+        a.total as assigned_total,
+        a.in_progress as assigned_in_progress,
+        a.completed as assigned_completed,
+        a.total_bounty_earned
+      FROM published_stats p, assigned_stats a
+    `;
+
+    const result = await pool.query(query, [userId]);
+    const row = result.rows[0];
+
+    return {
+      publishedTotal: parseInt(row.published_total) || 0,
+      publishedNotStarted: parseInt(row.published_not_started) || 0,
+      publishedInProgress: parseInt(row.published_in_progress) || 0,
+      publishedCompleted: parseInt(row.published_completed) || 0,
+      assignedTotal: parseInt(row.assigned_total) || 0,
+      assignedInProgress: parseInt(row.assigned_in_progress) || 0,
+      assignedCompleted: parseInt(row.assigned_completed) || 0,
+      totalBountyEarned: parseFloat(row.total_bounty_earned) || 0,
+    };
+  }
+
 }

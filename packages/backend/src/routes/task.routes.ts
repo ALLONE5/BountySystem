@@ -6,20 +6,9 @@ import { CommentService } from '../services/CommentService.js';
 import { AttachmentService } from '../services/AttachmentService.js';
 import { TaskAssistantService } from '../services/TaskAssistantService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { ValidationError, NotFoundError, AppError } from '../utils/errors.js';
-import { taskCreationRateLimiter, apiRateLimiter } from '../middleware/rateLimit.middleware.js';
+import { ValidationError } from '../utils/errors.js';
 import { AllocationType } from '../models/TaskAssistant.js';
 import { UserRole } from '../models/User.js';
-import {
-  validate,
-  idParamSchema,
-  safeTextSchema,
-  safeLongTextSchema,
-  positiveIntegerSchema,
-  dateSchema,
-  uuidSchema,
-} from '../middleware/validation.middleware.js';
-import { z } from 'zod';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { resolve } from '../config/container.js';
 import { Validator } from '../utils/Validator.js';
@@ -135,6 +124,127 @@ router.get('/user/assigned', authenticate, asyncHandler(async (req: Request, res
   const tasks = await taskService.getTasksByUser(userId, 'assignee', false);
 
   res.json(tasks);
+}));
+
+/**
+ * Generate task report
+ * POST /api/tasks/report
+ */
+router.post('/report', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { type } = req.body;
+
+  if (!type || !['daily', 'weekly', 'monthly', 'total'].includes(type)) {
+    return res.status(400).json({ error: 'Valid report type is required (daily, weekly, monthly, total)' });
+  }
+
+  // Get user's tasks for the report
+  const [publishedTasks, assignedTasks] = await Promise.all([
+    taskService.getTasksByUser(userId, 'publisher', false),
+    taskService.getTasksByUser(userId, 'assignee', false)
+  ]);
+
+  // Generate report content based on type and date range
+  const now = new Date();
+  let reportTitle = "任务总报";
+  let filteredPublished = publishedTasks;
+  let filteredAssigned = assignedTasks;
+
+  // Apply date filtering based on report type
+  if (type !== 'total') {
+    const filterByDate = (tasks: any[], dateField: string) => {
+      return tasks.filter(task => {
+        const taskDate = new Date(task[dateField]);
+        if (type === 'daily') {
+          return taskDate.toDateString() === now.toDateString();
+        } else if (type === 'weekly') {
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - now.getDay());
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          return taskDate >= weekStart && taskDate <= weekEnd;
+        } else if (type === 'monthly') {
+          return taskDate.getMonth() === now.getMonth() && taskDate.getFullYear() === now.getFullYear();
+        }
+        return true;
+      });
+    };
+
+    filteredPublished = filterByDate(publishedTasks, 'createdAt');
+    filteredAssigned = filterByDate(assignedTasks, 'createdAt');
+
+    if (type === 'daily') reportTitle = `任务日报 (${now.toISOString().split('T')[0]})`;
+    else if (type === 'weekly') reportTitle = `任务周报`;
+    else if (type === 'monthly') reportTitle = `任务月报 (${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')})`;
+  }
+
+  // Calculate statistics
+  const earnedBounty = filteredAssigned
+    .filter((t: any) => t.status === 'completed')
+    .reduce((sum: number, t: any) => sum + (parseFloat(t.bountyAmount) || 0), 0);
+
+  // Generate report text
+  let report = `${reportTitle}\n`;
+  report += `生成时间: ${now.toISOString().replace('T', ' ').split('.')[0]}\n`;
+  report += `----------------------------------------\n\n`;
+
+  report += `【一、统计概览】\n`;
+  report += `- 统计周期内承接任务: ${filteredAssigned.length}\n`;
+  report += `- 统计周期内发布任务: ${filteredPublished.length}\n`;
+  report += `- 周期内获得赏金: ${earnedBounty.toFixed(2)}元\n\n`;
+
+  report += `【二、承接任务详情】\n`;
+  if (filteredAssigned.length > 0) {
+    filteredAssigned.forEach((task: any, index: number) => {
+      const statusMap: Record<string, string> = {
+        'not_started': '未开始',
+        'in_progress': '进行中',
+        'completed': '已完成',
+        'abandoned': '已放弃'
+      };
+      const statusStr = statusMap[task.status] || task.status;
+      report += `${index + 1}. ${task.name}\n`;
+      report += `   状态: ${statusStr} | 进度: ${task.progress || 0}%\n`;
+      report += `   赏金: ${(parseFloat(task.bountyAmount) || 0).toFixed(2)}元\n\n`;
+    });
+  } else {
+    report += `(无相关记录)\n\n`;
+  }
+
+  report += `【三、发布任务详情】\n`;
+  if (filteredPublished.length > 0) {
+    filteredPublished.forEach((task: any, index: number) => {
+      const statusMap: Record<string, string> = {
+        'not_started': '未开始',
+        'in_progress': '进行中',
+        'completed': '已完成',
+        'abandoned': '已放弃'
+      };
+      const statusStr = statusMap[task.status] || task.status;
+      report += `${index + 1}. ${task.name}\n`;
+      report += `   状态: ${statusStr} | 进度: ${task.progress || 0}%\n`;
+      report += `   赏金: ${(parseFloat(task.bountyAmount) || 0).toFixed(2)}元\n\n`;
+    });
+  } else {
+    report += `(无相关记录)\n`;
+  }
+
+  // Return as plain text
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send(report);
+}));
+
+/**
+ * Get task statistics for the authenticated user
+ * GET /api/tasks/stats
+ * IMPORTANT: Must be before /:taskId route
+ */
+router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+
+  const stats = await taskService.getTaskStats(userId);
+
+  res.json(stats);
 }));
 
 /**

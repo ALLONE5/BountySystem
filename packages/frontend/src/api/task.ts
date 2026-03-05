@@ -57,9 +57,9 @@ export const taskApi = {
   },
 
   // 生成报告
-  generateReport: async (params: ReportParams): Promise<Blob> => {
+  generateReport: async (params: ReportParams): Promise<string> => {
     const response = await apiClient.post('/tasks/report', params, {
-      responseType: 'blob',
+      responseType: 'text',
     });
     return response.data;
   },
