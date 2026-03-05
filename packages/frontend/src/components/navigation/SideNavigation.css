@@ -1,6 +1,6 @@
 /**
  * Side Navigation Styles
- * Discord 风格的侧边导航样式
+ * Modern 风格的侧边导航样式
  */
 
 /* ============================================
@@ -304,29 +304,6 @@
 /* ============================================
    主题变体
    ============================================ */
-
-/* 赛博朋克主题 */
-.modern-layout.theme-cyberpunk .nav-menu .ant-menu-item::before {
-  background: #00f2ff;
-}
-
-.modern-layout.theme-cyberpunk .nav-menu .ant-menu-item.ant-menu-item-selected {
-  background: rgba(0, 242, 255, 0.1);
-  color: #00f2ff;
-}
-
-.modern-layout.theme-cyberpunk .nav-item-horizontal.active {
-  background: rgba(0, 242, 255, 0.15);
-  color: #00f2ff;
-}
-
-.modern-layout.theme-cyberpunk .nav-item-horizontal.active::before {
-  background: #00f2ff;
-}
-
-.modern-layout.theme-cyberpunk .user-status {
-  color: #39ff14;
-}
 
 /* 亮色主题 */
 .modern-layout.theme-light .nav-menu {

@@ -32,34 +32,6 @@
 }
 
 /* ============================================
-   赛博朋克主题 - 赛博战士 (优化版)
-   ============================================ */
-[data-theme='cyberpunk'] {
-  --color-bg-primary: #0a0a0f;
-  --color-bg-secondary: #151520;
-  --color-bg-tertiary: #1f1f2e;
-  --color-bg-glass: rgba(21, 21, 32, 0.9);
-  
-  --color-primary: #00f2ff;
-  --color-secondary: #ff00e5;
-  --color-accent: #39ff14;
-  
-  --color-success: #39ff14;
-  --color-warning: #ffaa00;
-  --color-danger: #ff0040;
-  --color-info: #00f2ff;
-  
-  --color-text-primary: #f0f0f8;
-  --color-text-secondary: #00f2ff;
-  --color-text-tertiary: #ff00e5;
-  --color-text-inverse: #0a0a0f;
-  
-  --color-border-primary: rgba(0, 242, 255, 0.5);
-  --color-border-secondary: rgba(255, 0, 229, 0.3);
-  --color-divider: rgba(0, 242, 255, 0.15);
-}
-
-/* ============================================
    亮色主题 - 日光战士
    ============================================ */
 [data-theme='light'] {
@@ -454,65 +426,6 @@
 }
 
 /* ============================================
-   赛博朋克主题特殊效果
-   ============================================ */
-[data-theme='cyberpunk'] .ant-btn-primary {
-  box-shadow: 0 0 10px rgba(0, 242, 255, 0.5), inset 0 0 10px rgba(0, 242, 255, 0.1) !important;
-  border: 1px solid rgba(0, 242, 255, 0.8) !important;
-}
-
-[data-theme='cyberpunk'] .ant-btn-primary:hover {
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.8), inset 0 0 10px rgba(0, 242, 255, 0.2) !important;
-}
-
-[data-theme='cyberpunk'] .ant-input:focus,
-[data-theme='cyberpunk'] .ant-select-selector:focus {
-  box-shadow: 0 0 10px rgba(0, 242, 255, 0.5), inset 0 0 5px rgba(0, 242, 255, 0.1) !important;
-  border-color: rgba(0, 242, 255, 0.8) !important;
-}
-
-/* 赛博朋克搜索栏 */
-[data-theme='cyberpunk'] .ant-input-wrapper,
-[data-theme='cyberpunk'] .ant-input-group {
-  background: var(--color-bg-tertiary) !important;
-  border: 1px solid rgba(0, 242, 255, 0.3) !important;
-  border-radius: 4px;
-}
-
-[data-theme='cyberpunk'] .ant-input {
-  background: var(--color-bg-tertiary) !important;
-  border: 1px solid rgba(0, 242, 255, 0.3) !important;
-  color: var(--color-text-primary) !important;
-}
-
-[data-theme='cyberpunk'] .ant-input:hover {
-  border-color: rgba(0, 242, 255, 0.6) !important;
-}
-
-[data-theme='cyberpunk'] .ant-input:focus {
-  border-color: rgba(0, 242, 255, 0.8) !important;
-  box-shadow: 0 0 10px rgba(0, 242, 255, 0.4), inset 0 0 5px rgba(0, 242, 255, 0.1) !important;
-}
-
-[data-theme='cyberpunk'] .ant-input-prefix {
-  color: rgba(0, 242, 255, 0.6) !important;
-}
-
-[data-theme='cyberpunk'] .ant-input-suffix {
-  color: rgba(0, 242, 255, 0.6) !important;
-}
-
-[data-theme='cyberpunk'] .ant-table-thead > tr > th {
-  background: linear-gradient(135deg, rgba(0, 242, 255, 0.1), rgba(255, 0, 229, 0.05)) !important;
-  border-left: 2px solid rgba(0, 242, 255, 0.4) !important;
-}
-
-[data-theme='cyberpunk'] .ant-table-tbody > tr:hover > td {
-  background: rgba(0, 242, 255, 0.05) !important;
-  box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.1) !important;
-}
-
-/* ============================================
    暗色主题特殊效果
    ============================================ */
 [data-theme='dark'] .ant-btn-primary {
@@ -568,8 +481,7 @@
    ============================================ */
 
 /* 确保所有文本都有足够的对比度 */
-[data-theme='dark'] body,
-[data-theme='cyberpunk'] body {
+[data-theme='dark'] body {
   color: var(--color-text-primary);
 }
 
@@ -578,24 +490,16 @@
 [data-theme='dark'] h3,
 [data-theme='dark'] h4,
 [data-theme='dark'] h5,
-[data-theme='dark'] h6,
-[data-theme='cyberpunk'] h1,
-[data-theme='cyberpunk'] h2,
-[data-theme='cyberpunk'] h3,
-[data-theme='cyberpunk'] h4,
-[data-theme='cyberpunk'] h5,
-[data-theme='cyberpunk'] h6 {
+[data-theme='dark'] h6 {
   color: var(--color-text-primary);
 }
 
 /* 链接颜色 */
-[data-theme='dark'] a,
-[data-theme='cyberpunk'] a {
+[data-theme='dark'] a {
   color: var(--color-primary);
 }
 
-[data-theme='dark'] a:hover,
-[data-theme='cyberpunk'] a:hover {
+[data-theme='dark'] a:hover {
   color: var(--color-secondary);
 }
 
@@ -672,17 +576,6 @@
   color: var(--color-text-inverse) !important;
 }
 
-/* 赛博朋克主题搜索栏特效 */
-[data-theme='cyberpunk'] .ant-input-search .ant-input:focus {
-  box-shadow: 0 0 10px rgba(0, 242, 255, 0.5), 
-              inset 0 0 5px rgba(0, 242, 255, 0.1) !important;
-  border-color: rgba(0, 242, 255, 0.8) !important;
-}
-
-[data-theme='cyberpunk'] .ant-input-search .ant-btn:hover {
-  box-shadow: 0 0 10px rgba(0, 242, 255, 0.5) !important;
-}
-
 /* 搜索结果下拉框 */
 .ant-select-dropdown,
 .ant-dropdown {
@@ -723,13 +616,4 @@
 .ant-input-search-button:hover {
   background: var(--color-secondary) !important;
   border-color: var(--color-secondary) !important;
-}
-
-/* 赛博朋克主题搜索按钮特效 */
-[data-theme='cyberpunk'] .ant-input-search-button {
-  box-shadow: 0 0 10px rgba(0, 242, 255, 0.5) !important;
-}
-
-[data-theme='cyberpunk'] .ant-input-search-button:hover {
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.8) !important;
 }

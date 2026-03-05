@@ -1,7 +1,6 @@
 /**
  * Glassmorphism Design System
  * 现代化玻璃态效果样式库
- * 参考 Discord 和 Midjourney 的设计理念
  */
 
 /* ============================================
@@ -13,20 +12,6 @@
   --glass-opacity: 0.8;
   --glass-border-opacity: 0.2;
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  
-  /* Discord 风格色彩 */
-  --discord-bg-primary: #2f3136;
-  --discord-bg-secondary: #36393f;
-  --discord-bg-tertiary: #40444b;
-  --discord-accent: #5865f2;
-  --discord-success: #57f287;
-  --discord-warning: #fee75c;
-  --discord-danger: #ed4245;
-  
-  /* Midjourney 风格渐变 */
-  --midjourney-gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --midjourney-gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --midjourney-gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   
   /* 间距系统 */
   --spacing-xs: 4px;
@@ -141,36 +126,36 @@
 }
 
 /* ============================================
-   Discord 风格组件
+   Modern UI Components
    ============================================ */
 
-/* Discord 侧边栏 */
-.discord-sidebar {
-  background: var(--discord-bg-primary);
+/* Modern sidebar */
+.modern-sidebar {
+  background: var(--color-bg-secondary);
   backdrop-filter: blur(var(--glass-blur));
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid var(--color-border-primary);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Discord 卡片 */
-.discord-card {
-  background: var(--discord-bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Modern card */
+.modern-card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
   border-radius: var(--radius-md);
   padding: var(--spacing-lg);
   transition: all var(--duration-normal) var(--ease-out-cubic);
 }
 
-.discord-card:hover {
-  background: var(--discord-bg-tertiary);
+.modern-card:hover {
+  background: var(--color-bg-tertiary);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Discord 按钮变体 */
-.discord-button-primary {
-  background: var(--discord-accent);
-  color: white;
+/* Modern button variants */
+.modern-button-primary {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--spacing-sm) var(--spacing-md);
@@ -178,110 +163,33 @@
   transition: all var(--duration-fast) var(--ease-out-cubic);
 }
 
-.discord-button-primary:hover {
-  background: #4752c4;
+.modern-button-primary:hover {
+  background: var(--color-primary);
+  opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+  box-shadow: var(--shadow-glow);
 }
 
-.discord-button-success {
-  background: var(--discord-success);
-  color: var(--discord-bg-primary);
+.modern-button-success {
+  background: var(--color-success);
+  color: var(--color-text-inverse);
 }
 
-.discord-button-success:hover {
-  background: #4ade80;
-  box-shadow: 0 4px 15px rgba(87, 242, 135, 0.4);
+.modern-button-success:hover {
+  background: var(--color-success);
+  opacity: 0.9;
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
 }
 
-.discord-button-danger {
-  background: var(--discord-danger);
-  color: white;
+.modern-button-danger {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
 }
 
-.discord-button-danger:hover {
-  background: #dc2626;
-  box-shadow: 0 4px 15px rgba(237, 66, 69, 0.4);
-}
-
-/* ============================================
-   Midjourney 风格组件
-   ============================================ */
-
-/* Midjourney 网格卡片 */
-.midjourney-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--spacing-lg);
-  padding: var(--spacing-lg);
-}
-
-.midjourney-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-xl);
-  position: relative;
-  overflow: hidden;
-  transition: all var(--duration-normal) var(--ease-in-out-cubic);
-}
-
-.midjourney-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--midjourney-gradient-1);
-  opacity: 0;
-  transition: opacity var(--duration-normal) var(--ease-out-cubic);
-  z-index: -1;
-}
-
-.midjourney-card:hover::before {
-  opacity: 0.1;
-}
-
-.midjourney-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-/* Midjourney 渐变按钮 */
-.midjourney-button {
-  background: var(--midjourney-gradient-1);
-  color: white;
-  border: none;
-  border-radius: var(--radius-full);
-  padding: var(--spacing-md) var(--spacing-xl);
-  font-weight: 600;
-  position: relative;
-  overflow: hidden;
-  transition: all var(--duration-normal) var(--ease-out-cubic);
-}
-
-.midjourney-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--midjourney-gradient-2);
-  opacity: 0;
-  transition: opacity var(--duration-normal) var(--ease-out-cubic);
-}
-
-.midjourney-button:hover::before {
-  opacity: 1;
-}
-
-.midjourney-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+.modern-button-danger:hover {
+  background: var(--color-danger);
+  opacity: 0.9;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
 }
 
 /* ============================================
@@ -294,23 +202,11 @@
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
   }
-  
-  .midjourney-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-  }
-  
-  .midjourney-card {
-    padding: var(--spacing-lg);
-  }
 }
 
 /* 平板端优化 */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .midjourney-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
+  /* 平板端样式 */
 }
 
 /* ============================================
@@ -363,7 +259,7 @@
 
 /* 文字渐变 */
 .text-gradient {
-  background: var(--midjourney-gradient-1);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -373,7 +269,7 @@
 /* 边框渐变 */
 .border-gradient {
   position: relative;
-  background: var(--discord-bg-secondary);
+  background: var(--color-bg-secondary);
   border-radius: var(--radius-md);
 }
 
@@ -382,7 +278,7 @@
   position: absolute;
   inset: 0;
   padding: 2px;
-  background: var(--midjourney-gradient-1);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: inherit;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: xor;

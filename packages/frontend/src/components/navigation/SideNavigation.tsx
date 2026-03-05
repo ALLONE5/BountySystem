@@ -47,8 +47,8 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
     if (path.startsWith('/my') || path.startsWith('/dashboard')) return 'my';
     if (path.startsWith('/bounty-tasks')) return 'bounty-tasks';
     if (path.startsWith('/ranking')) return 'ranking';
+    if (path.startsWith('/dev/')) return 'dev';
     if (path.startsWith('/admin') && !path.startsWith('/admin/system-config') && !path.startsWith('/admin/audit-logs')) return 'admin';
-    if (path.startsWith('/admin/system-config') || path.startsWith('/admin/audit-logs')) return 'dev';
     
     return 'my';
   }, [location.pathname]);
@@ -96,7 +96,12 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         key: 'dev',
         icon: <BgColorsOutlined />,
         label: collapsed && !horizontal ? null : '开发',
-        onClick: () => navigate('/admin/system-config'),
+        onClick: () => {
+          // 如果当前不在开发页面，导航到系统配置页面
+          if (!location.pathname.startsWith('/dev/')) {
+            navigate('/dev/system-config');
+          }
+        },
       });
     }
 
@@ -169,23 +174,43 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
 
   // 开发者子菜单项
   const devSubItems = useMemo(() => {
-    if (collapsed && !horizontal || !isDeveloper()) return [];
+    console.log('devSubItems creation:', {
+      collapsed,
+      horizontal,
+      isDeveloper: isDeveloper(),
+      user: user,
+    });
     
-    return [
+    if (collapsed && !horizontal) {
+      console.log('devSubItems: returning empty due to collapsed');
+      return [];
+    }
+    
+    // 临时：总是返回开发者菜单项用于调试
+    const items = [
       {
         key: 'dev-system-config',
         icon: <SettingOutlined />,
         label: '系统配置',
-        onClick: () => navigate('/admin/system-config'),
+        onClick: () => navigate('/dev/system-config'),
       },
       {
         key: 'dev-audit-logs',
         icon: <AuditOutlined />,
         label: '审计日志',
-        onClick: () => navigate('/admin/audit-logs'),
+        onClick: () => navigate('/dev/audit-logs'),
+      },
+      {
+        key: 'dev-system-monitor',
+        icon: <BgColorsOutlined />,
+        label: '系统监控',
+        onClick: () => navigate('/dev/system-monitor'),
       },
     ];
-  }, [collapsed, horizontal, navigate, isDeveloper]);
+    
+    console.log('devSubItems created:', items);
+    return items;
+  }, [collapsed, horizontal, navigate, isDeveloper, user]);
 
   const navigationClass = `side-navigation ${
     collapsed ? 'collapsed' : ''
@@ -269,20 +294,37 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         </div>
       )}
 
-      {/* 开发者子菜单 */}
-      {selectedKey === 'dev' && !collapsed && devSubItems.length > 0 && (
-        <div className="sub-navigation">
-          <div className="sub-nav-title">开发工具</div>
-          <Menu
-            mode="inline"
-            className="sub-nav-menu"
-            items={devSubItems.map((item) => ({
-              key: item.key,
-              icon: item.icon,
-              label: item.label,
-              onClick: item.onClick,
-            }))}
-          />
+      {/* 开发者子菜单 - 强制显示测试 */}
+      {true && (
+        <div style={{ 
+          backgroundColor: 'red', 
+          color: 'white', 
+          padding: '20px', 
+          margin: '10px',
+          border: '5px solid yellow',
+          fontSize: '16px',
+          fontWeight: 'bold'
+        }}>
+          <div>强制显示的开发者菜单</div>
+          <button 
+            onClick={() => {
+              console.log('Button clicked!');
+              alert('系统配置按钮被点击！');
+              navigate('/dev/system-config');
+            }}
+            style={{
+              backgroundColor: 'blue',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '5px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              marginTop: '10px'
+            }}
+          >
+            系统配置 (强制按钮)
+          </button>
         </div>
       )}
 

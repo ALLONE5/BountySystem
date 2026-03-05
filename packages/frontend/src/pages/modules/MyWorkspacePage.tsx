@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Tabs, Row, Col, Card, Button, Space, Avatar, Badge, List, Statistic, Progress } from 'antd';
+import React, { useState } from 'react';
+import { Tabs, Row, Col, Card, Button, Space, Avatar, Badge, Statistic, Progress } from 'antd';
 import {
   UserOutlined,
   FileTextOutlined,
   TeamOutlined,
   DollarOutlined,
   TrophyOutlined,
-  ClockCircleOutlined,
   CheckCircleOutlined,
   PlusOutlined,
   EyeOutlined,
@@ -21,7 +20,6 @@ export const MyWorkspacePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
-  const [loading, setLoading] = useState(false);
 
   // 个人资料数据
   const [profileData, setProfileData] = useState({
@@ -142,16 +140,16 @@ export const MyWorkspacePage: React.FC = () => {
           <Card title="个人信息">
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <Avatar size={80} src={user?.avatarUrl} icon={<UserOutlined />} />
-              <h3 style={{ margin: '16px 0 8px', color: 'var(--discord-text-primary)' }}>
+              <h3 style={{ margin: '16px 0 8px', color: 'var(--color-text-primary)' }}>
                 {user?.username}
               </h3>
-              <p style={{ color: 'var(--discord-text-secondary)', margin: 0 }}>
+              <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>
                 {user?.email}
               </p>
               <Badge 
                 status="success" 
                 text="在线" 
-                style={{ color: 'var(--discord-success)', marginTop: 8 }}
+                style={{ color: 'var(--color-success)', marginTop: 8 }}
               />
             </div>
             <div style={{ marginTop: 16 }}>
@@ -169,47 +167,49 @@ export const MyWorkspacePage: React.FC = () => {
         <Col xs={24} lg={16}>
           <Row gutter={[16, 16]}>
             <Col xs={12} sm={8}>
-              <Card
-                title="总赏金"
-                value={`¥${profileData.totalBounty}`}
-                icon={<DollarOutlined />}
-                color="warning"
-                trend={{ value: 15, isPositive: true }}
-              />
+              <Card>
+                <Statistic
+                  title="总赏金"
+                  value={`¥${profileData.totalBounty}`}
+                  prefix={<DollarOutlined />}
+                />
+              </Card>
             </Col>
             <Col xs={12} sm={8}>
-              <Card
-                title="完成任务"
-                value={profileData.completedTasks}
-                icon={<CheckCircleOutlined />}
-                color="success"
-                trend={{ value: 8, isPositive: true }}
-              />
+              <Card>
+                <Statistic
+                  title="完成任务"
+                  value={profileData.completedTasks}
+                  prefix={<CheckCircleOutlined />}
+                />
+              </Card>
             </Col>
             <Col xs={12} sm={8}>
-              <Card
-                title="当前排名"
-                value={`#${profileData.currentRank}`}
-                icon={<TrophyOutlined />}
-                color="danger"
-                trend={{ value: 2, isPositive: false }}
-              />
+              <Card>
+                <Statistic
+                  title="当前排名"
+                  value={`#${profileData.currentRank}`}
+                  prefix={<TrophyOutlined />}
+                />
+              </Card>
             </Col>
             <Col xs={12} sm={8}>
-              <Card
-                title="发布任务"
-                value={profileData.publishedTasks}
-                icon={<FileTextOutlined />}
-                color="primary"
-              />
+              <Card>
+                <Statistic
+                  title="发布任务"
+                  value={profileData.publishedTasks}
+                  prefix={<FileTextOutlined />}
+                />
+              </Card>
             </Col>
             <Col xs={12} sm={8}>
-              <Card
-                title="加入组群"
-                value={profileData.joinedGroups}
-                icon={<TeamOutlined />}
-                color="primary"
-              />
+              <Card>
+                <Statistic
+                  title="加入组群"
+                  value={profileData.joinedGroups}
+                  prefix={<TeamOutlined />}
+                />
+              </Card>
             </Col>
             <Col xs={12} sm={8}>
               <Card>
@@ -217,7 +217,7 @@ export const MyWorkspacePage: React.FC = () => {
                   title="本周进度"
                   value={profileData.weeklyProgress}
                   suffix="%"
-                  valueStyle={{ color: 'var(--discord-success)' }}
+                  valueStyle={{ color: 'var(--color-success)' }}
                 />
                 <Progress 
                   percent={profileData.weeklyProgress} 
@@ -236,7 +236,7 @@ export const MyWorkspacePage: React.FC = () => {
   const renderMyBountiesTab = () => (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ color: 'var(--discord-text-primary)', margin: 0 }}>我发布的悬赏</h3>
+        <h3 style={{ color: 'var(--color-text-primary)', margin: 0 }}>我发布的悬赏</h3>
         <Button 
           type="primary" 
           icon={<PlusOutlined />}
@@ -251,10 +251,10 @@ export const MyWorkspacePage: React.FC = () => {
           <Col xs={24} lg={12} key={bounty.id}>
             <Card>
               <div style={{ marginBottom: 12 }}>
-                <h4 style={{ color: 'var(--discord-text-primary)', margin: '0 0 8px 0' }}>
+                <h4 style={{ color: 'var(--color-text-primary)', margin: '0 0 8px 0' }}>
                   {bounty.title}
                 </h4>
-                <p style={{ color: 'var(--discord-text-secondary)', margin: '0 0 8px 0' }}>
+                <p style={{ color: 'var(--color-text-secondary)', margin: '0 0 8px 0' }}>
                   {bounty.description}
                 </p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
@@ -271,23 +271,23 @@ export const MyWorkspacePage: React.FC = () => {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <DollarOutlined style={{ color: 'var(--discord-success)' }} />
-                  <span style={{ color: 'var(--discord-success)', fontWeight: 600 }}>
+                  <DollarOutlined style={{ color: 'var(--color-success)' }} />
+                  <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
                     ¥{bounty.bounty}
                   </span>
                 </div>
-                <div style={{ color: 'var(--discord-text-muted)', fontSize: '12px' }}>
+                <div style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
                   {bounty.applicants} 人申请
                 </div>
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ color: 'var(--discord-text-muted)', fontSize: '12px' }}>
+                <div style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
                   截止: {bounty.deadline}
                 </div>
                 <Space>
                   <Button 
-                    type="secondary" 
+                    type="default" 
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() => handleTaskView(bounty.id)}
@@ -315,7 +315,7 @@ export const MyWorkspacePage: React.FC = () => {
   const renderMyTasksTab = () => (
     <div>
       <div style={{ marginBottom: 16 }}>
-        <h3 style={{ color: 'var(--discord-text-primary)', margin: 0 }}>我接受的任务</h3>
+        <h3 style={{ color: 'var(--color-text-primary)', margin: 0 }}>我接受的任务</h3>
       </div>
       
       <Row gutter={[16, 16]}>
@@ -323,10 +323,10 @@ export const MyWorkspacePage: React.FC = () => {
           <Col xs={24} lg={12} key={task.id}>
             <Card>
               <div style={{ marginBottom: 12 }}>
-                <h4 style={{ color: 'var(--discord-text-primary)', margin: '0 0 8px 0' }}>
+                <h4 style={{ color: 'var(--color-text-primary)', margin: '0 0 8px 0' }}>
                   {task.title}
                 </h4>
-                <p style={{ color: 'var(--discord-text-secondary)', margin: '0 0 8px 0' }}>
+                <p style={{ color: 'var(--color-text-secondary)', margin: '0 0 8px 0' }}>
                   {task.description}
                 </p>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
@@ -344,8 +344,8 @@ export const MyWorkspacePage: React.FC = () => {
               {task.progress !== undefined && (
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ color: 'var(--discord-text-secondary)', fontSize: '12px' }}>进度</span>
-                    <span style={{ color: 'var(--discord-text-secondary)', fontSize: '12px' }}>{task.progress}%</span>
+                    <span style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>进度</span>
+                    <span style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>{task.progress}%</span>
                   </div>
                   <Progress percent={task.progress} size="small" />
                 </div>
@@ -353,23 +353,23 @@ export const MyWorkspacePage: React.FC = () => {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <DollarOutlined style={{ color: 'var(--discord-success)' }} />
-                  <span style={{ color: 'var(--discord-success)', fontWeight: 600 }}>
+                  <DollarOutlined style={{ color: 'var(--color-success)' }} />
+                  <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
                     ¥{task.bounty}
                   </span>
                 </div>
-                <div style={{ color: 'var(--discord-text-muted)', fontSize: '12px' }}>
+                <div style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
                   发布者: {task.publisher}
                 </div>
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ color: 'var(--discord-text-muted)', fontSize: '12px' }}>
+                <div style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}>
                   {task.status === 'completed' ? `完成于: ${task.completedAt}` : `截止: ${task.deadline}`}
                 </div>
                 <Space>
                   <Button 
-                    type="secondary" 
+                    type="default" 
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() => handleTaskView(task.id)}
@@ -378,7 +378,7 @@ export const MyWorkspacePage: React.FC = () => {
                   </Button>
                   {task.status === 'in_progress' && (
                     <Button 
-                      type="success" 
+                      type="primary" 
                       size="small"
                     >
                       提交
@@ -397,7 +397,7 @@ export const MyWorkspacePage: React.FC = () => {
   const renderMyGroupsTab = () => (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ color: 'var(--discord-text-primary)', margin: 0 }}>我的组群</h3>
+        <h3 style={{ color: 'var(--color-text-primary)', margin: 0 }}>我的组群</h3>
         <Button 
           type="primary" 
           icon={<PlusOutlined />}
@@ -415,7 +415,7 @@ export const MyWorkspacePage: React.FC = () => {
                 <Avatar size={48} src={group.avatar} icon={<TeamOutlined />} />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <h4 style={{ color: 'var(--discord-text-primary)', margin: 0 }}>
+                    <h4 style={{ color: 'var(--color-text-primary)', margin: 0 }}>
                       {group.name}
                     </h4>
                     <Badge 
@@ -423,7 +423,7 @@ export const MyWorkspacePage: React.FC = () => {
                       text={group.isActive ? '活跃' : '不活跃'}
                     />
                   </div>
-                  <p style={{ color: 'var(--discord-text-secondary)', margin: 0, fontSize: '13px' }}>
+                  <p style={{ color: 'var(--color-text-secondary)', margin: 0, fontSize: '13px' }}>
                     {group.description}
                   </p>
                 </div>
@@ -431,18 +431,18 @@ export const MyWorkspacePage: React.FC = () => {
               
               <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ color: 'var(--discord-text-primary)', fontWeight: 600 }}>
+                  <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                     {group.memberCount}
                   </div>
-                  <div style={{ color: 'var(--discord-text-muted)', fontSize: '11px' }}>
+                  <div style={{ color: 'var(--color-text-tertiary)', fontSize: '11px' }}>
                     成员
                   </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ color: 'var(--discord-text-primary)', fontWeight: 600 }}>
+                  <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                     {group.taskCount}
                   </div>
-                  <div style={{ color: 'var(--discord-text-muted)', fontSize: '11px' }}>
+                  <div style={{ color: 'var(--color-text-tertiary)', fontSize: '11px' }}>
                     任务
                   </div>
                 </div>
@@ -457,7 +457,7 @@ export const MyWorkspacePage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <Space>
                   <Button 
-                    type="secondary" 
+                    type="default" 
                     size="small"
                     onClick={() => handleGroupView(group.id)}
                   >
@@ -483,10 +483,10 @@ export const MyWorkspacePage: React.FC = () => {
   return (
     <div className="my-workspace-page">
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ color: 'var(--discord-text-primary)', margin: 0 }}>
+        <h2 style={{ color: 'var(--color-text-primary)', margin: 0 }}>
           我的工作台
         </h2>
-        <p style={{ color: 'var(--discord-text-secondary)', margin: '8px 0 0 0' }}>
+        <p style={{ color: 'var(--color-text-secondary)', margin: '8px 0 0 0' }}>
           管理您的个人信息、悬赏、任务和组群
         </p>
       </div>
@@ -495,11 +495,6 @@ export const MyWorkspacePage: React.FC = () => {
         activeKey={activeTab} 
         onChange={setActiveTab}
         size="large"
-        style={{ 
-          '--ant-tabs-card-head-background': 'var(--discord-bg-secondary)',
-          '--ant-tabs-tab-color': 'var(--discord-text-secondary)',
-          '--ant-tabs-tab-active-color': 'var(--discord-text-primary)',
-        } as any}
       >
         <TabPane 
           tab={

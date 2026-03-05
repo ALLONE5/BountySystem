@@ -3,7 +3,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  role: string;
+  role: UserRole;
   avatarUrl?: string;
   avatarId?: string;
   bounty: number;
@@ -214,7 +214,7 @@ export interface UserFilters {
 }
 
 // Theme Types
-export type ThemeMode = 'light' | 'dark' | 'cyberpunk' | 'discord' | 'midjourney';
+export type ThemeMode = 'light' | 'dark';
 
 // System Config Types
 export interface SystemConfig {

@@ -125,7 +125,7 @@ export const AdminPage: React.FC = () => {
           <Space>
             {isSuperAdmin() && (
               <Button
-                className="discord-button-primary"
+                type="primary"
                 icon={<SettingOutlined />}
                 onClick={() => navigate('/admin/system-config')}
               >

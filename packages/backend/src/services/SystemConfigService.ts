@@ -64,9 +64,9 @@ export class SystemConfigService {
     logoUrl: string; 
     siteDescription: string; 
     debugMode: boolean;
-    defaultTheme: 'light' | 'dark' | 'cyberpunk';
+    defaultTheme: 'light' | 'dark';
     allowThemeSwitch: boolean;
-    animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'cyberpunk' | 'matrix';
+    animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'matrix';
     enableAnimations: boolean;
     reducedMotion: boolean;
   }> {
@@ -97,7 +97,7 @@ export class SystemConfigService {
         debugMode: false,
         defaultTheme: 'dark',
         allowThemeSwitch: true,
-        animationStyle: 'cyberpunk',
+        animationStyle: 'minimal',
         enableAnimations: true,
         reducedMotion: false,
       };
@@ -341,7 +341,7 @@ export class SystemConfigService {
       configData.smtpSecure ?? true,
       configData.defaultTheme || 'dark',
       configData.allowThemeSwitch ?? true,
-      configData.animationStyle || 'cyberpunk',
+      configData.animationStyle || 'minimal',
       configData.enableAnimations ?? true,
       configData.reducedMotion ?? false
     ];
@@ -449,14 +449,14 @@ export class SystemConfigService {
 
     // UI Theme validation
     if (data.defaultTheme !== undefined) {
-      const validThemes = ['light', 'dark', 'cyberpunk'];
+      const validThemes = ['light', 'dark'];
       if (!validThemes.includes(data.defaultTheme)) {
         throw new ValidationError('Invalid default theme');
       }
     }
 
     if (data.animationStyle !== undefined) {
-      const validAnimationStyles = ['none', 'minimal', 'scanline', 'particles', 'hexagon', 'datastream', 'hologram', 'ripple', 'cyberpunk', 'matrix'];
+      const validAnimationStyles = ['none', 'minimal', 'scanline', 'particles', 'hexagon', 'datastream', 'hologram', 'ripple', 'matrix'];
       if (!validAnimationStyles.includes(data.animationStyle)) {
         throw new ValidationError('Invalid animation style');
       }

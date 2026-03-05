@@ -15,9 +15,9 @@ export interface SystemConfig {
   smtpPassword: string;
   smtpSecure: boolean;
   // UI Theme Configuration
-  defaultTheme: 'light' | 'dark' | 'cyberpunk';
+  defaultTheme: 'light' | 'dark';
   allowThemeSwitch: boolean;
-  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'cyberpunk' | 'matrix';
+  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'matrix';
   enableAnimations: boolean;
   reducedMotion: boolean;
   createdAt: Date;
@@ -40,9 +40,9 @@ export interface SystemConfigCreateDTO {
   smtpPassword?: string;
   smtpSecure?: boolean;
   // UI Theme Configuration
-  defaultTheme?: 'light' | 'dark' | 'cyberpunk';
+  defaultTheme?: 'light' | 'dark';
   allowThemeSwitch?: boolean;
-  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'cyberpunk' | 'matrix';
+  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'matrix';
   enableAnimations?: boolean;
   reducedMotion?: boolean;
 }
@@ -63,9 +63,9 @@ export interface SystemConfigUpdateDTO {
   smtpPassword?: string;
   smtpSecure?: boolean;
   // UI Theme Configuration
-  defaultTheme?: 'light' | 'dark' | 'cyberpunk';
+  defaultTheme?: 'light' | 'dark';
   allowThemeSwitch?: boolean;
-  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'cyberpunk' | 'matrix';
+  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'matrix';
   enableAnimations?: boolean;
   reducedMotion?: boolean;
 }
@@ -86,9 +86,9 @@ export interface SystemConfigResponse {
   smtpUser: string;
   smtpSecure: boolean;
   // UI Theme Configuration
-  defaultTheme: 'light' | 'dark' | 'cyberpunk';
+  defaultTheme: 'light' | 'dark';
   allowThemeSwitch: boolean;
-  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'cyberpunk' | 'matrix';
+  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'matrix';
   enableAnimations: boolean;
   reducedMotion: boolean;
   createdAt: Date;

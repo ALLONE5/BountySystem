@@ -79,7 +79,7 @@ export const MyPage: React.FC = () => {
               通知
             </Button>
             <Button
-              className="discord-button-primary"
+              type="primary"
               icon={<SettingOutlined />}
               onClick={() => navigate('/settings')}
             >

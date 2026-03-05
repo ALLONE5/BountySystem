@@ -55,7 +55,6 @@ export const DashboardPage: React.FC = () => {
           year: currentYear, 
           month: currentMonth 
         }).catch((_error) => {
-          console.log('Monthly ranking not found, using default value');
           return null;
         }) : Promise.resolve(null),
         user ? rankingApi.getMyRanking(user.id, { 
@@ -63,14 +62,12 @@ export const DashboardPage: React.FC = () => {
           year: currentYear, 
           quarter: currentQuarter 
         }).catch((_error) => {
-          console.log('Quarterly ranking not found, using default value');
           return null;
         }) : Promise.resolve(null),
         user ? rankingApi.getMyRanking(user.id, { 
           period: 'all_time', 
           year: currentYear 
         }).catch((_error) => {
-          console.log('All-time ranking not found, using default value');
           return null;
         }) : Promise.resolve(null),
       ]);
@@ -109,7 +106,6 @@ export const DashboardPage: React.FC = () => {
       });
     } catch (error) {
       message.error('加载统计数据失败');
-      console.error('Failed to load stats:', error);
     } finally {
       setLoading(false);
     }
@@ -228,7 +224,6 @@ export const DashboardPage: React.FC = () => {
       message.success('报告已生成，请在下方查看');
     } catch (error: any) {
       message.error(`生成报告失败: ${error?.message || '未知错误'}`);
-      console.error('Failed to generate report:', error);
     } finally {
       setGeneratingReport(false);
     }

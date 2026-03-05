@@ -166,6 +166,11 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
         label: '开发管理',
         children: [
           {
+            key: '/dev/system-config',
+            label: '系统配置',
+            onClick: () => navigate('/dev/system-config'),
+          },
+          {
             key: '/dev/audit-logs',
             label: '审计日志',
             onClick: () => navigate('/dev/audit-logs'),
@@ -224,7 +229,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
 
   return (
     <Layout className={`modern-layout theme-${themeMode}`}>
-      {/* 顶部导航栏 - Discord 风格 */}
+      {/* 顶部导航栏 - Modern 风格 */}
       <Header className="modern-header">
         <div className="header-content">
           <div className="header-left">
@@ -245,7 +250,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                   className="logo-image"
                   style={{ height: '32px', width: 'auto' }}
                   onError={(e) => {
-                    console.error('Logo failed to load:', systemConfig.logoUrl);
                     e.currentTarget.style.display = 'none';
                   }}
                 />
@@ -309,7 +313,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
       </Header>
 
       <Layout className="modern-layout-body">
-        {/* 左侧导航栏 - Discord 风格 */}
+        {/* 左侧导航栏 - Modern 风格 */}
         <Sider
           className="modern-sidebar"
           collapsed={collapsed}

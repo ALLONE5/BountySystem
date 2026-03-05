@@ -1,6 +1,6 @@
 /**
  * Info Panel Styles
- * Discord 风格的信息面板样式
+ * Modern 风格的信息面板样式
  */
 
 /* ============================================
@@ -279,54 +279,6 @@
 /* ============================================
    主题变体
    ============================================ */
-
-/* 赛博朋克主题 */
-.modern-layout.theme-cyberpunk .info-panel .ant-card {
-  background: rgba(0, 242, 255, 0.05);
-  border-color: rgba(0, 242, 255, 0.15);
-}
-
-.modern-layout.theme-cyberpunk .stats-card {
-  background: rgba(0, 242, 255, 0.1) !important;
-  border-color: rgba(0, 242, 255, 0.2) !important;
-}
-
-.modern-layout.theme-cyberpunk .online-users-card {
-  background: rgba(57, 255, 20, 0.05) !important;
-  border-color: rgba(57, 255, 20, 0.15) !important;
-}
-
-.modern-layout.theme-cyberpunk .recent-activities-card {
-  background: rgba(255, 0, 229, 0.05) !important;
-  border-color: rgba(255, 0, 229, 0.15) !important;
-}
-
-.modern-layout.theme-cyberpunk .quick-actions-card {
-  background: rgba(255, 170, 0, 0.05) !important;
-  border-color: rgba(255, 170, 0, 0.15) !important;
-}
-
-.modern-layout.theme-cyberpunk .activity-user {
-  color: #00f2ff;
-}
-
-.modern-layout.theme-cyberpunk .activity-bounty {
-  color: #39ff14;
-  background: rgba(57, 255, 20, 0.1);
-  border-color: rgba(57, 255, 20, 0.2);
-}
-
-.modern-layout.theme-cyberpunk .quick-actions-card .ant-btn-primary {
-  background: #00f2ff;
-  border-color: #00f2ff;
-  color: #0a0a0f;
-}
-
-.modern-layout.theme-cyberpunk .quick-actions-card .ant-btn-primary:hover {
-  background: #00d4e6;
-  border-color: #00d4e6;
-  box-shadow: 0 4px 12px rgba(0, 242, 255, 0.4);
-}
 
 /* 亮色主题 */
 .modern-layout.theme-light .info-panel .ant-card {

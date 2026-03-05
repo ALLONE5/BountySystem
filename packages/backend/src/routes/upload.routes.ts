@@ -4,7 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import { authenticate } from '../middleware/auth.middleware.js';
-import { requireSuperAdmin } from '../middleware/permission.middleware.js';
+import { requireDeveloper } from '../middleware/permission.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { auditFileUpload, auditFileDelete } from '../middleware/audit.middleware.js';
 
@@ -52,9 +52,9 @@ const upload = multer({
   },
 });
 
-// Apply authentication and super admin permission
+// Apply authentication and developer permission
 router.use(authenticate);
-router.use(requireSuperAdmin);
+router.use(requireDeveloper);
 
 /**
  * POST /api/upload/logo

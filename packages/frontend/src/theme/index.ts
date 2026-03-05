@@ -27,9 +27,7 @@ export const getThemeConfig = (themeMode: ThemeMode): ThemeConfig => {
       colorBgLayout: themeColors.bgPrimary,
       borderRadius: borderRadius.md,
       boxShadow: shadows.sm,
-      fontFamily: themeMode === 'cyberpunk' 
-        ? '"JetBrains Mono", "Courier New", monospace'
-        : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     },
     components: {
       Button: {
@@ -125,22 +123,6 @@ const getThemeColors = (themeMode: ThemeMode) => {
         bgTertiary: '#252533',
         borderPrimary: 'rgba(0, 217, 255, 0.4)',
         borderSecondary: 'rgba(255, 0, 110, 0.2)',
-      };
-    case 'cyberpunk':
-      return {
-        primary: '#00f2ff',
-        success: '#39ff14',
-        warning: '#ffaa00',
-        error: '#ff0040',
-        info: '#00f2ff',
-        textPrimary: '#f0f0f8',
-        textSecondary: '#00f2ff',
-        textTertiary: '#ff00e5',
-        bgPrimary: '#0a0a0f',
-        bgSecondary: '#151520',
-        bgTertiary: '#1f1f2e',
-        borderPrimary: 'rgba(0, 242, 255, 0.5)',
-        borderSecondary: 'rgba(255, 0, 229, 0.3)',
       };
     case 'light':
     default:

@@ -28,9 +28,9 @@ const updateSystemConfigSchema = z.object({
   smtpPassword: z.string().max(255).optional(),
   smtpSecure: z.boolean().optional(),
   // UI Theme fields
-  defaultTheme: z.enum(['light', 'dark', 'cyberpunk']).optional(),
+  defaultTheme: z.enum(['light', 'dark']).optional(),
   allowThemeSwitch: z.boolean().optional(),
-  animationStyle: z.enum(['none', 'minimal', 'scanline', 'particles', 'hexagon', 'datastream', 'hologram', 'ripple', 'cyberpunk', 'matrix']).optional(),
+  animationStyle: z.enum(['none', 'minimal', 'scanline', 'particles', 'hexagon', 'datastream', 'hologram', 'ripple', 'matrix']).optional(),
   enableAnimations: z.boolean().optional(),
   reducedMotion: z.boolean().optional(),
 });

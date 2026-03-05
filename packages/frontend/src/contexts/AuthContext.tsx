@@ -3,15 +3,7 @@ import { message } from 'antd';
 import { authApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import { log } from '../utils/logger';
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  avatarUrl?: string;
-  bounty: number;
-}
+import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;

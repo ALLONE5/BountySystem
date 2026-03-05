@@ -46,7 +46,6 @@ export const BountyTasksPage: React.FC = () => {
         title="赏金任务"
         extra={
           <Button
-            className="discord-button-primary"
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => navigate('/tasks/published')}

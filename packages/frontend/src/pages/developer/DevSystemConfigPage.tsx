@@ -17,15 +17,15 @@ import {
   Divider,
 } from 'antd';
 import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined, BgColorsOutlined } from '@ant-design/icons';
-import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { systemConfigApi, SystemConfig, SystemConfigUpdate, UploadedLogo } from '../../api/systemConfig';
 import { useSystemConfig } from '../../contexts/SystemConfigContext';
+import './DevSystemConfigPage.css';
 
 const { Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
-export const SystemConfigPage: React.FC = () => {
+export const DevSystemConfigPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [config, setConfig] = useState<SystemConfig | null>(null);
@@ -45,7 +45,6 @@ export const SystemConfigPage: React.FC = () => {
       setConfig(data);
       form.setFieldsValue(data);
     } catch (error: any) {
-      console.error('Failed to load system config:', error);
       message.error('加载系统配置失败');
     } finally {
       setLoading(false);
@@ -57,7 +56,7 @@ export const SystemConfigPage: React.FC = () => {
       const data = await systemConfigApi.getLogos();
       setLogos(data);
     } catch (error: any) {
-      console.error('Failed to load logos:', error);
+      // 静默处理错误
     }
   };
 
@@ -72,7 +71,6 @@ export const SystemConfigPage: React.FC = () => {
       
       message.success('系统配置保存成功');
     } catch (error: any) {
-      console.error('Failed to save system config:', error);
       message.error('保存系统配置失败');
     } finally {
       setLoading(false);
@@ -88,7 +86,6 @@ export const SystemConfigPage: React.FC = () => {
       loadLogos(); // Refresh logos list
       return false; // Prevent default upload behavior
     } catch (error: any) {
-      console.error('Failed to upload logo:', error);
       message.error('Logo上传失败');
       return false;
     } finally {
@@ -108,7 +105,6 @@ export const SystemConfigPage: React.FC = () => {
         form.setFieldValue('logoUrl', '');
       }
     } catch (error: any) {
-      console.error('Failed to delete logo:', error);
       message.error('Logo删除失败');
     }
   };
@@ -119,13 +115,21 @@ export const SystemConfigPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <PageHeaderBar title="系统配置" />
+    <div className="dev-system-config">
+      {/* 页面头部 */}
+      <div className="page-header">
+        <div className="header-content">
+          <div>
+            <h1 className="page-title">系统配置</h1>
+            <p className="page-subtitle">开发管理 - 系统参数和界面配置</p>
+          </div>
+        </div>
+      </div>
 
       <Alert
-        message="系统配置说明"
-        description="修改系统配置可能会影响所有用户的使用体验，请谨慎操作。某些配置项修改后需要重启服务才能生效。"
-        type="warning"
+        message="开发者系统配置"
+        description="作为开发用户，您可以管理系统的核心配置。修改配置可能会影响所有用户的使用体验，请谨慎操作。"
+        type="info"
         showIcon
         style={{ marginBottom: 24 }}
       />
@@ -187,7 +191,6 @@ export const SystemConfigPage: React.FC = () => {
                               src={logo.url.startsWith('http') ? logo.url : `http://localhost:3000${logo.url}`}
                               style={{ height: 80, objectFit: 'contain', padding: 8 }}
                               onError={(e) => {
-                                console.error('Logo failed to load:', logo.url);
                                 e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMiAyMCAyNCAyMiAyNCAyNEMyNCAyNiAyMiAyOCAyMCAyOEMxOCAyOCAxNiAyNiAxNiAyNEMxNiAyMiAxOCAyMCAyMCAyMFoiIGZpbGw9IiNEOUQ5RDkiLz4KPC9zdmc+';
                               }}
                             />
@@ -374,7 +377,7 @@ export const SystemConfigPage: React.FC = () => {
             <Switch />
           </Form.Item>
 
-          <Divider orientation="left">动画效果设置</Divider>
+          <Divider>动画效果设置</Divider>
 
           <Form.Item
             name="enableAnimations"
@@ -445,3 +448,5 @@ export const SystemConfigPage: React.FC = () => {
     </div>
   );
 };
+
+export default DevSystemConfigPage;

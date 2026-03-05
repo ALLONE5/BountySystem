@@ -41,6 +41,7 @@ import { AuditLogPage } from '../pages/admin/AuditLogPage';
 // 开发者页面
 import { DevAuditLogPage } from '../pages/developer/DevAuditLogPage';
 import { DevSystemMonitorPage } from '../pages/developer/DevSystemMonitorPage';
+import { DevSystemConfigPage } from '../pages/developer/DevSystemConfigPage';
 
 // 组件
 import { ProtectedRoute } from '../components/ProtectedRoute';
@@ -246,6 +247,10 @@ export const router = createBrowserRouter(
         {
           path: 'dev/system-monitor',
           element: <DevSystemMonitorPage />,
+        },
+        {
+          path: 'dev/system-config',
+          element: <DevSystemConfigPage />,
         },
       ],
     },
