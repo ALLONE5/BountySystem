@@ -3,12 +3,14 @@ import { Form, Input, Button, Typography, message, Card } from 'antd';
 import { UserOutlined, LockOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSystemConfig } from '../../contexts/SystemConfigContext';
 
 const { Title, Text } = Typography;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { config: systemConfig } = useSystemConfig();
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
@@ -69,9 +71,24 @@ export const LoginPage: React.FC = () => {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <TrophyOutlined style={{ fontSize: 48, color: '#1890ff', marginBottom: '16px' }} />
+          {systemConfig?.logoUrl ? (
+            <img 
+              src={systemConfig.logoUrl.startsWith('http') 
+                ? systemConfig.logoUrl 
+                : `http://localhost:3000${systemConfig.logoUrl}`
+              } 
+              alt="Logo" 
+              style={{ height: '48px', width: 'auto', marginBottom: '16px' }}
+              onError={(e) => {
+                console.error('Logo failed to load:', systemConfig.logoUrl);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            <TrophyOutlined style={{ fontSize: 48, color: '#1890ff', marginBottom: '16px' }} />
+          )}
           <Title level={2} style={{ marginBottom: '8px' }}>
-            赏金猎人平台
+            {systemConfig?.siteName || '赏金平台'}
           </Title>
           <Text type="secondary">登录您的账户</Text>
         </div>

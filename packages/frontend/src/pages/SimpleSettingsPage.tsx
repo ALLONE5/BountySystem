@@ -8,11 +8,13 @@ import {
   SafetyOutlined 
 } from '@ant-design/icons';
 import { useSimpleTheme } from '../contexts/SimpleThemeContext';
+import { useSystemConfig } from '../contexts/SystemConfigContext';
 
 const { Title, Text } = Typography;
 
 export const SimpleSettingsPage: React.FC = () => {
   const { theme, setTheme } = useSimpleTheme();
+  const { config: systemConfig } = useSystemConfig();
 
   const settingsItems = [
     {
@@ -97,7 +99,7 @@ export const SimpleSettingsPage: React.FC = () => {
         <Divider />
         <div style={{ textAlign: 'center' }}>
           <Space orientation="vertical">
-            <Text type="secondary">赏金猎人平台 v1.0.0</Text>
+            <Text type="secondary">{systemConfig?.siteName || '赏金平台'} v1.0.0</Text>
             <Button type="link" size="small">关于我们</Button>
           </Space>
         </div>

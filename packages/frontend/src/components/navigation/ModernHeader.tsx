@@ -7,7 +7,6 @@ import {
   Dropdown, 
   Space, 
   Badge, 
-  Input,
   Tooltip,
   Breadcrumb
 } from 'antd';
@@ -20,7 +19,6 @@ import {
   SunOutlined,
   MoonOutlined,
   BgColorsOutlined,
-  SearchOutlined,
   HomeOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/authStore';
@@ -31,7 +29,7 @@ import { avatarApi } from '../../api/avatar';
 import './ModernHeader.css';
 
 const { Header } = Layout;
-const { Search } = Input;
+// Search组件已移除
 
 interface ModernHeaderProps {
   sidebarCollapsed: boolean;
@@ -51,7 +49,7 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
   const { themeMode, allowThemeSwitch, setThemeMode } = useTheme();
   
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
-  const [searchVisible, setSearchVisible] = useState(false);
+  // 搜索相关状态已移除
 
   // 加载用户头像
   useEffect(() => {
@@ -95,11 +93,7 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
     navigate('/auth/login');
   };
 
-  const handleSearch = (value: string) => {
-    if (value.trim()) {
-      navigate(`/tasks/browse?search=${encodeURIComponent(value.trim())}`);
-    }
-  };
+  // 搜索函数已移除
 
   // 用户菜单项
   const userMenuItems = [
@@ -187,7 +181,7 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
               />
             )}
             <span className="site-name text-gradient">
-              {systemConfig?.siteName || '赏金猎人平台'}
+              {systemConfig?.siteName || '赏金平台'}
             </span>
           </div>
 
@@ -202,44 +196,15 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
           )}
         </div>
 
-        {/* 中间区域 - 搜索 */}
+        {/* 中间区域 - 搜索已移除 */}
         <div className="header-center">
-          {!isMobile && (
-            <Search
-              placeholder="搜索任务、用户、组群..."
-              allowClear
-              enterButton={<SearchOutlined />}
-              size="large"
-              onSearch={handleSearch}
-              className="header-search glass-button"
-              style={{ width: 400 }}
-            />
-          )}
-          
-          {isMobile && (
-            <Button
-              type="text"
-              icon={<SearchOutlined />}
-              onClick={() => setSearchVisible(!searchVisible)}
-              className="search-toggle glass-button"
-              size="large"
-            />
-          )}
+          {/* 搜索功能已移除 */}
         </div>
 
         {/* 右侧区域 */}
         <div className="header-right">
           <Space size="middle">
-            {/* 移动端搜索 */}
-            {isMobile && searchVisible && (
-              <Search
-                placeholder="搜索..."
-                allowClear
-                onSearch={handleSearch}
-                className="mobile-search glass-button"
-                autoFocus
-              />
-            )}
+            {/* 移动端搜索已移除 */}
 
             {/* 主题切换 */}
             {allowThemeSwitch && (
@@ -301,32 +266,7 @@ export const ModernHeader: React.FC<ModernHeaderProps> = ({
         </div>
       </div>
 
-      {/* 移动端全屏搜索覆盖层 */}
-      {isMobile && searchVisible && (
-        <div className="mobile-search-overlay">
-          <div className="mobile-search-container">
-            <Search
-              placeholder="搜索任务、用户、组群..."
-              allowClear
-              enterButton="搜索"
-              size="large"
-              onSearch={(value) => {
-                handleSearch(value);
-                setSearchVisible(false);
-              }}
-              className="mobile-search-input"
-              autoFocus
-            />
-            <Button
-              type="text"
-              onClick={() => setSearchVisible(false)}
-              className="search-close"
-            >
-              取消
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* 移动端搜索覆盖层已移除 */}
     </Header>
   );
 };

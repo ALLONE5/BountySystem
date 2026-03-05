@@ -17,7 +17,7 @@ interface SystemConfigContextType {
 }
 
 const defaultConfig: SystemConfig = {
-  siteName: '赏金猎人平台',
+  siteName: '赏金平台',
   siteDescription: '专业的任务管理和赏金系统',
   logoUrl: '/logo.png',
   isMaintenanceMode: false,

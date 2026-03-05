@@ -250,12 +250,30 @@ export interface BountyTransaction {
 
 // Ranking Types
 export interface Ranking {
-  id: string;
+  id?: string;
   userId: string;
-  username: string;
+  username?: string;
+  avatarId?: string | null;
   avatarUrl?: string;
   totalBounty: number;
+  completedTasksCount?: number;
+  completedTasks?: number; // 兼容字段
+  totalPoints?: number; // 兼容字段
   rank: number;
-  createdAt: string;
-  updatedAt: string;
+  period?: 'monthly' | 'quarterly' | 'all_time';
+  year?: number;
+  month?: number | null;
+  quarter?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+  user?: {
+    id: string;
+    username: string;
+    email?: string;
+    avatarId?: string | null;
+    avatarUrl?: string;
+    role?: string;
+    createdAt?: Date;
+    lastLogin?: Date | null;
+  };
 }

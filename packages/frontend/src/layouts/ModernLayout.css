@@ -94,8 +94,20 @@
 }
 
 .logo-icon {
-  font-size: 24px;
-  filter: drop-shadow(0 0 8px var(--color-primary)50);
+  background: #1890ff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+.logo-image {
+  max-height: 32px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo-text {

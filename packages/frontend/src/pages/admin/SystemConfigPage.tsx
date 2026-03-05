@@ -143,7 +143,7 @@ export const SystemConfigPage: React.FC = () => {
             label="网站名称"
             rules={[{ required: true, message: '请输入网站名称' }]}
           >
-            <Input placeholder="赏金猎人平台" />
+            <Input placeholder="赏金平台" />
           </Form.Item>
 
           <Form.Item

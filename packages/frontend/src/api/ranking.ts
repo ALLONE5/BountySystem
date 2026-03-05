@@ -9,10 +9,38 @@ export interface RankingQueryParams {
   limit?: number;
 }
 
+// 获取当前用户ID的辅助函数
+const getCurrentUserId = (): string | null => {
+  try {
+    const authStorage = localStorage.getItem('auth-storage');
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage);
+      return parsed?.state?.user?.id || null;
+    }
+  } catch (error) {
+    console.warn('Failed to get current user ID:', error);
+  }
+  return null;
+};
+
 export const rankingApi = {
   // 获取排名列表
-  getRankings: async (params?: RankingQueryParams): Promise<Ranking[]> => {
-    return createApiMethod<Ranking[]>('get', '/rankings')(params);
+  getRankings: async (params?: RankingQueryParams): Promise<{ rankings: Ranking[], myRanking: Ranking | null }> => {
+    const rankings = await createApiMethod<Ranking[]>('get', '/rankings')(params);
+    
+    // 获取当前用户ID
+    const currentUserId = getCurrentUserId();
+    
+    // 在排行榜数据中查找当前用户的排名
+    let myRanking: Ranking | null = null;
+    if (currentUserId && rankings && rankings.length > 0) {
+      myRanking = rankings.find(ranking => ranking.userId === currentUserId) || null;
+    }
+    
+    return {
+      rankings: rankings || [],
+      myRanking
+    };
   },
 
   // 获取当前月度排名

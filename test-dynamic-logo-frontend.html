@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Logo Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .logo-test {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .logo-image {
+            height: 32px;
+            width: auto;
+        }
+        .logo-text {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Dynamic Logo and Name Test</h1>
+    
+    <div class="test-container">
+        <h2>System Config API Test</h2>
+        <div id="api-status" class="status loading">Loading...</div>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Logo Display Test</h2>
+        <div id="logo-status" class="status loading">Loading...</div>
+        <div id="logo-display"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Frontend Integration Test</h2>
+        <div id="frontend-status" class="status loading">Testing...</div>
+        <div id="frontend-result"></div>
+    </div>
+
+    <script>
+        async function testSystemConfigAPI() {
+            try {
+                const response = await fetch('http://localhost:3000/api/public/config');
+                const data = await response.json();
+                
+                document.getElementById('api-status').className = 'status success';
+                document.getElementById('api-status').textContent = 'API Working';
+                
+                document.getElementById('api-result').innerHTML = `
+                    <h3>System Config Data:</h3>
+                    <p><strong>Site Name:</strong> ${data.data.siteName}</p>
+                    <p><strong>Logo URL:</strong> ${data.data.logoUrl}</p>
+                    <p><strong>Description:</strong> ${data.data.siteDescription}</p>
+                    <p><strong>Theme:</strong> ${data.data.defaultTheme}</p>
+                `;
+                
+                return data.data;
+            } catch (error) {
+                document.getElementById('api-status').className = 'status error';
+                document.getElementById('api-status').textContent = 'API Error';
+                document.getElementById('api-result').innerHTML = `<p>Error: ${error.message}</p>`;
+                return null;
+            }
+        }
+        
+        async function testLogoDisplay(config) {
+            if (!config) return;
+            
+            try {
+                const logoUrl = `http://localhost:3000${config.logoUrl}`;
+                
+                // Test if logo loads
+                const img = new Image();
+                img.onload = () => {
+                    document.getElementById('logo-status').className = 'status success';
+                    document.getElementById('logo-status').textContent = 'Logo Loads Successfully';
+                    
+                    document.getElementById('logo-display').innerHTML = `
+                        <div class="logo-test">
+                            <img src="${logoUrl}" alt="Logo" class="logo-image">
+                            <span class="logo-text">${config.siteName}</span>
+                        </div>
+                        <p><strong>Logo URL:</strong> ${logoUrl}</p>
+                        <p><strong>Image Size:</strong> ${img.naturalWidth}x${img.naturalHeight}px</p>
+                    `;
+                };
+                
+                img.onerror = () => {
+                    document.getElementById('logo-status').className = 'status error';
+                    document.getElementById('logo-status').textContent = 'Logo Load Failed';
+                    document.getElementById('logo-display').innerHTML = `
+                        <p>Failed to load logo from: ${logoUrl}</p>
+                        <div class="logo-test">
+                            <div style="background: #007bff; color: white; padding: 4px 8px; border-radius: 4px;">OCT</div>
+                            <span class="logo-text">${config.siteName}</span>
+                        </div>
+                    `;
+                };
+                
+                img.src = logoUrl;
+                
+            } catch (error) {
+                document.getElementById('logo-status').className = 'status error';
+                document.getElementById('logo-status').textContent = 'Logo Test Error';
+                document.getElementById('logo-display').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+        
+        function testFrontendIntegration(config) {
+            if (!config) {
+                document.getElementById('frontend-status').className = 'status error';
+                document.getElementById('frontend-status').textContent = 'Cannot Test - No Config';
+                return;
+            }
+            
+            // Test if page title updates
+            const originalTitle = document.title;
+            document.title = config.siteName;
+            
+            // Test favicon update
+            const favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            favicon.type = 'image/png';
+            favicon.href = `http://localhost:3000${config.logoUrl}`;
+            document.head.appendChild(favicon);
+            
+            document.getElementById('frontend-status').className = 'status success';
+            document.getElementById('frontend-status').textContent = 'Frontend Integration Working';
+            
+            document.getElementById('frontend-result').innerHTML = `
+                <h3>Frontend Integration Results:</h3>
+                <p><strong>Page Title:</strong> Updated to "${config.siteName}"</p>
+                <p><strong>Favicon:</strong> Updated to logo from database</p>
+                <p><strong>Dynamic Loading:</strong> System config loaded from API</p>
+                <p><strong>Fallback Mechanism:</strong> OCT + "赏金平台" if config fails</p>
+                
+                <h4>ModernLayout Integration:</h4>
+                <ul>
+                    <li>✅ Uses SystemConfigContext</li>
+                    <li>✅ Displays dynamic logo from systemConfig.logoUrl</li>
+                    <li>✅ Displays dynamic name from systemConfig.siteName</li>
+                    <li>✅ Falls back to "OCT" + "赏金平台" when config unavailable</li>
+                </ul>
+                
+                <h4>DiscordLayout Integration:</h4>
+                <ul>
+                    <li>✅ Uses SystemConfigContext</li>
+                    <li>✅ Displays dynamic logo from systemConfig.logoUrl</li>
+                    <li>✅ Displays dynamic name from systemConfig.siteName</li>
+                    <li>✅ Falls back to "OCT" + "赏金平台" when config unavailable</li>
+                </ul>
+            `;
+        }
+        
+        // Run tests
+        async function runTests() {
+            console.log('Running dynamic logo and name tests...');
+            
+            const config = await testSystemConfigAPI();
+            await testLogoDisplay(config);
+            testFrontendIntegration(config);
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

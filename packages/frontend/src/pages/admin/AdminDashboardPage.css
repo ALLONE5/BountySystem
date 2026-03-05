@@ -1,0 +1,581 @@
+/**
+ * Admin Dashboard - 现代化监控仪表盘样式
+ * 支持亮色和暗色主题，更加生动的色彩设计
+ */
+
+/* ============================================
+   基础布局
+   ============================================ */
+
+.admin-dashboard {
+  padding: 0;
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+  position: relative;
+}
+
+.admin-dashboard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  background: var(--color-bg-primary);
+}
+
+.dashboard-header {
+  margin-bottom: 32px;
+  padding: 24px 0;
+  text-align: center;
+  background: linear-gradient(135deg, var(--color-primary)10, var(--color-secondary)10);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.dashboard-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  background: var(--color-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dashboard-header p {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* ============================================
+   统计卡片样式
+   ============================================ */
+
+.stats-row {
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  opacity: 0.8;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary)30;
+}
+
+.stat-card .ant-card-body {
+  padding: 24px;
+}
+
+.stat-card .ant-statistic-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.stat-card .ant-statistic-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-card .ant-statistic-content-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-card .ant-statistic-content-prefix {
+  font-size: 24px;
+  opacity: 0.8;
+}
+
+.stat-extra {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-secondary);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.online-count,
+.active-count,
+.currency {
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+/* 特定卡片颜色 */
+.users-card::before {
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
+}
+
+.tasks-card::before {
+  background: linear-gradient(90deg, #52c41a, #73d13d);
+}
+
+.bounty-card::before {
+  background: linear-gradient(90deg, #faad14, #ffc53d);
+}
+
+.completion-card::before {
+  background: linear-gradient(90deg, #722ed1, #9254de);
+}
+
+/* ============================================
+   监控面板样式
+   ============================================ */
+
+.monitoring-row {
+  margin-bottom: 32px;
+}
+
+.monitoring-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.monitoring-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary)20;
+}
+
+.monitoring-card .ant-card-head {
+  border-bottom: 1px solid var(--color-border-secondary);
+  background: linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-tertiary));
+}
+
+.monitoring-card .ant-card-head-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.card-title .anticon {
+  font-size: 18px;
+  color: var(--color-primary);
+}
+
+/* ============================================
+   在线用户列表
+   ============================================ */
+
+.online-users-card .ant-card-body {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.online-user-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border-light);
+  transition: all 0.2s ease;
+}
+
+.online-user-item:last-child {
+  border-bottom: none;
+}
+
+.online-user-item:hover {
+  background: var(--color-hover);
+  border-radius: var(--radius-md);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.user-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: currentColor;
+  color: white !important;
+  opacity: 0.9;
+}
+
+.user-description {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.user-description .anticon {
+  font-size: 12px;
+}
+
+/* ============================================
+   系统性能监控
+   ============================================ */
+
+.performance-card .ant-card-body {
+  padding: 24px;
+}
+
+.performance-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-item .ant-progress {
+  margin: 0;
+}
+
+.metric-item .ant-progress-bg {
+  border-radius: var(--radius-sm);
+  height: 8px;
+}
+
+.metric-item .ant-progress-inner {
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-secondary);
+}
+
+/* ============================================
+   实时活动监控
+   ============================================ */
+
+.activity-row {
+  margin-bottom: 32px;
+}
+
+.activity-card .ant-card-body {
+  padding: 16px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border-light);
+  transition: all 0.2s ease;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item:hover {
+  background: var(--color-hover);
+  border-radius: var(--radius-md);
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.activity-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.activity-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.activity-user {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.activity-action {
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.activity-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.activity-time .anticon {
+  font-size: 12px;
+}
+
+/* ============================================
+   响应式设计
+   ============================================ */
+
+/* 平板端 */
+@media (max-width: 1024px) {
+  .dashboard-header h1 {
+    font-size: 28px;
+  }
+  
+  .stat-card .ant-statistic-content-value {
+    font-size: 24px;
+  }
+  
+  .performance-metrics {
+    gap: 16px;
+  }
+}
+
+/* 移动端 */
+@media (max-width: 768px) {
+  .dashboard-header {
+    margin-bottom: 24px;
+    padding: 20px 16px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+  
+  .dashboard-header p {
+    font-size: 14px;
+  }
+  
+  .stats-row,
+  .monitoring-row,
+  .activity-row {
+    margin-bottom: 24px;
+  }
+  
+  .stat-card .ant-card-body {
+    padding: 20px;
+  }
+  
+  .stat-card .ant-statistic-content-value {
+    font-size: 20px;
+  }
+  
+  .monitoring-card .ant-card-body {
+    padding: 16px;
+  }
+  
+  .performance-metrics {
+    gap: 12px;
+  }
+  
+  .activity-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .activity-time {
+    align-self: flex-end;
+  }
+}
+
+/* 小屏幕 */
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 16px 12px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+  
+  .stat-card .ant-card-body {
+    padding: 16px;
+  }
+  
+  .stat-card .ant-statistic-content-value {
+    font-size: 18px;
+  }
+  
+  .user-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+/* ============================================
+   动画效果
+   ============================================ */
+
+/* 卡片加载动画 */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card,
+.monitoring-card {
+  animation: cardFadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* 数值跳动动画 */
+@keyframes numberPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.stat-card:hover .ant-statistic-content-value {
+  animation: numberPulse 0.6s ease-in-out;
+}
+
+/* 进度条动画 */
+@keyframes progressGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 15px currentColor;
+  }
+}
+
+.metric-item .ant-progress-bg {
+  animation: progressGlow 2s ease-in-out infinite;
+}
+
+/* 状态指示器闪烁 */
+@keyframes statusBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.status-badge {
+  animation: statusBlink 2s ease-in-out infinite;
+}
+
+/* ============================================
+   主题特定样式
+   ============================================ */
+
+/* 亮色主题 */
+.theme-light .dashboard-header {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(99, 102, 241, 0.05));
+}
+
+.theme-light .monitoring-card .ant-card-head {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.theme-light .metric-item .ant-progress-inner {
+  background: #f1f5f9;
+}
+
+/* 暗色主题 */
+.theme-dark .dashboard-header {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(129, 140, 248, 0.1));
+}
+
+.theme-dark .monitoring-card .ant-card-head {
+  background: linear-gradient(135deg, #1e293b, #334155);
+}
+
+.theme-dark .metric-item .ant-progress-inner {
+  background: #334155;
+}
+
+/* ============================================
+   滚动条样式
+   ============================================ */
+
+.online-users-card .ant-card-body::-webkit-scrollbar,
+.activity-card .ant-card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.online-users-card .ant-card-body::-webkit-scrollbar-track,
+.activity-card .ant-card-body::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.online-users-card .ant-card-body::-webkit-scrollbar-thumb,
+.activity-card .ant-card-body::-webkit-scrollbar-thumb {
+  background: var(--color-border-primary);
+  border-radius: var(--radius-sm);
+}
+
+.online-users-card .ant-card-body::-webkit-scrollbar-thumb:hover,
+.activity-card .ant-card-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}

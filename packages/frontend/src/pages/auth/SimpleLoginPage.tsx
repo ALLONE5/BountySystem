@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../../store/authStore';
+import { useSystemConfig } from '../../contexts/SystemConfigContext';
 
 const { Title, Text } = Typography;
 
 export const SimpleLoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const { config: systemConfig } = useSystemConfig();
 
   const onFinish = async (values: any) => {
     setLoading(true);
@@ -56,7 +58,23 @@ export const SimpleLoginPage: React.FC = () => {
     <div style={{ textAlign: 'center' }}>
       <div style={{ marginBottom: '24px' }}>
         <Title level={2} style={{ color: '#1890ff', marginBottom: '8px' }}>
-          🏆 赏金猎人平台
+          {systemConfig?.logoUrl ? (
+            <img 
+              src={systemConfig.logoUrl.startsWith('http') 
+                ? systemConfig.logoUrl 
+                : `http://localhost:3000${systemConfig.logoUrl}`
+              } 
+              alt="Logo" 
+              style={{ height: '32px', width: 'auto', marginRight: '8px' }}
+              onError={(e) => {
+                console.error('Logo failed to load:', systemConfig.logoUrl);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            '🏆 '
+          )}
+          {systemConfig?.siteName || '赏金平台'}
         </Title>
         <Text type="secondary">欢迎回来！请登录您的账户</Text>
       </div>

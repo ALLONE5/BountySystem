@@ -10,6 +10,7 @@ import {
   FireOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useSystemConfig } from '../contexts/SystemConfigContext';
 import { 
   DiscordCard, 
   DiscordUserCard,
@@ -45,6 +46,7 @@ interface RankingStats {
 
 export const DiscordRankingPage: React.FC = () => {
   const { user } = useAuth();
+  const { config: systemConfig } = useSystemConfig();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<RankingUser[]>([]);
   const [stats, setStats] = useState<RankingStats | null>(null);
@@ -316,7 +318,7 @@ export const DiscordRankingPage: React.FC = () => {
       <DiscordCard style={{ marginBottom: 24 }}>
         <div style={{ textAlign: 'center' }}>
           <h2 style={{ margin: 0, color: 'var(--discord-text-primary)' }}>
-            🏆 赏金猎人排行榜
+            🏆 {systemConfig?.siteName || '赏金平台'}排行榜
           </h2>
           <p style={{ margin: '8px 0 0 0', color: 'var(--discord-text-secondary)' }}>
             展示平台上最优秀的赏金猎人们

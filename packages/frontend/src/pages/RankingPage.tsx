@@ -131,10 +131,10 @@ export const RankingPage: React.FC = () => {
       render: (_, record) => (
         <div className="stats-display">
           <div className="stat-badge">
-            任务: {record.completedTasks || 0}
+            任务: {record.completedTasksCount || record.completedTasks || 0}
           </div>
           <div className="stat-badge">
-            积分: {record.totalPoints || 0}
+            积分: {record.totalPoints || record.totalBounty || 0}
           </div>
         </div>
       ),
@@ -201,13 +201,13 @@ export const RankingPage: React.FC = () => {
             </Col>
             <Col span={6}>
               <div className="stat-item">
-                <div className="stat-value">{myRanking.completedTasks || 0}</div>
+                <div className="stat-value">{myRanking.completedTasksCount || myRanking.completedTasks || 0}</div>
                 <div className="stat-label">完成任务</div>
               </div>
             </Col>
             <Col span={6}>
               <div className="stat-item">
-                <div className="stat-value">{myRanking.totalPoints || 0}</div>
+                <div className="stat-value">{myRanking.totalPoints || myRanking.totalBounty || 0}</div>
                 <div className="stat-label">总积分</div>
               </div>
             </Col>

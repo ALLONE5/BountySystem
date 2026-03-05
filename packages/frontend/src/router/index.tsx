@@ -15,14 +15,13 @@ import { GanttChartPage } from '../pages/GanttChartPage';
 import { TaskVisualizationPage } from '../pages/TaskVisualizationPage';
 
 // 其他页面
-import PublishedTasksPage from '../pages/PublishedTasksPage';
+import { PublishedTasksPage } from '../pages/PublishedTasksPage';
 import { AssignedTasksPage } from '../pages/AssignedTasksPage';
 import { GroupsPage } from '../pages/GroupsPage';
 import { NotificationPage } from '../pages/NotificationPage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { MyPage } from '../pages/MyPage';
-import { BountyTasksPage } from '../pages/BountyTasksPage';
 import { AdminPage } from '../pages/AdminPage';
 import { TaskInvitationsPage } from '../pages/TaskInvitationsPage';
 import { UIShowcasePage } from '../pages/UIShowcasePage';
@@ -33,7 +32,7 @@ import { UIShowcasePage } from '../pages/UIShowcasePage';
 // import { MyGroupsPage } from '../pages/workspace/MyGroupsPage';
 
 // 管理页面
-// import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { UserManagementPage } from '../pages/admin/UserManagementPage';
 import { GroupManagementPage } from '../pages/admin/GroupManagementPage';
 import { TaskManagementPage } from '../pages/admin/TaskManagementPage';
@@ -46,8 +45,8 @@ import { SystemConfigPage } from '../pages/admin/SystemConfigPage';
 import { AuditLogPage } from '../pages/admin/AuditLogPage';
 
 // 开发者页面
-// import { DevSystemConfigPage } from '../pages/developer/DevSystemConfigPage';
 import { DevAuditLogPage } from '../pages/developer/DevAuditLogPage';
+import { DevSystemMonitorPage } from '../pages/developer/DevSystemMonitorPage';
 
 // 测试页面
 import { TestPage } from '../pages/TestPage';
@@ -121,24 +120,24 @@ export const router = createBrowserRouter(
           element: <MyPage />,
         },
         
-        // 工作台子页面 - 使用现有页面替代
+        // 工作台子页面
         {
           path: 'my/bounties',
-          element: <BountyTasksPage />,
+          element: <PublishedTasksPage />,
         },
         {
           path: 'my/tasks',
-          element: <TaskListPage />,
+          element: <AssignedTasksPage />,
         },
         {
           path: 'my/groups',
           element: <GroupsPage />,
         },
         
-        // 模块化路由 - 赏金任务
+        // 任务市场
         {
           path: 'bounty-tasks',
-          element: <BountyTasksPage />,
+          element: <BrowseTasksPage />,
         },
         
         // 模块化路由 - 管理中心
@@ -147,10 +146,10 @@ export const router = createBrowserRouter(
           element: <AdminPage />,
         },
         
-        // 管理中心子页面 - 使用现有页面替代
+        // 管理中心子页面
         {
           path: 'admin/dashboard',
-          element: <AdminPage />,
+          element: <AdminDashboardPage />,
         },
         
         // 任务相关页面
@@ -271,10 +270,14 @@ export const router = createBrowserRouter(
           element: <AuditLogPage />,
         },
         
-        // 开发者页面 - 使用现有页面替代
+        // 开发者页面
         {
           path: 'dev/audit-logs',
           element: <DevAuditLogPage />,
+        },
+        {
+          path: 'dev/system-monitor',
+          element: <DevSystemMonitorPage />,
         },
       ],
     },

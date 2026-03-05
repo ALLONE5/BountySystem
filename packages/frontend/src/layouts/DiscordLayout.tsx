@@ -18,6 +18,7 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSystemConfig } from '../contexts/SystemConfigContext';
 import './DiscordLayout.css';
 
 const { Header, Sider, Content } = Layout;
@@ -34,6 +35,7 @@ export const DiscordLayout: React.FC<DiscordLayoutProps> = ({
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { theme } = useTheme();
+  const { config: systemConfig } = useSystemConfig();
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
@@ -283,8 +285,24 @@ export const DiscordLayout: React.FC<DiscordLayoutProps> = ({
             className="sidebar-toggle"
           />
           <div className="app-logo">
-            <span className="logo-icon">🎯</span>
-            {!collapsed && <span className="logo-text">赏金猎人平台</span>}
+            {systemConfig?.logoUrl ? (
+              <img 
+                src={systemConfig.logoUrl.startsWith('http') 
+                  ? systemConfig.logoUrl 
+                  : `http://localhost:3000${systemConfig.logoUrl}`
+                } 
+                alt="Logo" 
+                className="logo-image"
+                style={{ height: '24px', width: 'auto' }}
+                onError={(e) => {
+                  console.error('Logo failed to load:', systemConfig.logoUrl);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <span className="logo-icon">OCT</span>
+            )}
+            {!collapsed && <span className="logo-text">{systemConfig?.siteName || '赏金平台'}</span>}
           </div>
         </div>
 

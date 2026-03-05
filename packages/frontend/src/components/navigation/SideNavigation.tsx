@@ -291,7 +291,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         <div className="nav-footer">
           <div className="system-info">
             <div className="system-name">
-              {systemConfig.siteName || '赏金猎人平台'}
+              {systemConfig.siteName || '赏金平台'}
             </div>
             <div className="system-version">v2.0.0</div>
           </div>

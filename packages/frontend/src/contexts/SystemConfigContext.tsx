@@ -64,7 +64,7 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // 使用默认配置
       const defaultConfig = {
         id: 'default',
-        siteName: '赏金猎人平台',
+        siteName: '赏金平台',
         siteDescription: '基于任务的协作平台',
         logoUrl: '',
         debugMode: false,
@@ -110,7 +110,7 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
     let faviconUrl = logoUrl;
     if (!logoUrl.startsWith('http')) {
       // 如果是相对路径，添加后端服务器地址
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000';
       faviconUrl = `${baseUrl}${logoUrl.startsWith('/') ? logoUrl : '/' + logoUrl}`;
     }
     

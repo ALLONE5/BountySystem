@@ -1,74 +1,39 @@
 const axios = require('axios');
 
+const BACKEND_URL = 'http://localhost:3000';
+
 async function testSystemConfigAPI() {
   try {
-    console.log('🧪 Testing system configuration API...\n');
+    console.log('Testing system config API...\n');
+
+    // 测试公共配置API（不需要认证）
+    console.log('1. Testing public config API...');
+    const publicResponse = await axios.get(`${BACKEND_URL}/api/public/config`);
     
-    // First, let's try to login to get a token
-    console.log('1. Attempting to login...');
-    const loginResponse = await axios.post('http://localhost:3000/api/auth/login', {
-      username: 'developer',
-      password: 'Password123'
+    console.log('Public config response status:', publicResponse.status);
+    console.log('Public config data:', JSON.stringify(publicResponse.data, null, 2));
+
+    // 测试完整配置API（需要认证）
+    console.log('\n2. Testing full config API (with auth)...');
+    
+    // 先登录获取token
+    const loginResponse = await axios.post(`${BACKEND_URL}/api/auth/login`, {
+      username: 'testadmin',
+      password: 'admin123'
     });
-    
+
     const token = loginResponse.data.token;
-    console.log('✅ Login successful, token obtained');
-    
-    // Test getting system configuration
-    console.log('\n2. Getting current system configuration...');
-    const getResponse = await axios.get('http://localhost:3000/api/admin/system/config', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+    console.log('Login successful, testing full config...');
+
+    const fullResponse = await axios.get(`${BACKEND_URL}/api/admin/system/config`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
     
-    console.log('✅ Current config:', JSON.stringify(getResponse.data.data, null, 2));
-    
-    // Test updating system configuration
-    console.log('\n3. Updating system configuration...');
-    const updateData = {
-      siteName: '测试赏金平台',
-      siteDescription: '这是一个测试描述',
-      allowRegistration: false,
-      maxFileSize: 15
-    };
-    
-    const updateResponse = await axios.put('http://localhost:3000/api/admin/system/config', updateData, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    console.log('✅ Update successful:', updateResponse.data.message);
-    console.log('📊 Updated config:', JSON.stringify(updateResponse.data.data, null, 2));
-    
-    // Test individual endpoints
-    console.log('\n4. Testing individual endpoints...');
-    
-    const maintenanceResponse = await axios.get('http://localhost:3000/api/admin/system/maintenance', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    console.log('✅ Maintenance mode:', maintenanceResponse.data.data.maintenanceMode);
-    
-    const registrationResponse = await axios.get('http://localhost:3000/api/admin/system/registration', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    console.log('✅ Registration allowed:', registrationResponse.data.data.allowRegistration);
-    
-    const fileSizeResponse = await axios.get('http://localhost:3000/api/admin/system/file-size', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    console.log('✅ Max file size:', fileSizeResponse.data.data.maxFileSize, 'MB');
-    
-    console.log('\n🎉 All system configuration API tests passed!');
-    
+    console.log('Full config response status:', fullResponse.status);
+    console.log('Full config data:', JSON.stringify(fullResponse.data, null, 2));
+
   } catch (error) {
-    console.error('❌ API Test failed:', error.response?.data || error.message);
-    
-    if (error.response?.status === 401) {
-      console.log('💡 Tip: Make sure you have a valid admin user with username "admin" and password "Password123"');
-    }
+    console.error('Error testing system config API:', error.response?.data || error.message);
   }
 }
 

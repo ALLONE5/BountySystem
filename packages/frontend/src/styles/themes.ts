@@ -83,7 +83,7 @@ export interface Theme {
   };
 }
 
-// Light Theme - 简洁优雅的亮色主题
+// Light Theme - 更加生动的亮色主题
 export const lightTheme: Theme = {
   mode: 'light',
   colors: {
@@ -94,26 +94,26 @@ export const lightTheme: Theme = {
     bgGlass: 'rgba(255, 255, 255, 0.8)',
     bgElevated: '#ffffff',
     
-    // 主色调 - 现代蓝色系
-    primary: '#3b82f6',
-    primaryHover: '#2563eb',
-    primaryActive: '#1d4ed8',
-    secondary: '#6366f1',
-    accent: '#8b5cf6',
+    // 主色调 - 更加鲜艳的蓝色系
+    primary: '#2563eb',
+    primaryHover: '#1d4ed8',
+    primaryActive: '#1e40af',
+    secondary: '#7c3aed',
+    accent: '#06b6d4',
     
-    // 功能色彩
-    success: '#10b981',
+    // 功能色彩 - 更加鲜明
+    success: '#059669',
     successLight: '#d1fae5',
-    warning: '#f59e0b',
+    warning: '#d97706',
     warningLight: '#fef3c7',
-    danger: '#ef4444',
+    danger: '#dc2626',
     dangerLight: '#fee2e2',
-    info: '#06b6d4',
+    info: '#0284c7',
     infoLight: '#cffafe',
     
     // 文字颜色
     textPrimary: '#111827',
-    textSecondary: '#4b5563',
+    textSecondary: '#374151',
     textTertiary: '#9ca3af',
     textInverse: '#ffffff',
     textMuted: '#d1d5db',
@@ -125,14 +125,14 @@ export const lightTheme: Theme = {
     divider: '#e5e7eb',
     
     // 交互色彩
-    hover: 'rgba(59, 130, 246, 0.05)',
-    active: 'rgba(59, 130, 246, 0.1)',
-    focus: 'rgba(59, 130, 246, 0.2)',
+    hover: 'rgba(37, 99, 235, 0.05)',
+    active: 'rgba(37, 99, 235, 0.1)',
+    focus: 'rgba(37, 99, 235, 0.2)',
     
-    // 渐变色
-    gradientPrimary: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
-    gradientSecondary: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
-    gradientAccent: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+    // 渐变色 - 更加鲜艳
+    gradientPrimary: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+    gradientSecondary: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+    gradientAccent: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
   },
   fonts: {
     display: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -163,7 +163,7 @@ export const lightTheme: Theme = {
   },
 };
 
-// Dark Theme - 优雅深邀的暗色主题
+// Dark Theme - 更加生动的暗色主题
 export const darkTheme: Theme = {
   mode: 'dark',
   colors: {
@@ -174,22 +174,22 @@ export const darkTheme: Theme = {
     bgGlass: 'rgba(30, 41, 59, 0.8)',
     bgElevated: '#1e293b',
     
-    // 主色调 - 明亮蓝色系
-    primary: '#60a5fa',
-    primaryHover: '#3b82f6',
+    // 主色调 - 更加鲜艳的蓝色系
+    primary: '#3b82f6',
+    primaryHover: '#60a5fa',
     primaryActive: '#2563eb',
-    secondary: '#818cf8',
-    accent: '#a78bfa',
+    secondary: '#8b5cf6',
+    accent: '#06b6d4',
     
-    // 功能色彩
-    success: '#34d399',
-    successLight: 'rgba(52, 211, 153, 0.1)',
-    warning: '#fbbf24',
-    warningLight: 'rgba(251, 191, 36, 0.1)',
-    danger: '#f87171',
-    dangerLight: 'rgba(248, 113, 113, 0.1)',
-    info: '#22d3ee',
-    infoLight: 'rgba(34, 211, 238, 0.1)',
+    // 功能色彩 - 更加鲜明
+    success: '#10b981',
+    successLight: 'rgba(16, 185, 129, 0.1)',
+    warning: '#f59e0b',
+    warningLight: 'rgba(245, 158, 11, 0.1)',
+    danger: '#ef4444',
+    dangerLight: 'rgba(239, 68, 68, 0.1)',
+    info: '#06b6d4',
+    infoLight: 'rgba(6, 182, 212, 0.1)',
     
     // 文字颜色
     textPrimary: '#f8fafc',
@@ -205,14 +205,14 @@ export const darkTheme: Theme = {
     divider: 'rgba(51, 65, 85, 0.6)',
     
     // 交互色彩
-    hover: 'rgba(96, 165, 250, 0.1)',
-    active: 'rgba(96, 165, 250, 0.2)',
-    focus: 'rgba(96, 165, 250, 0.3)',
+    hover: 'rgba(59, 130, 246, 0.1)',
+    active: 'rgba(59, 130, 246, 0.2)',
+    focus: 'rgba(59, 130, 246, 0.3)',
     
-    // 渐变色
-    gradientPrimary: 'linear-gradient(135deg, #60a5fa 0%, #818cf8 100%)',
-    gradientSecondary: 'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)',
-    gradientAccent: 'linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)',
+    // 渐变色 - 更加鲜艳
+    gradientPrimary: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+    gradientSecondary: 'linear-gradient(135deg, #8b5cf6 0%, #c084fc 100%)',
+    gradientAccent: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
   },
   fonts: {
     display: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',

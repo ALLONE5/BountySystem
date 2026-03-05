@@ -237,7 +237,7 @@ export const BottomNavLayout: React.FC = () => {
               }}
             />
           ) : null}
-          <span>{systemConfig?.siteName || '赏金猎人'}</span>
+          <span>{systemConfig?.siteName || '赏金平台'}</span>
         </div>
         
         <Space size="large">

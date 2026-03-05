@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端排行榜测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>前端排行榜测试</h1>
+    
+    <div class="test-section">
+        <h2>1. 登录并设置localStorage</h2>
+        <button onclick="loginAndSetStorage()">登录testadmin用户</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 测试localStorage中的用户信息</h2>
+        <button onclick="checkLocalStorage()">检查localStorage</button>
+        <div id="storageResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 测试前端排行API</h2>
+        <button onclick="testFrontendRankingAPI()">测试getRankings方法</button>
+        <div id="frontendResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 访问排行页面</h2>
+        <p>现在可以访问: <a href="http://localhost:5173/ranking" target="_blank">http://localhost:5173/ranking</a></p>
+        <p>使用testadmin用户登录，应该能看到"我的排名"显示第1名</p>
+    </div>
+
+    <script>
+        async function loginAndSetStorage() {
+            const resultDiv = document.getElementById('loginResult');
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'testadmin',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // 模拟前端auth store的存储格式
+                    const authStorage = {
+                        state: {
+                            token: data.token,
+                            user: data.user,
+                            isAuthenticated: true
+                        },
+                        version: 0
+                    };
+                    
+                    localStorage.setItem('auth-storage', JSON.stringify(authStorage));
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '登录成功！用户信息已保存到localStorage。\\n' + 
+                        'User ID: ' + data.user.id + '\\n' +
+                        'Username: ' + data.user.username;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '登录失败: ' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '登录错误: ' + error.message;
+            }
+        }
+
+        function checkLocalStorage() {
+            const resultDiv = document.getElementById('storageResult');
+            try {
+                const authStorage = localStorage.getItem('auth-storage');
+                if (authStorage) {
+                    const parsed = JSON.parse(authStorage);
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = 'localStorage内容:\\n' + JSON.stringify(parsed, null, 2);
+                    
+                    const userId = parsed?.state?.user?.id;
+                    if (userId) {
+                        resultDiv.textContent += '\\n\\n提取的用户ID: ' + userId;
+                    }
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'localStorage中没有auth-storage数据';
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '解析localStorage错误: ' + error.message;
+            }
+        }
+
+        async function testFrontendRankingAPI() {
+            const resultDiv = document.getElementById('frontendResult');
+            try {
+                // 获取token
+                const authStorage = localStorage.getItem('auth-storage');
+                if (!authStorage) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '请先登录！';
+                    return;
+                }
+                
+                const parsed = JSON.parse(authStorage);
+                const token = parsed?.state?.token;
+                const userId = parsed?.state?.user?.id;
+                
+                if (!token) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'Token不存在！';
+                    return;
+                }
+
+                // 调用排行API
+                const currentDate = new Date();
+                const params = new URLSearchParams({
+                    period: 'monthly',
+                    year: currentDate.getFullYear().toString(),
+                    month: (currentDate.getMonth() + 1).toString()
+                });
+
+                const response = await fetch(`http://localhost:3000/api/rankings?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+
+                const rankings = await response.json();
+                
+                if (response.ok) {
+                    // 模拟前端getRankings方法的逻辑
+                    let myRanking = null;
+                    if (userId && rankings && rankings.length > 0) {
+                        myRanking = rankings.find(ranking => ranking.userId === userId) || null;
+                    }
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `排行榜数据获取成功！\\n` +
+                        `总数: ${rankings.length}\\n` +
+                        `当前用户ID: ${userId}\\n` +
+                        `我的排名: ${myRanking ? JSON.stringify(myRanking, null, 2) : '未找到'}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '获取排行榜失败: ' + JSON.stringify(rankings, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '测试错误: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
