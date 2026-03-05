@@ -1,63 +1,98 @@
-export interface LogContext {
-  userId?: string;
-  taskId?: string;
-  groupId?: string;
-  error?: Error | string;
-  [key: string]: any;
+/**
+ * 统一的日志工具类
+ * 用于替换项目中的 console.log/error 调用
+ */
+
+export enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
 }
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === 'development';
+  private static instance: Logger;
+  private logLevel: LogLevel;
+  private isDevelopment: boolean;
 
-  info(message: string, context?: LogContext) {
-    if (this.isDevelopment) {
-      console.log(`[INFO] ${message}`, context);
-    }
-    // In production, could send to logging service
+  private constructor() {
+    this.isDevelopment = import.meta.env.DEV || import.meta.env.NODE_ENV === 'development';
+    this.logLevel = this.isDevelopment ? LogLevel.DEBUG : LogLevel.WARN;
   }
 
-  warn(message: string, context?: LogContext) {
-    if (this.isDevelopment) {
-      console.warn(`[WARN] ${message}`, context);
+  public static getInstance(): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
     }
-    // In production, could send to logging service
+    return Logger.instance;
   }
 
-  error(message: string, context?: LogContext) {
-    const sanitizedContext = this.sanitizeContext(context);
-    
-    if (this.isDevelopment) {
-      console.error(`[ERROR] ${message}`, sanitizedContext);
-    }
-    
-    // In production, send to error reporting service
-    // Example: Sentry, LogRocket, etc.
+  public setLogLevel(level: LogLevel): void {
+    this.logLevel = level;
   }
 
-  debug(message: string, context?: LogContext) {
-    if (this.isDevelopment) {
-      console.debug(`[DEBUG] ${message}`, context);
+  private shouldLog(level: LogLevel): boolean {
+    return level >= this.logLevel;
+  }
+
+  private formatMessage(level: string, message: string, context?: any): string {
+    const timestamp = new Date().toISOString();
+    const contextStr = context ? ` | Context: ${JSON.stringify(context)}` : '';
+    return `[${timestamp}] [${level}] ${message}${contextStr}`;
+  }
+
+  public debug(message: string, context?: any): void {
+    if (this.shouldLog(LogLevel.DEBUG)) {
+      console.log(this.formatMessage('DEBUG', message, context));
     }
   }
 
-  private sanitizeContext(context?: LogContext): LogContext | undefined {
-    if (!context) return undefined;
-    
-    // Remove sensitive information
-    const sanitized = { ...context };
-    delete sanitized.password;
-    delete sanitized.token;
-    delete sanitized.secret;
-    
-    // Convert Error objects to serializable format
-    if (sanitized.error instanceof Error) {
-      sanitized.errorMessage = sanitized.error.message;
-      sanitized.stack = sanitized.error.stack;
-      delete sanitized.error;
+  public info(message: string, context?: any): void {
+    if (this.shouldLog(LogLevel.INFO)) {
+      console.info(this.formatMessage('INFO', message, context));
     }
-    
-    return sanitized;
+  }
+
+  public warn(message: string, context?: any): void {
+    if (this.shouldLog(LogLevel.WARN)) {
+      console.warn(this.formatMessage('WARN', message, context));
+    }
+  }
+
+  public error(message: string, error?: Error | any, context?: any): void {
+    if (this.shouldLog(LogLevel.ERROR)) {
+      const errorStr = error instanceof Error ? error.stack : JSON.stringify(error);
+      const fullContext = { ...context, error: errorStr };
+      console.error(this.formatMessage('ERROR', message, fullContext));
+    }
+  }
+
+  // 便捷方法用于组件渲染日志
+  public componentRender(componentName: string, props?: any): void {
+    this.debug(`${componentName} rendered`, props);
+  }
+
+  // 便捷方法用于API调用日志
+  public apiCall(method: string, url: string, data?: any): void {
+    this.debug(`API ${method} ${url}`, data);
+  }
+
+  // 便捷方法用于状态更新日志
+  public stateUpdate(component: string, state: any): void {
+    this.debug(`${component} state updated`, state);
   }
 }
 
-export const logger = new Logger();
+// 导出单例实例
+export const logger = Logger.getInstance();
+
+// 导出便捷方法
+export const log = {
+  debug: (message: string, context?: any) => logger.debug(message, context),
+  info: (message: string, context?: any) => logger.info(message, context),
+  warn: (message: string, context?: any) => logger.warn(message, context),
+  error: (message: string, error?: Error | any, context?: any) => logger.error(message, error, context),
+  componentRender: (componentName: string, props?: any) => logger.componentRender(componentName, props),
+  apiCall: (method: string, url: string, data?: any) => logger.apiCall(method, url, data),
+  stateUpdate: (component: string, state: any) => logger.stateUpdate(component, state),
+};

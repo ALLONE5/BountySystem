@@ -14,12 +14,6 @@ import {
   StarOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { 
-  DiscordCard, 
-  DiscordButton, 
-  DiscordTaskCard, 
-  DiscordStatsCard 
-} from '../../components/discord/DiscordComponents';
 
 const { Search } = Input;
 const { Option } = Select;

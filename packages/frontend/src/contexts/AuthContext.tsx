@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { message } from 'antd';
 import { authApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
+import { log } from '../utils/logger';
 
 interface User {
   id: string;
@@ -60,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           useAuthStore.getState().setAuth(token, userData);
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
+        log.error('Auth check failed', error);
         localStorage.removeItem('token');
         useAuthStore.getState().clearAuth();
       } finally {

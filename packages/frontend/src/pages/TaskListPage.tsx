@@ -22,12 +22,7 @@ import dayjs from 'dayjs';
 import { useAuthStore } from '../store/authStore';
 import { getTaskStatusConfig } from '../utils/statusConfig';
 import { useTheme } from '../contexts/ThemeContext';
-import { CyberCard, NeonButton } from '../components/cyberpunk';
-import { 
-  DiscordCard, 
-  DiscordButton, 
-  DiscordTaskCard 
-} from '../components/discord/DiscordComponents';
+import { log } from '../utils/logger';
 import { logger } from '../utils/logger';
 
 const { Option } = Select;
@@ -77,10 +72,10 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
   isPublishedTasksPage = false,
   isGroupTasksPage = false, // 新增
 }) => {
-  console.log('TaskListPage rendered, hideFilters:', hideFilters);
+  log.componentRender('TaskListPage', { hideFilters });
   const { user } = useAuthStore();
   const { themeMode } = useTheme();
-  const isCyberpunk = themeMode === 'cyberpunk';
+  const isCyberpunk = false; // cyberpunk theme not available in current ThemeMode
   const [internalTasks, setInternalTasks] = useState<Task[]>([]);
   const [internalLoading, setInternalLoading] = useState(true);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
@@ -109,9 +104,11 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
   useEffect(() => {
     applyFilters();
     if (tasks.length > 0) {
-      console.log('[TaskListPage] Total tasks:', tasks.length);
-      console.log('[TaskListPage] Tasks with parentId:', tasks.filter(t => t.parentId).map(t => ({ id: t.id, name: t.name, parentId: t.parentId })));
-      console.log('[TaskListPage] Top-level tasks:', tasks.filter(t => !t.parentId).length);
+      log.debug('TaskListPage tasks loaded', {
+        totalTasks: tasks.length,
+        tasksWithParent: tasks.filter(t => t.parentId).length,
+        topLevelTasks: tasks.filter(t => !t.parentId).length
+      });
     }
   }, [tasks, searchText, statusFilter]);
 
@@ -120,7 +117,10 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
     if (selectedTask && drawerVisible) {
       const updatedTask = tasks.find(t => t.id === selectedTask.id);
       if (updatedTask) {
-        console.log('[TaskListPage] Updating selectedTask with new data, progress:', updatedTask.progress);
+        log.stateUpdate('TaskListPage', { 
+          selectedTaskId: selectedTask.id, 
+          progress: updatedTask.progress 
+        });
         setSelectedTask(updatedTask);
       }
     }
@@ -199,7 +199,11 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
     const subtasks = tasks.filter(t => t.parentId === taskId);
     const count = subtasks.length;
     if (count > 0) {
-      console.log(`[TaskListPage] Task ${taskId} has ${count} subtasks:`, subtasks.map(st => ({ id: st.id, name: st.name, parentId: st.parentId })));
+      log.debug('Task subtasks found', { 
+        taskId, 
+        subtaskCount: count,
+        subtasks: subtasks.map(st => ({ id: st.id, name: st.name, parentId: st.parentId }))
+      });
     }
     return count;
   };
@@ -363,7 +367,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       dataIndex: 'bountyAmount',
       key: 'bountyAmount',
       width: 120,
-      sorter: (a, b) => a.bountyAmount - b.bountyAmount,
+      sorter: (a, b) => (a.bountyAmount || 0) - (b.bountyAmount || 0),
       render: (amount: number) => (
         <Tag icon={<DollarOutlined />} color="gold">
           ${amount}
@@ -376,7 +380,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       key: 'plannedEndDate',
       width: 150,
       sorter: (a, b) =>
-        new Date(a.plannedEndDate).getTime() - new Date(b.plannedEndDate).getTime(),
+        new Date(a.plannedEndDate || 0).getTime() - new Date(b.plannedEndDate || 0).getTime(),
       render: (date: Date) => (
         <Space>
           <ClockCircleOutlined />
@@ -389,7 +393,11 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       dataIndex: 'priority',
       key: 'priority',
       width: 100,
-      sorter: (a, b) => a.priority - b.priority,
+      sorter: (a, b) => {
+        const aPriority = typeof a.priority === 'number' ? a.priority : 0;
+        const bPriority = typeof b.priority === 'number' ? b.priority : 0;
+        return aPriority - bPriority;
+      },
       render: (priority: number) => (
         <Tag icon={<FlagOutlined />} color={getPriorityColor(priority)}>
           P{priority}
@@ -401,7 +409,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       dataIndex: 'complexity',
       key: 'complexity',
       width: 100,
-      sorter: (a, b) => a.complexity - b.complexity,
+      sorter: (a, b) => (a.complexity || 0) - (b.complexity || 0),
       render: (complexity: number) => (
         <Tag>{getComplexityText(complexity)}</Tag>
       ),
@@ -411,7 +419,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       dataIndex: 'estimatedHours',
       key: 'estimatedHours',
       width: 100,
-      sorter: (a, b) => a.estimatedHours - b.estimatedHours,
+      sorter: (a, b) => (a.estimatedHours || 0) - (b.estimatedHours || 0),
       render: (hours: number) => `${hours}h`,
     },
     {
@@ -419,7 +427,7 @@ export const TaskListPage: React.FC<TaskListPageProps> = ({
       dataIndex: 'progress',
       key: 'progress',
       width: 150,
-      sorter: (a, b) => a.progress - b.progress,
+      sorter: (a, b) => (a.progress || 0) - (b.progress || 0),
       render: (progress: number) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Progress

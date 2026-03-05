@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Card, Button, Select, message, Spin, Input } from 'antd';
+import { Card, Button, Select, message, Spin, Input } from 'antd';
 import {
   FileTextOutlined,
   CheckSquareOutlined,
@@ -9,11 +9,10 @@ import dayjs from 'dayjs';
 import { useAuth } from '../contexts/AuthContext';
 import { taskApi } from '../api/task';
 import { rankingApi } from '../api/ranking';
-import { TaskStats, Task, Ranking } from '../types';
+import { TaskStats, Task } from '../types';
 import { BountyHistoryDrawer } from '../components/BountyHistoryDrawer';
 import './DashboardPage.css';
 
-const { Title } = Typography;
 const { Option } = Select;
 
 export const DashboardPage: React.FC = () => {
@@ -403,7 +402,7 @@ export const DashboardPage: React.FC = () => {
         />
       )}
 
-      <style jsx>{`
+      <style>{`
         .dashboard-page {
           padding: 0;
           max-width: 1200px;

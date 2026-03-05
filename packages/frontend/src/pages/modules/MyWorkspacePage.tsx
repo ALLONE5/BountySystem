@@ -14,13 +14,6 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { 
-  DiscordCard, 
-  DiscordButton, 
-  DiscordTaskCard, 
-  DiscordUserCard, 
-  DiscordStatsCard 
-} from '../../components/discord/DiscordComponents';
 
 const { TabPane } = Tabs;
 
@@ -146,7 +139,7 @@ export const MyWorkspacePage: React.FC = () => {
     <div>
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} lg={8}>
-          <DiscordCard title="个人信息">
+          <Card title="个人信息">
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <Avatar size={80} src={user?.avatarUrl} icon={<UserOutlined />} />
               <h3 style={{ margin: '16px 0 8px', color: 'var(--discord-text-primary)' }}>
@@ -162,21 +155,21 @@ export const MyWorkspacePage: React.FC = () => {
               />
             </div>
             <div style={{ marginTop: 16 }}>
-              <DiscordButton 
+              <Button 
                 type="primary" 
                 block 
                 onClick={() => navigate('/profile')}
               >
                 编辑资料
-              </DiscordButton>
+              </Button>
             </div>
-          </DiscordCard>
+          </Card>
         </Col>
         
         <Col xs={24} lg={16}>
           <Row gutter={[16, 16]}>
             <Col xs={12} sm={8}>
-              <DiscordStatsCard
+              <Card
                 title="总赏金"
                 value={`¥${profileData.totalBounty}`}
                 icon={<DollarOutlined />}
@@ -185,7 +178,7 @@ export const MyWorkspacePage: React.FC = () => {
               />
             </Col>
             <Col xs={12} sm={8}>
-              <DiscordStatsCard
+              <Card
                 title="完成任务"
                 value={profileData.completedTasks}
                 icon={<CheckCircleOutlined />}
@@ -194,7 +187,7 @@ export const MyWorkspacePage: React.FC = () => {
               />
             </Col>
             <Col xs={12} sm={8}>
-              <DiscordStatsCard
+              <Card
                 title="当前排名"
                 value={`#${profileData.currentRank}`}
                 icon={<TrophyOutlined />}
@@ -203,7 +196,7 @@ export const MyWorkspacePage: React.FC = () => {
               />
             </Col>
             <Col xs={12} sm={8}>
-              <DiscordStatsCard
+              <Card
                 title="发布任务"
                 value={profileData.publishedTasks}
                 icon={<FileTextOutlined />}
@@ -211,7 +204,7 @@ export const MyWorkspacePage: React.FC = () => {
               />
             </Col>
             <Col xs={12} sm={8}>
-              <DiscordStatsCard
+              <Card
                 title="加入组群"
                 value={profileData.joinedGroups}
                 icon={<TeamOutlined />}
@@ -219,7 +212,7 @@ export const MyWorkspacePage: React.FC = () => {
               />
             </Col>
             <Col xs={12} sm={8}>
-              <DiscordCard>
+              <Card>
                 <Statistic
                   title="本周进度"
                   value={profileData.weeklyProgress}
@@ -231,7 +224,7 @@ export const MyWorkspacePage: React.FC = () => {
                   size="small" 
                   style={{ marginTop: 8 }}
                 />
-              </DiscordCard>
+              </Card>
             </Col>
           </Row>
         </Col>
@@ -244,19 +237,19 @@ export const MyWorkspacePage: React.FC = () => {
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ color: 'var(--discord-text-primary)', margin: 0 }}>我发布的悬赏</h3>
-        <DiscordButton 
+        <Button 
           type="primary" 
           icon={<PlusOutlined />}
           onClick={() => navigate('/tasks/create')}
         >
           发布新悬赏
-        </DiscordButton>
+        </Button>
       </div>
       
       <Row gutter={[16, 16]}>
         {myBounties.map(bounty => (
           <Col xs={24} lg={12} key={bounty.id}>
-            <DiscordCard>
+            <Card>
               <div style={{ marginBottom: 12 }}>
                 <h4 style={{ color: 'var(--discord-text-primary)', margin: '0 0 8px 0' }}>
                   {bounty.title}
@@ -293,25 +286,25 @@ export const MyWorkspacePage: React.FC = () => {
                   截止: {bounty.deadline}
                 </div>
                 <Space>
-                  <DiscordButton 
+                  <Button 
                     type="secondary" 
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() => handleTaskView(bounty.id)}
                   >
                     查看
-                  </DiscordButton>
-                  <DiscordButton 
+                  </Button>
+                  <Button 
                     type="primary" 
                     size="small"
                     icon={<EditOutlined />}
                     onClick={() => handleTaskEdit(bounty.id)}
                   >
                     管理
-                  </DiscordButton>
+                  </Button>
                 </Space>
               </div>
-            </DiscordCard>
+            </Card>
           </Col>
         ))}
       </Row>
@@ -328,7 +321,7 @@ export const MyWorkspacePage: React.FC = () => {
       <Row gutter={[16, 16]}>
         {myTasks.map(task => (
           <Col xs={24} lg={12} key={task.id}>
-            <DiscordCard>
+            <Card>
               <div style={{ marginBottom: 12 }}>
                 <h4 style={{ color: 'var(--discord-text-primary)', margin: '0 0 8px 0' }}>
                   {task.title}
@@ -375,25 +368,25 @@ export const MyWorkspacePage: React.FC = () => {
                   {task.status === 'completed' ? `完成于: ${task.completedAt}` : `截止: ${task.deadline}`}
                 </div>
                 <Space>
-                  <DiscordButton 
+                  <Button 
                     type="secondary" 
                     size="small"
                     icon={<EyeOutlined />}
                     onClick={() => handleTaskView(task.id)}
                   >
                     查看
-                  </DiscordButton>
+                  </Button>
                   {task.status === 'in_progress' && (
-                    <DiscordButton 
+                    <Button 
                       type="success" 
                       size="small"
                     >
                       提交
-                    </DiscordButton>
+                    </Button>
                   )}
                 </Space>
               </div>
-            </DiscordCard>
+            </Card>
           </Col>
         ))}
       </Row>
@@ -405,19 +398,19 @@ export const MyWorkspacePage: React.FC = () => {
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ color: 'var(--discord-text-primary)', margin: 0 }}>我的组群</h3>
-        <DiscordButton 
+        <Button 
           type="primary" 
           icon={<PlusOutlined />}
           onClick={() => navigate('/groups/create')}
         >
           创建组群
-        </DiscordButton>
+        </Button>
       </div>
       
       <Row gutter={[16, 16]}>
         {myGroups.map(group => (
           <Col xs={24} lg={12} key={group.id}>
-            <DiscordCard>
+            <Card>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <Avatar size={48} src={group.avatar} icon={<TeamOutlined />} />
                 <div style={{ flex: 1 }}>
@@ -463,24 +456,24 @@ export const MyWorkspacePage: React.FC = () => {
               
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <Space>
-                  <DiscordButton 
+                  <Button 
                     type="secondary" 
                     size="small"
                     onClick={() => handleGroupView(group.id)}
                   >
                     进入组群
-                  </DiscordButton>
+                  </Button>
                   {group.role === 'admin' && (
-                    <DiscordButton 
+                    <Button 
                       type="primary" 
                       size="small"
                     >
                       管理
-                    </DiscordButton>
+                    </Button>
                   )}
                 </Space>
               </div>
-            </DiscordCard>
+            </Card>
           </Col>
         ))}
       </Row>

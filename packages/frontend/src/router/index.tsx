@@ -24,12 +24,6 @@ import { SettingsPage } from '../pages/SettingsPage';
 import { MyPage } from '../pages/MyPage';
 import { AdminPage } from '../pages/AdminPage';
 import { TaskInvitationsPage } from '../pages/TaskInvitationsPage';
-import { UIShowcasePage } from '../pages/UIShowcasePage';
-
-// 工作台页面 - 使用现有页面替代
-// import { MyBountiesPage } from '../pages/workspace/MyBountiesPage';
-// import { MyTasksPage } from '../pages/workspace/MyTasksPage';
-// import { MyGroupsPage } from '../pages/workspace/MyGroupsPage';
 
 // 管理页面
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
@@ -48,8 +42,7 @@ import { AuditLogPage } from '../pages/admin/AuditLogPage';
 import { DevAuditLogPage } from '../pages/developer/DevAuditLogPage';
 import { DevSystemMonitorPage } from '../pages/developer/DevSystemMonitorPage';
 
-// 测试页面
-import { TestPage } from '../pages/TestPage';
+// 组件
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { Result, Button } from 'antd';
 
@@ -102,25 +95,12 @@ export const router = createBrowserRouter(
           path: 'dashboard',
           element: <DashboardPage />,
         },
-        // 原有仪表板（备用）
-        {
-          path: 'dashboard/original',
-          element: <DashboardPage />,
-        },
         
-        // UI 展示页面
-        {
-          path: 'ui-showcase',
-          element: <UIShowcasePage />,
-        },
-        
-        // 模块化路由 - 我的工作台
+        // 我的工作台
         {
           path: 'my',
           element: <MyPage />,
         },
-        
-        // 工作台子页面
         {
           path: 'my/bounties',
           element: <PublishedTasksPage />,
@@ -140,18 +120,6 @@ export const router = createBrowserRouter(
           element: <BrowseTasksPage />,
         },
         
-        // 模块化路由 - 管理中心
-        {
-          path: 'admin',
-          element: <AdminPage />,
-        },
-        
-        // 管理中心子页面
-        {
-          path: 'admin/dashboard',
-          element: <AdminDashboardPage />,
-        },
-        
         // 任务相关页面
         {
           path: 'tasks/published',
@@ -167,10 +135,6 @@ export const router = createBrowserRouter(
         },
         {
           path: 'tasks/browse',
-          element: <BrowseTasksPage />,
-        },
-        {
-          path: 'tasks/browse/original',
           element: <BrowseTasksPage />,
         },
         {
@@ -207,10 +171,6 @@ export const router = createBrowserRouter(
           path: 'ranking',
           element: <RankingPage />,
         },
-        {
-          path: 'ranking/original',
-          element: <RankingPage />,
-        },
         
         // 通知
         {
@@ -228,7 +188,15 @@ export const router = createBrowserRouter(
           element: <SettingsPage />,
         },
         
-        // 管理员页面
+        // 管理中心
+        {
+          path: 'admin',
+          element: <AdminPage />,
+        },
+        {
+          path: 'admin/dashboard',
+          element: <AdminDashboardPage />,
+        },
         {
           path: 'admin/users',
           element: <UserManagementPage />,
@@ -280,11 +248,6 @@ export const router = createBrowserRouter(
           element: <DevSystemMonitorPage />,
         },
       ],
-    },
-    {
-      path: '/test',
-      element: <TestPage />,
-      errorElement: <ErrorBoundary />,
     },
     {
       path: '*',

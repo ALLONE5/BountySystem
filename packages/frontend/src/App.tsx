@@ -11,8 +11,6 @@ import { initializeUserSettings } from './utils/timezone';
 import { getThemeConfig } from './theme';
 import './styles/global.css';
 import './styles/global-theme.css';
-import './styles/search-bar.css';
-import './styles/collapse.css';
 import './styles/glassmorphism.css';
 
 // Import Google Fonts

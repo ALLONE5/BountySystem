@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { systemConfigApi, SystemConfig } from '../api/systemConfig';
+import { log } from '../utils/logger';
 
 interface SystemConfigContextType {
   config: SystemConfig | null;
@@ -16,9 +17,9 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const refreshConfig = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Loading system config...');
+      log.info('Loading system config...');
       const data = await systemConfigApi.getPublicConfig();
-      console.log('✅ System config loaded:', data);
+      log.info('System config loaded successfully', data);
       
       // Convert public config to full config format
       const fullConfig: SystemConfig = {
@@ -51,16 +52,16 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // 动态更新页面标题
       if (data.siteName) {
         document.title = data.siteName;
-        console.log('📝 Updated page title to:', data.siteName);
+        log.debug('Updated page title', { siteName: data.siteName });
       }
       
       // 动态更新favicon（如果有Logo）
       if (data.logoUrl) {
         updateFavicon(data.logoUrl);
-        console.log('🖼️ Updated favicon to:', data.logoUrl);
+        log.debug('Updated favicon', { logoUrl: data.logoUrl });
       }
     } catch (error) {
-      console.error('❌ Failed to load system config:', error);
+      log.error('Failed to load system config', error);
       // 使用默认配置
       const defaultConfig = {
         id: 'default',
@@ -86,7 +87,7 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      console.log('🔧 Using default config:', defaultConfig);
+      log.info('Using default system config', defaultConfig);
       setConfig(defaultConfig);
     } finally {
       setLoading(false);
@@ -119,7 +120,7 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     // 添加错误处理
     link.onerror = () => {
-      console.warn('Failed to load favicon:', faviconUrl);
+      log.warn('Failed to load favicon', { faviconUrl });
       // 如果加载失败，尝试使用默认favicon
       link.href = '/favicon.ico';
     };

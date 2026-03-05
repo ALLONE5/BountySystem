@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { message } from 'antd';
-import { useAuthStore } from '../store/authStore';
+import { log } from '../utils/logger';
 
 // 创建 axios 实例
 const apiClient = axios.create({
@@ -14,7 +14,7 @@ const apiClient = axios.create({
 // 请求拦截器 - 添加 token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -42,10 +42,10 @@ apiClient.interceptors.response.use(
       if (status === 401) {
         // 如果是登录请求失败，不要自动跳转，让登录页面自己处理错误
         if (!isLoginRequest) {
-          message.error('登录已过期，请重新登录');
+          log.warn('Authentication failed, redirecting to login');
           // 清除token并跳转到登录页
-          useAuthStore.getState().clearAuth();
-          window.location.href = '/login';
+          localStorage.removeItem('token');
+          window.location.href = '/auth/login';
         }
         return Promise.reject(error);
       }
