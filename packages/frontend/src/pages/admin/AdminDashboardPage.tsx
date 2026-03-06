@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Progress, List, Avatar, Badge, Spin } from 'antd';
+import { Card, Row, Col, Statistic, Progress, List, Avatar, Badge, Spin, message } from 'antd';
 import {
   UserOutlined,
   TeamOutlined,
@@ -10,24 +10,14 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
+import { 
+  systemMonitorApi, 
+  SystemStats, 
+  OnlineUser, 
+  SystemPerformance, 
+  ActivityLog 
+} from '../../api/systemMonitor';
 import './AdminDashboardPage.css';
-
-interface SystemStats {
-  totalUsers: number;
-  onlineUsers: number;
-  totalTasks: number;
-  activeTasks: number;
-  totalBounty: number;
-  completedTasks: number;
-}
-
-interface OnlineUser {
-  id: string;
-  username: string;
-  avatarUrl?: string;
-  lastActive: string;
-  status: 'online' | 'away' | 'busy';
-}
 
 export const AdminDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -40,6 +30,14 @@ export const AdminDashboardPage: React.FC = () => {
     completedTasks: 0,
   });
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+  const [performance, setPerformance] = useState<SystemPerformance>({
+    cpuUsage: 0,
+    memoryUsage: 0,
+    diskUsage: 0,
+    networkLoad: 0,
+    uptime: '0分钟'
+  });
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -51,29 +49,19 @@ export const AdminDashboardPage: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      // 模拟数据加载 - 实际项目中应该调用API
-      setTimeout(() => {
-        setStats({
-          totalUsers: 1247,
-          onlineUsers: 89,
-          totalTasks: 3456,
-          activeTasks: 234,
-          totalBounty: 125678.50,
-          completedTasks: 2890,
-        });
-        
-        setOnlineUsers([
-          { id: '1', username: 'Alice', status: 'online', lastActive: '刚刚' },
-          { id: '2', username: 'Bob', status: 'away', lastActive: '5分钟前' },
-          { id: '3', username: 'Charlie', status: 'busy', lastActive: '2分钟前' },
-          { id: '4', username: 'Diana', status: 'online', lastActive: '1分钟前' },
-          { id: '5', username: 'Eve', status: 'away', lastActive: '10分钟前' },
-        ]);
-        
-        setLoading(false);
-      }, 1000);
+      
+      // 使用新的API获取仪表盘数据
+      const dashboardData = await systemMonitorApi.getDashboard();
+      
+      setStats(dashboardData.stats);
+      setOnlineUsers(dashboardData.onlineUsers);
+      setPerformance(dashboardData.performance);
+      setActivities(dashboardData.activities);
+      
+      setLoading(false);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      message.error('加载仪表盘数据失败');
       setLoading(false);
     }
   };
@@ -247,43 +235,48 @@ export const AdminDashboardPage: React.FC = () => {
             }
             className="monitoring-card performance-card"
           >
-            <div className="performance-metrics">
-              <div className="metric-item">
-                <div className="metric-label">CPU 使用率</div>
-                <Progress 
-                  percent={45} 
-                  strokeColor="#52c41a"
-                  trailColor="rgba(0,0,0,0.1)"
-                />
+              <div className="performance-metrics">
+                <div className="metric-item">
+                  <div className="metric-label">CPU 使用率</div>
+                  <Progress 
+                    percent={performance.cpuUsage} 
+                    strokeColor="#52c41a"
+                    trailColor="rgba(0,0,0,0.1)"
+                  />
+                </div>
+                
+                <div className="metric-item">
+                  <div className="metric-label">内存使用率</div>
+                  <Progress 
+                    percent={performance.memoryUsage} 
+                    strokeColor="#1890ff"
+                    trailColor="rgba(0,0,0,0.1)"
+                  />
+                </div>
+                
+                <div className="metric-item">
+                  <div className="metric-label">磁盘使用率</div>
+                  <Progress 
+                    percent={performance.diskUsage} 
+                    strokeColor="#faad14"
+                    trailColor="rgba(0,0,0,0.1)"
+                  />
+                </div>
+                
+                <div className="metric-item">
+                  <div className="metric-label">网络负载</div>
+                  <Progress 
+                    percent={performance.networkLoad} 
+                    strokeColor="#722ed1"
+                    trailColor="rgba(0,0,0,0.1)"
+                  />
+                </div>
+                
+                <div className="metric-item">
+                  <div className="metric-label">系统运行时间</div>
+                  <div className="uptime-display">{performance.uptime}</div>
+                </div>
               </div>
-              
-              <div className="metric-item">
-                <div className="metric-label">内存使用率</div>
-                <Progress 
-                  percent={68} 
-                  strokeColor="#1890ff"
-                  trailColor="rgba(0,0,0,0.1)"
-                />
-              </div>
-              
-              <div className="metric-item">
-                <div className="metric-label">磁盘使用率</div>
-                <Progress 
-                  percent={32} 
-                  strokeColor="#faad14"
-                  trailColor="rgba(0,0,0,0.1)"
-                />
-              </div>
-              
-              <div className="metric-item">
-                <div className="metric-label">网络负载</div>
-                <Progress 
-                  percent={23} 
-                  strokeColor="#722ed1"
-                  trailColor="rgba(0,0,0,0.1)"
-                />
-              </div>
-            </div>
           </Card>
         </Col>
       </Row>
@@ -301,13 +294,7 @@ export const AdminDashboardPage: React.FC = () => {
             className="monitoring-card activity-card"
           >
             <List
-              dataSource={[
-                { id: 1, type: 'task_created', user: 'Alice', action: '创建了新任务', time: '2分钟前', status: 'success' },
-                { id: 2, type: 'task_completed', user: 'Bob', action: '完成了任务', time: '5分钟前', status: 'success' },
-                { id: 3, type: 'user_login', user: 'Charlie', action: '登录系统', time: '8分钟前', status: 'info' },
-                { id: 4, type: 'bounty_awarded', user: 'Diana', action: '获得赏金奖励', time: '12分钟前', status: 'warning' },
-                { id: 5, type: 'group_joined', user: 'Eve', action: '加入了项目组', time: '15分钟前', status: 'info' },
-              ]}
+              dataSource={activities}
               renderItem={(activity) => (
                 <List.Item className="activity-item">
                   <div className="activity-content">

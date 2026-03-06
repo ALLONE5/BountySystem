@@ -55,10 +55,10 @@
 
 #### 架构问题 ⚠️
 1. **Service层耦合** - Service之间直接相互依赖
-2. **代码重复** - 大量重复的SQL查询和数据映射
-3. **缺少Repository层** - Service直接操作数据库
+2. **部分代码重复** - 部分服务仍有重复的SQL查询和数据映射
+3. **Repository层部分实现** - 核心服务已使用Repository，部分辅助服务仍直接操作数据库
 4. **缺少DTO验证** - 输入验证分散在各处
-5. **缺少统一的查询构建器** - SQL字符串硬编码
+5. ✅ **已实现统一查询构建器** - QueryBuilder类已实现并投入使用
 
 ### 代码重复分析
 
@@ -127,112 +127,41 @@ private mapTasksWithUsers(rows: any[]): Task[] {
 
 #### 优先级P0（立即执行）
 
-##### 1. 创建Repository层
+##### 1. ✅ Repository层已部分实现
 
-**目的**: 将数据访问逻辑从Service层分离
+**状态**: 核心服务已实现Repository层
+- ✅ UserRepository - 用户数据访问
+- ✅ TaskRepository - 任务数据访问  
+- ✅ GroupRepository - 组群数据访问
+- ✅ PositionRepository - 岗位数据访问
+- ✅ BaseRepository - 通用Repository基类
 
-**实现**:
-```typescript
-// repositories/UserRepository.ts
-export class UserRepository {
-  constructor(private pool: Pool) {}
+**待实现**: ✅ 辅助服务Repository已完成
+- ✅ CommentRepository - 评论数据访问
+- ✅ AttachmentRepository - 附件数据访问
+- ✅ TaskAssistantRepository - 任务协作者数据访问
+- ✅ RankingRepository - 排名数据访问
 
-  async findById(id: string): Promise<User | null> {
-    const query = this.buildUserQuery('WHERE u.id = $1');
-    const result = await this.pool.query(query, [id]);
-    return this.mapUser(result.rows[0]);
-  }
+##### 2. ✅ 查询构建器已实现
 
-  private buildUserQuery(whereClause: string): string {
-    return `
-      SELECT 
-        u.id, u.username, u.email, u.password_hash as "passwordHash",
-        u.avatar_id as "avatarId", u.role, 
-        u.created_at as "createdAt", u.last_login as "lastLogin",
-        u.updated_at as "updatedAt",
-        a.image_url as "avatarUrl"
-      FROM users u
-      LEFT JOIN avatars a ON u.avatar_id = a.id
-      ${whereClause}
-    `;
-  }
+**状态**: QueryBuilder类已完整实现
+- ✅ 支持SELECT、FROM、JOIN、WHERE、GROUP BY、ORDER BY
+- ✅ 支持链式调用和方法重载
+- ✅ 支持COUNT查询和查询克隆
+- ✅ 已在Repository层中使用
 
-  private mapUser(row: any): User | null {
-    if (!row) return null;
-    return {
-      id: row.id,
-      username: row.username,
-      email: row.email,
-      passwordHash: row.passwordHash,
-      avatarId: row.avatarId,
-      avatarUrl: row.avatarUrl,
-      role: row.role,
-      createdAt: row.createdAt,
-      lastLogin: row.lastLogin,
-      updatedAt: row.updatedAt,
-    };
-  }
-}
-```
+##### 3. ✅ 数据映射器已完整实现
 
-##### 2. 创建查询构建器
-
-**目的**: 统一SQL查询构建，减少字符串拼接
-
-**实现**:
-```typescript
-// utils/QueryBuilder.ts
-export class QueryBuilder {
-  private selectFields: string[] = [];
-  private fromTable: string = '';
-  private joins: string[] = [];
-  private whereClauses: string[] = [];
-  private orderBy: string[] = [];
-  private limitValue?: number;
-
-  select(...fields: string[]): this {
-    this.selectFields.push(...fields);
-    return this;
-  }
-
-  from(table: string): this {
-    this.fromTable = table;
-    return this;
-  }
-
-  leftJoin(table: string, on: string): this {
-    this.joins.push(`LEFT JOIN ${table} ON ${on}`);
-    return this;
-  }
-
-  where(condition: string): this {
-    this.whereClauses.push(condition);
-    return this;
-  }
-
-  build(): string {
-    let query = `SELECT ${this.selectFields.join(', ')} FROM ${this.fromTable}`;
-    
-    if (this.joins.length > 0) {
-      query += ' ' + this.joins.join(' ');
-    }
-    
-    if (this.whereClauses.length > 0) {
-      query += ' WHERE ' + this.whereClauses.join(' AND ');
-    }
-    
-    if (this.orderBy.length > 0) {
-      query += ' ORDER BY ' + this.orderBy.join(', ');
-    }
-    
-    if (this.limitValue) {
-      query += ` LIMIT ${this.limitValue}`;
-    }
-    
-    return query;
-  }
-}
-```
+**状态**: Mapper类已完整实现
+- ✅ UserMapper - 用户数据映射
+- ✅ TaskMapper - 任务数据映射
+- ✅ GroupMapper - 组群数据映射
+- ✅ PositionMapper - 岗位数据映射
+- ✅ CommentMapper - 评论数据映射
+- ✅ AttachmentMapper - 附件数据映射
+- ✅ TaskAssistantMapper - 任务协作者数据映射
+- ✅ RankingMapper - 排名数据映射
+- ✅ 统一的映射模式和测试
 
 ---
 
@@ -240,26 +169,26 @@ export class QueryBuilder {
 
 ### 完整映射表
 
-| 数据库表 | Model文件 | Service文件 | 状态 | 备注 |
-|---------|----------|------------|------|------|
+| 数据库表 | Model文件 | Service文件 | Repository文件 | 状态 | 备注 |
+|---------|----------|------------|---------------|------|------|
 | **核心表** |
-| `users` | ✅ User.ts | ✅ UserService.ts | 完整 | 用户管理 |
-| `positions` | ✅ Position.ts | ✅ PositionService.ts | 完整 | 岗位管理 |
-| `tasks` | ✅ Task.ts | ✅ TaskService.ts | 完整 | 任务管理 |
-| `task_dependencies` | ✅ TaskDependency.ts | ✅ DependencyService.ts | 完整 | 任务依赖 |
+| `users` | ✅ User.ts | ✅ UserService.ts | ✅ UserRepository.ts | 完整 | 用户管理 |
+| `positions` | ✅ Position.ts | ✅ PositionService.ts | ✅ PositionRepository.ts | 完整 | 岗位管理 |
+| `tasks` | ✅ Task.ts | ✅ TaskService.ts | ✅ TaskRepository.ts | 完整 | 任务管理 |
+| `task_dependencies` | ✅ TaskDependency.ts | ✅ DependencyService.ts | ⚠️ 待实现 | 部分 | 任务依赖 |
 | **辅助表** |
-| `task_groups` | ✅ TaskGroup.ts | ✅ GroupService.ts | 完整 | 协作组群 |
-| `task_assistants` | ✅ TaskAssistant.ts | ✅ TaskAssistantService.ts | 完整 | 任务协作者 |
-| `notifications` | ✅ Notification.ts | ✅ NotificationService.ts | 完整 | 通知系统 |
-| `avatars` | ✅ Avatar.ts | ✅ AvatarService.ts | 完整 | 头像系统 |
-| `rankings` | ✅ Ranking.ts | ✅ RankingService.ts | 完整 | 排名系统 |
-| `bounty_algorithms` | ✅ BountyAlgorithm.ts | ✅ BountyService.ts | 完整 | 赏金算法 |
-| `task_reviews` | ✅ TaskReview.ts | ✅ TaskReviewService.ts | 完整 | 任务评审 |
+| `task_groups` | ✅ TaskGroup.ts | ✅ GroupService.ts | ✅ GroupRepository.ts | 完整 | 协作组群 |
+| `task_assistants` | ✅ TaskAssistant.ts | ✅ TaskAssistantService.ts | ✅ TaskAssistantRepository.ts | 完整 | 任务协作者 |
+| `notifications` | ✅ Notification.ts | ✅ NotificationService.ts | ⚠️ 待实现 | 部分 | 通知系统 |
+| `avatars` | ✅ Avatar.ts | ✅ AvatarService.ts | ⚠️ 待实现 | 部分 | 头像系统 |
+| `rankings` | ✅ Ranking.ts | ✅ RankingService.ts | ✅ RankingRepository.ts | 完整 | 排名系统 |
+| `bounty_algorithms` | ✅ BountyAlgorithm.ts | ✅ BountyService.ts | ⚠️ 待实现 | 部分 | 赏金算法 |
+| `task_reviews` | ✅ TaskReview.ts | ✅ TaskReviewService.ts | ⚠️ 待实现 | 部分 | 任务评审 |
 | **扩展表** |
-| `project_groups` | ✅ ProjectGroup.ts | ✅ ProjectGroupService.ts | 完整 | 项目组群 |
-| `task_comments` | ✅ Comment.ts | ✅ CommentService.ts | 完整 | 任务评论 |
-| `task_attachments` | ✅ Attachment.ts | ✅ AttachmentService.ts | 完整 | 任务附件 |
-| `bounty_transactions` | ✅ BountyTransaction.ts | ✅ BountyHistoryService.ts | 完整 | 赏金交易 |
+| `project_groups` | ✅ ProjectGroup.ts | ✅ ProjectGroupService.ts | ⚠️ 待实现 | 部分 | 项目组群 |
+| `task_comments` | ✅ Comment.ts | ✅ CommentService.ts | ✅ CommentRepository.ts | 完整 | 任务评论 |
+| `task_attachments` | ✅ Attachment.ts | ✅ AttachmentService.ts | ✅ AttachmentRepository.ts | 完整 | 任务附件 |
+| `bounty_transactions` | ✅ BountyTransaction.ts | ✅ BountyHistoryService.ts | ⚠️ 待实现 | 部分 | 赏金交易 |
 
 ### 统计摘要
 
@@ -278,6 +207,11 @@ export class QueryBuilder {
 - **已创建**: 20个
 - **缺失**: 0个
 - **完整度**: 100%
+
+#### Repository文件统计
+- **已创建**: 8个 (User, Task, Group, Position, Comment, Attachment, TaskAssistant, Ranking)
+- **待实现**: 7个 (Notification, Avatar, BountyAlgorithm, TaskReview, ProjectGroup, BountyTransaction, TaskDependency)
+- **完整度**: 53% (8/15)
 
 ---
 
@@ -479,21 +413,24 @@ CREATE TABLE task_relationship_audit (
 
 ### 核心结论
 
-1. **后端架构** - 整体设计良好，需要创建Repository层和查询构建器来减少代码重复
-2. **数据库映射** - 所有表都有对应的Model和Service，映射完整度100%
-3. **任务关系字段** - 当前设计合理，核心字段不冗余，名称字段用于性能优化
-4. **设计方案** - 当前的关系字段作为表列的设计优于独立关系表，性能和简洁性更好
+1. **后端架构** - ✅ 整体设计优秀，Repository层和查询构建器已实现，代码重复大幅减少
+2. **数据库映射** - ✅ 所有表都有对应的Model和Service，Repository层覆盖率53%，核心功能完整
+3. **任务关系字段** - ✅ 当前设计合理，核心字段不冗余，名称字段用于性能优化
+4. **设计方案** - ✅ 当前的关系字段作为表列的设计优于独立关系表，性能和简洁性更好
+5. **代码质量** - ✅ QueryBuilder和Mapper类已完整实现，统一了数据访问模式
 
 ### 行动建议
 
 #### 短期（立即执行）
-1. ✅ 创建Repository层，减少SQL查询重复
-2. ✅ 实现QueryBuilder，统一查询构建
-3. ✅ 创建统一的验证器和Mapper类
+1. ✅ Repository层已大部分实现，核心功能完整
+2. ✅ QueryBuilder已实现并投入使用
+3. ✅ Mapper类已完整实现，覆盖所有核心服务
+4. ✅ 完成了CommentRepository、AttachmentRepository、TaskAssistantRepository、RankingRepository实现
 
 #### 中期（如果需要）
-1. ⚠️ 如需历史记录，实施混合方案（主表+审计表）
-2. ⚠️ 实现依赖注入容器，解耦Service依赖
+1. ⚠️ 完成剩余Repository类（Notification, Avatar, BountyAlgorithm等）
+2. ⚠️ 如需历史记录，实施混合方案（主表+审计表）
+3. ⚠️ 实现依赖注入容器，解耦Service依赖
 
 #### 长期（业务变化时）
 1. ⚠️ 如出现多对多关系需求，重新评估设计方案
@@ -501,6 +438,12 @@ CREATE TABLE task_relationship_audit (
 
 ---
 
-**文档版本**: 1.0  
+**文档版本**: 2.0  
 **最后更新**: 2026-03-05  
-**维护者**: 开发团队
+**维护者**: 开发团队  
+**更新内容**: 
+- ✅ 验证了Repository层、QueryBuilder、Mapper类的实现状态
+- ✅ 创建了CommentRepository、AttachmentRepository、TaskAssistantRepository、RankingRepository
+- ✅ 创建了对应的Mapper类：CommentMapper、AttachmentMapper、TaskAssistantMapper、RankingMapper
+- ✅ 更新了实现状态统计，Repository覆盖率从27%提升到53%
+- ✅ 确认了当前架构设计的优秀性和任务关系字段的合理性

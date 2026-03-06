@@ -22,6 +22,7 @@ import auditLogRoutes from './routes/auditLog.routes.js';
 import devAuditLogRoutes from './routes/devAuditLog.routes.js';
 import schedulerRoutes from './routes/scheduler.routes.js';
 import metricsRoutes from './routes/metrics.routes.js';
+import systemMonitorRoutes from './routes/systemMonitor.routes.js';
 import publicRoutes from './routes/public.routes.js';
 import { createRankingRouter } from './routes/ranking.routes.js';
 import { createAvatarRouter } from './routes/avatar.routes.js';
@@ -31,6 +32,8 @@ import { pool } from './config/database.js';
 import { AppError } from './utils/errors.js';
 import { WebSocketService } from './services/WebSocketService.js';
 import { ipRateLimiter } from './middleware/rateLimit.middleware.js';
+import { trackPerformance } from './middleware/performance.middleware.js';
+import { systemMetricsCollector } from './utils/SystemMetricsCollector.js';
 
 const app = express();
 
@@ -67,6 +70,9 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Limit payload size
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Performance monitoring middleware
+app.use(trackPerformance);
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -142,6 +148,9 @@ app.use('/api/scheduler', schedulerRoutes);
 
 // Metrics routes
 app.use('/api/metrics', metricsRoutes);
+
+// System monitor routes
+app.use('/api/system-monitor', systemMonitorRoutes);
 
 // Ranking routes
 app.use('/api/rankings', createRankingRouter(pool));
@@ -224,6 +233,10 @@ const startServer = async () => {
       console.log(`Server running on port ${config.server.port}`);
       console.log(`Environment: ${config.server.nodeEnv}`);
       console.log('WebSocket server ready');
+      
+      // Start system metrics collection
+      metricsInterval = systemMetricsCollector.startMetricsCollection(30000); // Collect every 30 seconds
+      console.log('System metrics collection started');
     });
   } catch (error) {
     console.error('Failed to start server:', error);
@@ -232,5 +245,24 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Graceful shutdown handling
+let metricsInterval: NodeJS.Timeout | null = null;
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  if (metricsInterval) {
+    systemMetricsCollector.stopMetricsCollection(metricsInterval);
+  }
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  if (metricsInterval) {
+    systemMetricsCollector.stopMetricsCollection(metricsInterval);
+  }
+  process.exit(0);
+});
 
 export { app, wsService };

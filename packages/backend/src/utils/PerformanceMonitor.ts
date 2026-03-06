@@ -33,13 +33,62 @@ export class PerformanceMonitor {
    * Start timing an operation
    * Returns a function to stop the timer and log metrics
    */
-  startTimer(operation: string): () => void {
+  startTimer(operation: string): () => number {
     const startTime = Date.now();
     
     return () => {
       const duration = Date.now() - startTime;
+      
+      // Auto-log the metrics
+      this.logMetrics({
+        operation,
+        duration,
+        timestamp: new Date()
+      });
+      
       return duration;
     };
+  }
+
+  /**
+   * Time an async operation and automatically log metrics
+   */
+  async timeOperation<T>(operation: string, fn: () => Promise<T>): Promise<T> {
+    const stopTimer = this.startTimer(operation);
+    try {
+      const result = await fn();
+      stopTimer();
+      return result;
+    } catch (error) {
+      stopTimer();
+      throw error;
+    }
+  }
+
+  /**
+   * Get average response time for API operations
+   */
+  getAverageApiResponseTime(timeWindowMs: number = 300000): number {
+    const apiOperations = Array.from(this.metrics.keys()).filter(op => 
+      op.includes('api') || op.includes('route') || op.includes('request') || op.includes('GET') || op.includes('POST')
+    );
+
+    if (apiOperations.length === 0) {
+      return 0;
+    }
+
+    let totalDuration = 0;
+    let totalCount = 0;
+
+    for (const operation of apiOperations) {
+      const metrics = this.getMetrics(operation, timeWindowMs);
+      if (metrics) {
+        totalDuration += metrics.avgDuration * metrics.count;
+        totalCount += metrics.count;
+      }
+    }
+
+    return totalCount > 0 ? Math.round(totalDuration / totalCount) : 0;
   }
 
   /**
