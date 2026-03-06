@@ -1,5 +1,5 @@
 import { RouterProvider } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App as AntdApp } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import { router } from './router/index';
 import { AuthProvider } from './contexts/AuthContext';
@@ -8,7 +8,7 @@ import { SystemConfigProvider } from './contexts/SystemConfigContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { useEffect } from 'react';
 import { initializeUserSettings } from './utils/timezone';
-import { getThemeConfig } from './theme';
+import { getThemeConfig } from './theme/index';
 import './styles/global.css';
 import './styles/global-theme.css';
 import './styles/glassmorphism.css';
@@ -29,11 +29,13 @@ function AppContent() {
 
   return (
     <ConfigProvider locale={zhCN} theme={themeConfig}>
-      <AuthProvider>
-        <NotificationProvider>
-          <RouterProvider router={router} />
-        </NotificationProvider>
-      </AuthProvider>
+      <AntdApp>
+        <AuthProvider>
+          <NotificationProvider>
+            <RouterProvider router={router} />
+          </NotificationProvider>
+        </AuthProvider>
+      </AntdApp>
     </ConfigProvider>
   );
 }

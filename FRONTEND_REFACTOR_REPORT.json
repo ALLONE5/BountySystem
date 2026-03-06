@@ -1,0 +1,438 @@
+{
+  "totalFiles": 107,
+  "refactoredFiles": 0,
+  "totalReplacements": 0,
+  "refactoredFilesList": [],
+  "recommendations": [
+    {
+      "file": "packages\\frontend\\src\\components\\admin\\UserDetailsDrawer.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 4 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\BountyHistoryDrawer.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 417 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\BountyHistoryDrawer.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 11 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\common\\InviteMemberModal.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 5 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\common\\Skeleton.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 23 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\TaskAssistants.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\TaskAssistants.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 5 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\TaskComments.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 14 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\TaskDetailDrawer.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\TaskDetailDrawer.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 2119 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\components\\TaskDetailDrawer.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 68 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\contexts\\ThemeContext.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\hooks\\useLoadingState.ts",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\hooks\\useResponsive.ts",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\layouts\\AuthLayout.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 5 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\layouts\\ModernLayout.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 673 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\AdminDashboardPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\AdminDashboardPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 318 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\ApplicationReviewPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\ApplicationReviewPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 353 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\ApplicationReviewPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 6 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\AuditLogPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\AuditLogPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 448 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\AuditLogPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 9 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\BountyAlgorithmPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 522 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\BountyAlgorithmPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 13 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\GroupManagementPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\GroupManagementPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 4 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\NotificationBroadcastPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\NotificationBroadcastPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 4 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\SystemConfigPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 447 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\SystemConfigPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 13 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\TaskManagementPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\TaskManagementPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 557 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\TaskManagementPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 16 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\UserManagementPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 340 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\admin\\UserManagementPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 5 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\AssignedTasksPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\AssignedTasksPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 758 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\AssignedTasksPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 31 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\auth\\LoginPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 10 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\BrowseTasksPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\BrowseTasksPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 504 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\BrowseTasksPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 31 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\CalendarPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\CalendarPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 460 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\CalendarPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 19 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\DashboardPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\DashboardPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 902 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\DashboardPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 7 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\developer\\DevAuditLogPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\developer\\DevAuditLogPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 482 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\developer\\DevAuditLogPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 12 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\developer\\DevSystemConfigPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 452 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\developer\\DevSystemConfigPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 13 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\GanttChartPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\GanttChartPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 563 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\GanttChartPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 17 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\GroupsPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\GroupsPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 616 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\GroupsPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 15 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\KanbanPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\KanbanPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 663 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\KanbanPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 52 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\NotificationPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\NotificationPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 464 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\NotificationPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 27 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\ProfilePage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\ProfilePage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 557 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\ProfilePage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 29 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\PublishedTasksPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\PublishedTasksPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 660 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\PublishedTasksPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 21 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\RankingPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\RankingPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 363 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\RankingPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 5 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\SettingsPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\SettingsPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 395 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\SettingsPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 32 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\TaskInvitationsPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\TaskInvitationsPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 6 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\TaskListPage.tsx",
+      "issue": "复杂状态管理",
+      "suggestion": "考虑使用 useReducer 或状态管理库"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\TaskListPage.tsx",
+      "issue": "组件过大",
+      "suggestion": "组件有 971 行，建议拆分为更小的组件"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\TaskListPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 29 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\pages\\TaskVisualizationPage.tsx",
+      "issue": "过多内联样式",
+      "suggestion": "发现 5 个内联样式，建议使用 CSS 类"
+    },
+    {
+      "file": "packages\\frontend\\src\\types\\index.ts",
+      "issue": "组件过大",
+      "suggestion": "组件有 312 行，建议拆分为更小的组件"
+    }
+  ]
+}

@@ -1,52 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Typography,
-  Card,
-  List,
-  Button,
-  Drawer,
-  Empty,
-  message,
-  Space,
-  Modal,
-  Form,
-  Input,
-  DatePicker,
-  InputNumber,
-  Select,
-  Row,
-  Col,
-  Statistic,
-} from 'antd';
-import {
-  EyeOutlined,
-  TeamOutlined,
-  PlusOutlined,
-  UserAddOutlined,
-  UserOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  PlayCircleOutlined,
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
+import React, { useState } from 'react';
+import { Typography, List, Button, Empty, Modal } from 'antd';
+import { TeamOutlined, PlusOutlined } from '@ant-design/icons';
+import { TaskGroup, Task } from '../types';
+import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
+import { InviteMemberModal, UserOption } from '../components/common/InviteMemberModal';
+import { GroupCard } from '../components/Groups/GroupCard';
+import { GroupDetailDrawer } from '../components/Groups/GroupDetailDrawer';
+import { CreateGroupModal } from '../components/Groups/CreateGroupModal';
+import { CreateTaskModal } from '../components/Groups/CreateTaskModal';
+import { useDataFetch } from '../hooks/useDataFetch';
+import { useErrorHandler } from '../hooks/useErrorHandler';
+import { useAuthStore } from '../store/authStore';
 import { groupApi } from '../api/group';
 import { userApi } from '../api/user';
 import { taskApi } from '../api/task';
-import { TaskGroup, Task, TaskStatus } from '../types';
-import { StatusTag } from '../components/common/StatusTag';
-import { UserChip } from '../components/common/UserChip';
-import { InviteMemberModal, UserOption } from '../components/common/InviteMemberModal';
-import { TaskViews } from '../components/TaskViews';
-import { TaskListPage } from './TaskListPage';
-import { TaskDetailDrawer } from '../components/TaskDetailDrawer';
-import { useAuthStore } from '../store/authStore';
 
-const { Title, Text: AntText } = Typography;
+const { Title, Text } = Typography;
 
 export const GroupsPage: React.FC = () => {
   const { user } = useAuthStore();
-  const [groups, setGroups] = useState<TaskGroup[]>([]);
-  const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<TaskGroup | null>(null);
   const [groupTasks, setGroupTasks] = useState<Task[]>([]);
@@ -59,84 +31,66 @@ export const GroupsPage: React.FC = () => {
   const [createTaskLoading, setCreateTaskLoading] = useState(false);
   const [taskDetailDrawerVisible, setTaskDetailDrawerVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [form] = Form.useForm();
-  const [taskForm] = Form.useForm();
+  const { handleAsyncError } = useErrorHandler();
 
-  const getAvatarUrl = (avatarUrl?: string, seed?: string) => {
-    if (avatarUrl) return avatarUrl;
-    if (seed) return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
-    return undefined;
-  };
-
-  useEffect(() => {
-    loadGroups();
-  }, []);
-
-  const loadGroups = async () => {
-    try {
-      setLoading(true);
-      const data = await groupApi.getUserGroups();
-      setGroups(data || []);
-    } catch (error) {
-      console.error('Failed to load groups:', error);
-      setGroups([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 数据获取
+  const { data: groups = [], loading, refetch: refetchGroups } = useDataFetch(
+    () => groupApi.getUserGroups(),
+    [],
+    { errorMessage: '加载组群列表失败', context: 'GroupsPage.loadGroups' }
+  );
 
   const handleViewGroup = async (group: TaskGroup) => {
-    try {
-      setLoadingTasks(true);
-      const [details, members, tasks] = await Promise.all([
-        groupApi.getGroup(group.id),
-        groupApi.getGroupMembers(group.id),
-        groupApi.getGroupTasks(group.id),
-      ]);
+    await handleAsyncError(
+      async () => {
+        setLoadingTasks(true);
+        const [details, members, tasks] = await Promise.all([
+          groupApi.getGroup(group.id),
+          groupApi.getGroupMembers(group.id),
+          groupApi.getGroupTasks(group.id),
+        ]);
 
-      console.log('[GroupsPage] Loaded group tasks:', tasks.length, 'tasks');
-      console.log('[GroupsPage] Tasks with parentId:', tasks.filter(t => t.parentId).length);
-      console.log('[GroupsPage] Top-level tasks:', tasks.filter(t => !t.parentId).length);
+        console.log('[GroupsPage] Loaded group tasks:', tasks.length, 'tasks');
+        console.log('[GroupsPage] Tasks with parentId:', tasks.filter(t => t.parentId).length);
+        console.log('[GroupsPage] Top-level tasks:', tasks.filter(t => !t.parentId).length);
 
-      setSelectedGroup({ ...details, members });
-      setGroupTasks(tasks);
-      setDrawerVisible(true);
-    } catch (error) {
-      message.error('加载组群详情失败');
-      console.error('Failed to load group details:', error);
-    } finally {
-      setLoadingTasks(false);
-    }
+        setSelectedGroup({ ...details, members });
+        setGroupTasks(tasks);
+        setDrawerVisible(true);
+      },
+      'GroupsPage.viewGroup',
+      undefined,
+      '加载组群详情失败'
+    );
+    setLoadingTasks(false);
   };
 
   const handleCreateGroup = async (values: { name: string }) => {
-    try {
-      setCreateLoading(true);
-      await groupApi.createGroup(values.name);
-      message.success('Group created successfully');
-      setCreateModalVisible(false);
-      form.resetFields();
-      loadGroups();
-    } catch (error) {
-      console.error('Failed to create group:', error);
-      message.error('Failed to create group');
-    } finally {
-      setCreateLoading(false);
-    }
+    setCreateLoading(true);
+    await handleAsyncError(
+      async () => {
+        await groupApi.createGroup(values.name);
+        await refetchGroups();
+      },
+      'GroupsPage.createGroup',
+      'Group created successfully',
+      'Failed to create group'
+    );
+    setCreateLoading(false);
   };
 
   const handleInviteMember = async (userId: string) => {
     if (!selectedGroup) return;
-    try {
-      setInviteLoading(true);
-      await groupApi.inviteMember(selectedGroup.id, userId);
-      message.success('Invitation sent successfully');
-      setInviteModalVisible(false);
-    } catch (error: any) {
-      message.error(error.response?.data?.error || 'Failed to invite member');
-    } finally {
-      setInviteLoading(false);
-    }
+    setInviteLoading(true);
+    await handleAsyncError(
+      async () => {
+        await groupApi.inviteMember(selectedGroup.id, userId);
+      },
+      'GroupsPage.inviteMember',
+      'Invitation sent successfully',
+      'Failed to invite member'
+    );
+    setInviteLoading(false);
   };
 
   const handleSearchUsers = async (keyword: string): Promise<UserOption[]> => {
@@ -157,49 +111,47 @@ export const GroupsPage: React.FC = () => {
 
   const handleCreateTask = async (values: any) => {
     if (!selectedGroup) return;
-    try {
-      setCreateTaskLoading(true);
-      
-      const taskData = {
-        name: values.name,
-        description: values.description,
-        tags: values.tags || [],
-        plannedStartDate: values.dateRange[0].toISOString(),
-        plannedEndDate: values.dateRange[1].toISOString(),
-        estimatedHours: values.estimatedHours,
-        complexity: values.complexity,
-        priority: values.priority,
-      };
+    setCreateTaskLoading(true);
+    await handleAsyncError(
+      async () => {
+        const taskData = {
+          name: values.name,
+          description: values.description,
+          tags: values.tags || [],
+          plannedStartDate: values.dateRange[0].toISOString(),
+          plannedEndDate: values.dateRange[1].toISOString(),
+          estimatedHours: values.estimatedHours,
+          complexity: values.complexity,
+          priority: values.priority,
+        };
 
-      await groupApi.createGroupTask(selectedGroup.id, taskData);
-      message.success('任务创建成功');
-      setCreateTaskModalVisible(false);
-      taskForm.resetFields();
-      
-      // 刷新组群任务列表
-      const tasks = await groupApi.getGroupTasks(selectedGroup.id);
-      setGroupTasks(tasks);
-    } catch (error: any) {
-      message.error(error.response?.data?.error || '创建任务失败');
-      console.error('Failed to create task:', error);
-    } finally {
-      setCreateTaskLoading(false);
-    }
+        await groupApi.createGroupTask(selectedGroup.id, taskData);
+        
+        // 刷新组群任务列表
+        const tasks = await groupApi.getGroupTasks(selectedGroup.id);
+        setGroupTasks(tasks);
+      },
+      'GroupsPage.createTask',
+      '任务创建成功',
+      '创建任务失败'
+    );
+    setCreateTaskLoading(false);
   };
 
   const handleAcceptTask = async (taskId: string) => {
     if (!selectedGroup) return;
-    try {
-      await groupApi.acceptGroupTask(selectedGroup.id, taskId);
-      message.success('任务承接成功');
-      
-      // 刷新组群任务列表
-      const tasks = await groupApi.getGroupTasks(selectedGroup.id);
-      setGroupTasks(tasks);
-    } catch (error: any) {
-      message.error(error.response?.data?.error || '承接任务失败');
-      console.error('Failed to accept task:', error);
-    }
+    await handleAsyncError(
+      async () => {
+        await groupApi.acceptGroupTask(selectedGroup.id, taskId);
+        
+        // 刷新组群任务列表
+        const tasks = await groupApi.getGroupTasks(selectedGroup.id);
+        setGroupTasks(tasks);
+      },
+      'GroupsPage.acceptTask',
+      '任务承接成功',
+      '承接任务失败'
+    );
   };
 
   const handleCompleteTask = async (taskId: string) => {
@@ -209,38 +161,39 @@ export const GroupsPage: React.FC = () => {
       okText: '确定',
       cancelText: '取消',
       onOk: async () => {
-        try {
-          await taskApi.completeTask(taskId);
-          message.success('任务已完成');
-          
-          // 刷新组群任务列表
-          if (selectedGroup) {
-            const tasks = await groupApi.getGroupTasks(selectedGroup.id);
-            setGroupTasks(tasks);
-          }
-        } catch (error) {
-          message.error('完成任务失败');
-          console.error('Failed to complete task:', error);
-          throw error;
-        }
+        await handleAsyncError(
+          async () => {
+            await taskApi.completeTask(taskId);
+            
+            // 刷新组群任务列表
+            if (selectedGroup) {
+              const tasks = await groupApi.getGroupTasks(selectedGroup.id);
+              setGroupTasks(tasks);
+            }
+          },
+          'GroupsPage.completeTask',
+          '任务已完成',
+          '完成任务失败'
+        );
       },
     });
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    try {
-      await taskApi.deleteTask(taskId);
-      message.success('任务已删除');
-      
-      // 刷新组群任务列表
-      if (selectedGroup) {
-        const tasks = await groupApi.getGroupTasks(selectedGroup.id);
-        setGroupTasks(tasks);
-      }
-    } catch (error: any) {
-      message.error(error.response?.data?.error || '删除任务失败');
-      console.error('Failed to delete task:', error);
-    }
+    await handleAsyncError(
+      async () => {
+        await taskApi.deleteTask(taskId);
+        
+        // 刷新组群任务列表
+        if (selectedGroup) {
+          const tasks = await groupApi.getGroupTasks(selectedGroup.id);
+          setGroupTasks(tasks);
+        }
+      },
+      'GroupsPage.deleteTask',
+      '任务已删除',
+      '删除任务失败'
+    );
   };
 
   const handleTaskUpdated = async () => {
@@ -250,23 +203,18 @@ export const GroupsPage: React.FC = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleTaskClick = async (taskId: string) => {
-    try {
-      const task = await taskApi.getTask(taskId);
-      setSelectedTask(task);
-      setTaskDetailDrawerVisible(true);
-    } catch (error) {
-      message.error('加载任务详情失败');
-      console.error(error);
-    }
-  };
-
-  // Calculate statistics
-  const stats = {
-    total: groupTasks.length,
-    inProgress: groupTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length,
-    completed: groupTasks.filter(t => t.status === TaskStatus.COMPLETED).length,
-    totalBounty: groupTasks.reduce((sum, t) => sum + (Number(t.bountyAmount) || 0), 0),
+    await handleAsyncError(
+      async () => {
+        const task = await taskApi.getTask(taskId);
+        setSelectedTask(task);
+        setTaskDetailDrawerVisible(true);
+      },
+      'GroupsPage.taskClick',
+      undefined,
+      '加载任务详情失败'
+    );
   };
 
   return (
@@ -277,7 +225,7 @@ export const GroupsPage: React.FC = () => {
           <Title level={2} style={{ margin: 0 }}>
             <TeamOutlined /> 我的组群
           </Title>
-          <AntText type="secondary">管理您的团队协作组群</AntText>
+          <Text type="secondary">管理您的团队协作组群</Text>
         </div>
         <Button
           type="primary"
@@ -292,217 +240,44 @@ export const GroupsPage: React.FC = () => {
       <List
         loading={loading}
         grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
-        dataSource={groups}
+        dataSource={groups || []}
         locale={{ emptyText: <Empty description="暂无组群" /> }}
         renderItem={(group) => (
           <List.Item>
-            <Card
-              hoverable
-              className="task-card"
-              onClick={() => handleViewGroup(group)}
-              style={{ borderLeft: '4px solid #1890ff' }}
-              actions={[
-                <Button
-                  type="link"
-                  icon={<EyeOutlined />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleViewGroup(group);
-                  }}
-                >
-                  查看详情
-                </Button>,
-              ]}
-            >
-              <Card.Meta
-                avatar={<TeamOutlined style={{ fontSize: 32, color: '#1890ff' }} />}
-                title={<AntText strong style={{ fontSize: 16 }}>{group.name}</AntText>}
-                description={
-                  <Space orientation="vertical" size={4}>
-                    <AntText type="secondary">
-                      <UserOutlined /> 成员数: {group.members?.length || group.memberIds?.length || 0}
-                    </AntText>
-                    <AntText type="secondary">
-                      创建时间: {dayjs(group.createdAt).format('YYYY-MM-DD')}
-                    </AntText>
-                  </Space>
-                }
-              />
-            </Card>
+            <GroupCard group={group} onViewGroup={handleViewGroup} />
           </List.Item>
         )}
       />
 
-      {/* 组群详情抽屉 */}
-      <Drawer
-        title="组群详情"
-        placement="right"
-        size="large"
+      <GroupDetailDrawer
+        visible={drawerVisible}
+        group={selectedGroup}
+        tasks={groupTasks}
+        loadingTasks={loadingTasks}
+        currentUserId={user?.id}
         onClose={() => setDrawerVisible(false)}
-        open={drawerVisible}
-      >
-        {selectedGroup && (
-          <div>
-            <Title level={4}>{selectedGroup.name}</Title>
-            
-            <Card 
-              title="成员列表" 
-              style={{ marginBottom: 16 }}
-              extra={
-                selectedGroup.creatorId === user?.id && (
-                  <Button 
-                    type="primary" 
-                    size="small" 
-                    icon={<UserAddOutlined />}
-                    onClick={() => setInviteModalVisible(true)}
-                  >
-                    邀请成员
-                  </Button>
-                )
-              }
-            >
-              {selectedGroup.members && selectedGroup.members.length > 0 ? (
-                <Space wrap>
-                  {selectedGroup.members.map((member) => (
-                    <UserChip
-                      key={member.id}
-                      avatarUrl={getAvatarUrl(member.avatarUrl, member.avatarId || member.username)}
-                      username={member.username}
-                      tip={member.email}
-                      size={40}
-                      extra={<StatusTag value={member.role as any} />}
-                    />
-                  ))}
-                </Space>
-              ) : (
-                <Empty description="暂无成员" />
-              )}
-            </Card>
+        onInviteMember={() => setInviteModalVisible(true)}
+        onCreateTask={() => setCreateTaskModalVisible(true)}
+        onAcceptTask={handleAcceptTask}
+        onCompleteTask={handleCompleteTask}
+        onDeleteTask={handleDeleteTask}
+        onTaskUpdated={handleTaskUpdated}
+      />
 
-            {/* Statistics Cards */}
-            <Row gutter={16} style={{ marginBottom: 24 }}>
-              <Col xs={24} sm={12} lg={6}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #1890ff' }}>
-                  <Statistic
-                    title="总任务数"
-                    value={stats.total}
-                    prefix={<ClockCircleOutlined style={{ color: '#1890ff', fontSize: 20 }} />}
-                    styles={{ content: { fontSize: 24, fontWeight: 600 } }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={24} sm={12} lg={6}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #faad14' }}>
-                  <Statistic
-                    title="进行中"
-                    value={stats.inProgress}
-                    prefix={<PlayCircleOutlined style={{ color: '#faad14', fontSize: 20 }} />}
-                    styles={{ content: { fontSize: 24, fontWeight: 600 } }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={24} sm={12} lg={6}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #52c41a' }}>
-                  <Statistic
-                    title="已完成"
-                    value={stats.completed}
-                    prefix={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: 20 }} />}
-                    styles={{ content: { fontSize: 24, fontWeight: 600 } }}
-                  />
-                </Card>
-              </Col>
-              <Col xs={24} sm={12} lg={6}>
-                <Card className="stat-card" style={{ borderLeft: '4px solid #f5222d' }}>
-                  <Statistic
-                    title="总赏金"
-                    value={stats.totalBounty}
-                    prefix="$"
-                    precision={2}
-                    styles={{ content: { fontSize: 24, fontWeight: 600, color: '#f5222d' } }}
-                  />
-                </Card>
-              </Col>
-            </Row>
-
-            <Card 
-              title="组群任务" 
-              extra={
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setCreateTaskModalVisible(true)}
-                >
-                  创建任务
-                </Button>
-              }
-            >
-              <TaskViews
-                tasks={groupTasks}
-                loading={loadingTasks}
-                listView={
-                  <TaskListPage
-                    key={selectedGroup.id}
-                    tasks={groupTasks}
-                    loading={loadingTasks}
-                    hideFilters
-                    showAcceptButton
-                    isGroupTasksPage
-                    onAcceptTask={handleAcceptTask}
-                    onCompleteTask={handleCompleteTask}
-                    onDeleteTask={handleDeleteTask}
-                    onTaskUpdated={handleTaskUpdated}
-                  />
-                }
-              />
-            </Card>
-
-          </div>
-        )}
-      </Drawer>
-
-      {/* 任务详情抽屉 */}
       <TaskDetailDrawer
         task={selectedTask}
         visible={taskDetailDrawerVisible}
         onClose={() => setTaskDetailDrawerVisible(false)}
         onTaskUpdated={handleTaskUpdated}
-        onTaskClick={handleTaskClick}
       />
 
-      {/* 创建组群模态框 */}
-      <Modal
-        title="创建组群"
-        open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleCreateGroup}
-        >
-          <Form.Item
-            name="name"
-            label="组群名称"
-            rules={[{ required: true, message: '请输入组群名称' }]}
-          >
-            <Input placeholder="请输入组群名称" />
-          </Form.Item>
+      <CreateGroupModal
+        visible={createModalVisible}
+        loading={createLoading}
+        onClose={() => setCreateModalVisible(false)}
+        onSubmit={handleCreateGroup}
+      />
 
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={createLoading}
-              block
-            >
-              创建组群
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* 邀请成员模态框 */}
       <InviteMemberModal
         open={inviteModalVisible}
         onCancel={() => setInviteModalVisible(false)}
@@ -511,105 +286,14 @@ export const GroupsPage: React.FC = () => {
         searchUsers={handleSearchUsers}
       />
 
-      {/* 创建任务模态框 */}
-      <Modal
-        title="创建组群任务"
-        open={createTaskModalVisible}
-        onCancel={() => {
-          setCreateTaskModalVisible(false);
-          taskForm.resetFields();
-        }}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={taskForm}
-          layout="vertical"
-          onFinish={handleCreateTask}
-        >
-          <Form.Item
-            name="name"
-            label="任务名称"
-            rules={[{ required: true, message: '请输入任务名称' }]}
-          >
-            <Input placeholder="请输入任务名称" />
-          </Form.Item>
-
-          <Form.Item
-            name="description"
-            label="任务描述"
-            rules={[{ required: true, message: '请输入任务描述' }]}
-          >
-            <Input.TextArea rows={4} placeholder="请输入任务描述" />
-          </Form.Item>
-
-          <Form.Item name="tags" label="标签">
-            <Select mode="tags" placeholder="输入标签后按回车" />
-          </Form.Item>
-
-          <Form.Item
-            name="dateRange"
-            label="计划时间"
-            rules={[{ required: true, message: '请选择计划时间' }]}
-          >
-            <DatePicker.RangePicker style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item
-            name="estimatedHours"
-            label="预估工时（小时）"
-            rules={[{ required: true, message: '请输入预估工时' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item
-            name="complexity"
-            label="复杂度"
-            rules={[{ required: true, message: '请选择复杂度' }]}
-          >
-            <Select>
-              <Select.Option value={1}>1 - 非常简单</Select.Option>
-              <Select.Option value={2}>2 - 简单</Select.Option>
-              <Select.Option value={3}>3 - 中等</Select.Option>
-              <Select.Option value={4}>4 - 复杂</Select.Option>
-              <Select.Option value={5}>5 - 非常复杂</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="priority"
-            label="优先级"
-            rules={[{ required: true, message: '请选择优先级' }]}
-          >
-            <Select>
-              <Select.Option value={1}>1 - 最低</Select.Option>
-              <Select.Option value={2}>2 - 低</Select.Option>
-              <Select.Option value={3}>3 - 中</Select.Option>
-              <Select.Option value={4}>4 - 高</Select.Option>
-              <Select.Option value={5}>5 - 最高</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={createTaskLoading}
-              >
-                创建任务
-              </Button>
-              <Button onClick={() => {
-                setCreateTaskModalVisible(false);
-                taskForm.resetFields();
-              }}>
-                取消
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+      <CreateTaskModal
+        visible={createTaskModalVisible}
+        loading={createTaskLoading}
+        onClose={() => setCreateTaskModalVisible(false)}
+        onSubmit={handleCreateTask}
+      />
     </div>
   );
 };
+
+export default GroupsPage;

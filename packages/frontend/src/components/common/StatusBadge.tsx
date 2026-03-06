@@ -17,6 +17,7 @@ const statusConfig: Record<TaskStatus, { text: string; color: string }> = {
   [TaskStatus.PENDING_ACCEPTANCE]: { text: '待接受', color: colors.status.available },
   [TaskStatus.IN_PROGRESS]: { text: '进行中', color: colors.status.inProgress },
   [TaskStatus.COMPLETED]: { text: '已完成', color: colors.status.completed },
+  [TaskStatus.ABANDONED]: { text: '已放弃', color: '#ff4d4f' },
 };
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'default' }) => {

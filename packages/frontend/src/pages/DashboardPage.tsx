@@ -1,33 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Button, Select, message, Spin, Input, Avatar } from 'antd';
-import {
-  FileTextOutlined,
-  CheckSquareOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Spin } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useAuth } from '../contexts/AuthContext';
 import { taskApi } from '../api/task';
 import { rankingApi } from '../api/ranking';
-import { TaskStats } from '../types';
+import { useDataFetch } from '../hooks/useDataFetch';
+import { DashboardHero } from '../components/Dashboard/DashboardHero';
+import { DashboardStats } from '../components/Dashboard/DashboardStats';
+import { DashboardQuickActions } from '../components/Dashboard/DashboardQuickActions';
+import { DashboardCharts } from '../components/Dashboard/DashboardCharts';
+import { DashboardActivity } from '../components/Dashboard/DashboardActivity';
+import { DashboardReports } from '../components/Dashboard/DashboardReports';
 import { BountyHistoryDrawer } from '../components/BountyHistoryDrawer';
 import './DashboardPage.css';
 
 // Add relative time plugin
 dayjs.extend(relativeTime);
 
-const { Option } = Select;
-
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [stats, setStats] = useState<TaskStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [reportType, setReportType] = useState<'daily' | 'weekly' | 'monthly' | 'total'>('monthly');
-  const [generatingReport, setGeneratingReport] = useState(false);
-  const [reportContent, setReportContent] = useState<string>('');
   const [historyDrawerVisible, setHistoryDrawerVisible] = useState(false);
   const [monthlyBounty, setMonthlyBounty] = useState(0);
   const [quarterlyBounty, setQuarterlyBounty] = useState(0);
@@ -37,20 +29,15 @@ export const DashboardPage: React.FC = () => {
   const [allTimeHasData, setAllTimeHasData] = useState(true);
   const [assignedTasksList, setAssignedTasksList] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadStats();
-  }, []);
-
-  const loadStats = async () => {
-    try {
-      setLoading(true);
-      
+  // 使用 useDataFetch Hook 获取统计数据
+  const { data: stats, loading } = useDataFetch(
+    async () => {
       const now = new Date();
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth() + 1;
       const currentQuarter = Math.ceil(currentMonth / 3);
 
-      // Load task statistics and ranking data in parallel
+      // 并行加载所有数据
       const [taskStats, , assignedTasks, monthlyRanking, quarterlyRanking, allTimeRanking] = await Promise.all([
         taskApi.getTaskStats(),
         taskApi.getPublishedTasks(),
@@ -59,569 +46,80 @@ export const DashboardPage: React.FC = () => {
           period: 'monthly', 
           year: currentYear, 
           month: currentMonth 
-        }).catch((_error) => {
-          return null;
-        }) : Promise.resolve(null),
+        }).catch(() => null) : Promise.resolve(null),
         user ? rankingApi.getMyRanking(user.id, { 
           period: 'quarterly', 
           year: currentYear, 
           quarter: currentQuarter 
-        }).catch((_error) => {
-          return null;
-        }) : Promise.resolve(null),
+        }).catch(() => null) : Promise.resolve(null),
         user ? rankingApi.getMyRanking(user.id, { 
           period: 'all_time', 
           year: currentYear 
-        }).catch((_error) => {
-          return null;
-        }) : Promise.resolve(null),
+        }).catch(() => null) : Promise.resolve(null),
       ]);
 
-      // Set task lists for detailed analysis (used in other parts of the component)
+      // 设置任务列表和赏金数据
       setAssignedTasksList(assignedTasks);
-
-      // Set bounty data from rankings
       setMonthlyBounty(monthlyRanking?.totalBounty || 0);
       setQuarterlyBounty(quarterlyRanking?.totalBounty || 0);
       setAllTimeBounty(allTimeRanking?.totalBounty || 0);
-      
-      // Set hasData flags
       setMonthlyHasData(!!monthlyRanking);
       setQuarterlyHasData(!!quarterlyRanking);
       setAllTimeHasData(!!allTimeRanking);
 
-      // Use the statistics from the API instead of calculating locally
-      setStats(taskStats);
-    } catch (error) {
-      message.error('加载统计数据失败');
-    } finally {
-      setLoading(false);
+      return taskStats;
+    },
+    [user?.id],
+    {
+      errorMessage: '加载统计数据失败',
+      context: 'DashboardPage.loadStats'
     }
-  };
-
-  const handleGenerateReport = async () => {
-    try {
-      setGeneratingReport(true);
-      
-      const reportContent = await taskApi.generateReport({
-        type: reportType,
-      });
-
-      setReportContent(reportContent);
-      message.success('报告已生成，请在下方查看');
-    } catch (error: any) {
-      message.error(`生成报告失败: ${error?.message || '未知错误'}`);
-    } finally {
-      setGeneratingReport(false);
-    }
-  };
+  );
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-        <Spin size="large">
-          <div style={{ padding: '20px', textAlign: 'center' }}>加载中...</div>
-        </Spin>
+      <div className="dashboard-container">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+          <Spin size="large">
+            <div style={{ padding: '20px', textAlign: 'center' }}>加载中...</div>
+          </Spin>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="dashboard-container">
-      {/* Hero Section */}
-      <div className="dashboard-hero">
-        <div className="hero-content">
-          <div className="hero-text">
-            <h1 className="hero-title">
-              欢迎回来，{user?.username}！
-            </h1>
-            <p className="hero-subtitle">
-              这是您的个人工作台，查看最新的任务动态和统计信息
-            </p>
-            <div className="hero-actions">
-              <Button 
-                type="primary" 
-                className="hero-btn hero-btn-primary"
-                onClick={() => navigate('/bounty-tasks')}
-              >
-                浏览任务市场
-              </Button>
-              <Button 
-                className="hero-btn hero-btn-secondary"
-                onClick={() => navigate('/tasks/published')}
-              >
-                查看我的任务
-              </Button>
-            </div>
-          </div>
-          <div className="hero-visual">
-            <Avatar 
-              size={120}
-              src={user?.avatarUrl}
-              icon={<UserOutlined />}
-              className="hero-avatar"
-              onClick={() => navigate('/profile')}
-              style={{ cursor: 'pointer' }}
-            >
-              {user?.username?.charAt(0).toUpperCase()}
-            </Avatar>
-          </div>
-        </div>
-      </div>
+      <DashboardHero user={user} />
       
-      {/* 统计卡片网格 */}
-      <div className="stats-grid">
-        <Card className="stat-card" onClick={() => navigate('/tasks/published')}>
-          <div className="stat-header">
-            <div className="stat-icon primary">
-              <FileTextOutlined />
-            </div>
-            <div className="stat-trend up">
-              <span>↗ +12%</span>
-            </div>
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats?.publishedTotal || 0}</div>
-            <div className="stat-label">发布的任务</div>
-            <div className="stat-description">
-              进行中 {stats?.publishedInProgress || 0} · 已完成 {stats?.publishedCompleted || 0}
-            </div>
-          </div>
-        </Card>
+      <DashboardStats
+        stats={stats}
+        monthlyBounty={monthlyBounty}
+        quarterlyBounty={quarterlyBounty}
+        allTimeBounty={allTimeBounty}
+        monthlyHasData={monthlyHasData}
+        quarterlyHasData={quarterlyHasData}
+        allTimeHasData={allTimeHasData}
+        assignedTasksList={assignedTasksList}
+        onHistoryDrawerOpen={() => setHistoryDrawerVisible(true)}
+      />
 
-        <Card className="stat-card" onClick={() => navigate('/tasks/assigned')}>
-          <div className="stat-header">
-            <div className="stat-icon success">
-              <CheckSquareOutlined />
-            </div>
-            <div className="stat-trend up">
-              <span>↗ +8%</span>
-            </div>
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{stats?.assignedTotal || 0}</div>
-            <div className="stat-label">承接的任务</div>
-            <div className="stat-description">
-              进行中 {stats?.assignedInProgress || 0} · 已完成 {stats?.assignedCompleted || 0}
-            </div>
-          </div>
-        </Card>
+      <DashboardQuickActions
+        stats={stats}
+        assignedTasksList={assignedTasksList}
+      />
 
-        <Card
-          className="stat-card"
-          hoverable
-          onClick={() => {
-            if (!historyDrawerVisible && user?.id) {
-              setHistoryDrawerVisible(true);
-            }
-          }}
-        >
-          <div className="stat-content">
-            <div className="stat-icon">
-              💰
-            </div>
-            <div className="stat-info">
-              <div className="stat-value">
-                {monthlyHasData ? `$${monthlyBounty.toFixed(2)}` : '未参与'}
-              </div>
-              <div className="stat-label">当月赏金</div>
-              <div className="stat-details">
-                <span>
-                  {quarterlyHasData ? `当季 $${quarterlyBounty.toFixed(2)}` : '当季未参与'}
-                </span>
-                <span>
-                  {allTimeHasData ? `累积 $${allTimeBounty.toFixed(2)}` : '累积未参与'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </Card>
+      <DashboardCharts
+        stats={stats}
+        monthlyBounty={monthlyBounty}
+        monthlyHasData={monthlyHasData}
+      />
 
-        <Card className="stat-card stat-card-info">
-          <div className="stat-content">
-            <div className="stat-icon">
-              📊
-            </div>
-            <div className="stat-info">
-              <div className="stat-value">
-                {stats?.assignedTotal
-                  ? ((stats.assignedCompleted / stats.assignedTotal) * 100).toFixed(1)
-                  : 0}%
-              </div>
-              <div className="stat-label">任务完成率</div>
-              <div className="stat-details">
-                <span>总计 {stats?.assignedTotal || 0} 个任务</span>
-              </div>
-            </div>
-          </div>
-        </Card>
+      <DashboardActivity
+        assignedTasksList={assignedTasksList}
+      />
 
-        {/* 新增的统计卡片 */}
-        <Card className="stat-card">
-          <div className="stat-header">
-            <div className="stat-icon warning">
-              ⏰
-            </div>
-            <div className="stat-trend up">
-              <span>本周</span>
-            </div>
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {assignedTasksList.filter(t => {
-                const deadline = new Date(t.plannedEndDate || '');
-                const now = new Date();
-                const diffTime = deadline.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays <= 7 && diffDays > 0 && t.status !== 'completed';
-              }).length}
-            </div>
-            <div className="stat-label">即将到期</div>
-            <div className="stat-description">
-              7天内需完成的任务
-            </div>
-          </div>
-        </Card>
-
-        <Card className="stat-card">
-          <div className="stat-header">
-            <div className="stat-icon info">
-              🎯
-            </div>
-            <div className="stat-trend up">
-              <span>活跃</span>
-            </div>
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">
-              {(stats?.publishedInProgress || 0) + (stats?.assignedInProgress || 0)}
-            </div>
-            <div className="stat-label">进行中任务</div>
-            <div className="stat-description">
-              发布 {stats?.publishedInProgress || 0} · 承接 {stats?.assignedInProgress || 0}
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* 快速操作区域 */}
-      <div className="quick-actions">
-        <div className="quick-actions-header">
-          <h3 className="quick-actions-title">快速操作</h3>
-          <div className="quick-stats">
-            <span className="quick-stat">
-              <span className="quick-stat-value">{(stats?.publishedInProgress || 0) + (stats?.assignedInProgress || 0)}</span>
-              <span className="quick-stat-label">进行中</span>
-            </span>
-            <span className="quick-stat">
-              <span className="quick-stat-value">{assignedTasksList.filter(t => {
-                const deadline = new Date(t.plannedEndDate || '');
-                const now = new Date();
-                const diffTime = deadline.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays <= 7 && diffDays > 0 && t.status !== 'completed';
-              }).length}</span>
-              <span className="quick-stat-label">本周到期</span>
-            </span>
-          </div>
-        </div>
-        <div className="actions-grid">
-          <div className="action-card primary" onClick={() => navigate('/tasks/create')}>
-            <div className="action-icon">➕</div>
-            <div className="action-title">发布任务</div>
-            <div className="action-description">创建新的任务并设置赏金</div>
-          </div>
-          <div className="action-card" onClick={() => navigate('/bounty-tasks')}>
-            <div className="action-icon">🔍</div>
-            <div className="action-title">浏览任务</div>
-            <div className="action-description">查找感兴趣的任务</div>
-          </div>
-          <div className="action-card" onClick={() => navigate('/ranking')}>
-            <div className="action-icon">🏆</div>
-            <div className="action-title">排行榜</div>
-            <div className="action-description">查看赏金排行榜</div>
-          </div>
-          <div className="action-card" onClick={() => navigate('/my/groups')}>
-            <div className="action-icon">👥</div>
-            <div className="action-title">我的团队</div>
-            <div className="action-description">管理项目组和成员</div>
-          </div>
-          <div className="action-card" onClick={() => navigate('/tasks/assigned')}>
-            <div className="action-icon">📋</div>
-            <div className="action-title">我的任务</div>
-            <div className="action-description">查看承接的任务</div>
-          </div>
-          <div className="action-card" onClick={() => navigate('/notifications')}>
-            <div className="action-icon">🔔</div>
-            <div className="action-title">消息通知</div>
-            <div className="action-description">查看系统通知</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 任务趋势 */}
-      <div className="task-trends">
-        <div className="trends-card">
-          <div className="trends-header">
-            <h3 className="trends-title">任务趋势</h3>
-            <div className="trends-legend">
-              <div className="legend-item">
-                <div className="legend-color primary"></div>
-                <span>承接任务</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-color secondary"></div>
-                <span>发布任务</span>
-              </div>
-            </div>
-          </div>
-          <div className="trends-content">
-            <div className="trends-chart">
-              {/* 简单的趋势图表 */}
-              <div className="chart-bars">
-                {[...Array(7)].map((_, index) => {
-                  const assignedHeight = Math.random() * 60 + 20;
-                  const publishedHeight = Math.random() * 40 + 10;
-                  const dayName = dayjs().subtract(6 - index, 'day').format('ddd');
-                  
-                  return (
-                    <div key={index} className="chart-bar-group">
-                      <div className="chart-bars-container">
-                        <div 
-                          className="chart-bar assigned" 
-                          style={{ height: `${assignedHeight}%` }}
-                        ></div>
-                        <div 
-                          className="chart-bar published" 
-                          style={{ height: `${publishedHeight}%` }}
-                        ></div>
-                      </div>
-                      <div className="chart-label">{dayName}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="trends-summary">
-              <div className="summary-item">
-                <div className="summary-value">
-                  {((stats?.assignedInProgress || 0) / Math.max(stats?.assignedTotal || 1, 1) * 100).toFixed(0)}%
-                </div>
-                <div className="summary-label">承接任务活跃度</div>
-              </div>
-              <div className="summary-item">
-                <div className="summary-value">
-                  {((stats?.publishedInProgress || 0) / Math.max(stats?.publishedTotal || 1, 1) * 100).toFixed(0)}%
-                </div>
-                <div className="summary-label">发布任务活跃度</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 进度概览 */}
-      <div className="progress-overview">
-        <div className="progress-card">
-          <div className="progress-header">
-            <h3 className="progress-title">本月进度概览</h3>
-            <div className="progress-period">
-              {dayjs().format('YYYY年MM月')}
-            </div>
-          </div>
-          <div className="progress-content">
-            <div className="progress-item">
-              <div className="progress-info">
-                <span className="progress-label">任务完成率</span>
-                <span className="progress-value">
-                  {stats?.assignedTotal
-                    ? ((stats.assignedCompleted / stats.assignedTotal) * 100).toFixed(1)
-                    : 0}%
-                </span>
-              </div>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ 
-                    width: `${stats?.assignedTotal
-                      ? (stats.assignedCompleted / stats.assignedTotal) * 100
-                      : 0}%` 
-                  }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="progress-item">
-              <div className="progress-info">
-                <span className="progress-label">发布任务完成率</span>
-                <span className="progress-value">
-                  {stats?.publishedTotal
-                    ? ((stats.publishedCompleted / stats.publishedTotal) * 100).toFixed(1)
-                    : 0}%
-                </span>
-              </div>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill secondary" 
-                  style={{ 
-                    width: `${stats?.publishedTotal
-                      ? (stats.publishedCompleted / stats.publishedTotal) * 100
-                      : 0}%` 
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="progress-stats">
-              <div className="progress-stat">
-                <div className="progress-stat-value">{stats?.assignedCompleted || 0}</div>
-                <div className="progress-stat-label">已完成承接</div>
-              </div>
-              <div className="progress-stat">
-                <div className="progress-stat-value">{stats?.publishedCompleted || 0}</div>
-                <div className="progress-stat-label">已完成发布</div>
-              </div>
-              <div className="progress-stat">
-                <div className="progress-stat-value">
-                  {monthlyHasData ? monthlyBounty.toFixed(0) : '0'}
-                </div>
-                <div className="progress-stat-label">本月赏金</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 最近活动 */}
-      <div className="recent-activity">
-        <div className="activity-card">
-          <div className="activity-header">
-            <h3 className="activity-title">最近活动</h3>
-            <Button type="link" size="small" onClick={() => navigate('/notifications')}>
-              查看全部
-            </Button>
-          </div>
-          <div className="activity-list">
-            {assignedTasksList.slice(0, 5).map((task) => (
-              <div key={task.id} className="activity-item">
-                <div className="activity-avatar">
-                  <UserOutlined />
-                </div>
-                <div className="activity-content">
-                  <div className="activity-text">
-                    {task.status === 'completed' ? '完成了任务' : '正在进行任务'} "{task.name || task.title}"
-                  </div>
-                  <div className="activity-time">
-                    {dayjs(task.updatedAt || task.createdAt).fromNow()}
-                  </div>
-                </div>
-                <div className={`activity-status ${task.status === 'completed' ? 'completed' : 'active'}`}></div>
-              </div>
-            ))}
-            {assignedTasksList.length === 0 && (
-              <div className="empty-state">
-                <div className="empty-icon">📝</div>
-                <div className="empty-title">暂无活动</div>
-                <div className="empty-description">开始承接任务来查看活动记录</div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="notifications-card">
-          <div className="notifications-header">
-            <h3 className="notifications-title">任务提醒</h3>
-          </div>
-          <div className="notifications-list">
-            {assignedTasksList
-              .filter(t => {
-                const deadline = new Date(t.plannedEndDate || '');
-                const now = new Date();
-                const diffTime = deadline.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays <= 3 && diffDays > 0 && t.status !== 'completed';
-              })
-              .slice(0, 3)
-              .map((task) => {
-                const deadline = new Date(task.plannedEndDate || '');
-                const now = new Date();
-                const diffTime = deadline.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                return (
-                  <div key={task.id} className="notification-item">
-                    <div className="notification-icon urgent">⚠️</div>
-                    <div className="notification-content">
-                      <div className="notification-text">
-                        任务 "{task.name || task.title}" 将在 {diffDays} 天后到期
-                      </div>
-                      <div className="notification-time">
-                        截止时间: {dayjs(task.plannedEndDate).format('MM-DD HH:mm')}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            {assignedTasksList.filter(t => {
-              const deadline = new Date(t.plannedEndDate || '');
-              const now = new Date();
-              const diffTime = deadline.getTime() - now.getTime();
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-              return diffDays <= 3 && diffDays > 0 && t.status !== 'completed';
-            }).length === 0 && (
-              <div className="empty-state">
-                <div className="empty-icon">🔔</div>
-                <div className="empty-title">暂无提醒</div>
-                <div className="empty-description">所有任务都在正常进度中</div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 报告生成区域 */}
-      <Card className="report-card">
-        <div className="report-header">
-          <div className="report-title">
-            <FileTextOutlined />
-            <span>生成任务报告</span>
-          </div>
-          <div className="report-controls">
-            <Select
-              value={reportType}
-              onChange={setReportType}
-              className="report-select"
-            >
-              <Option value="daily">日报</Option>
-              <Option value="weekly">周报</Option>
-              <Option value="monthly">月报</Option>
-              <Option value="total">总报</Option>
-            </Select>
-            <Button 
-              type="primary"
-              icon={<FileTextOutlined />} 
-              onClick={handleGenerateReport}
-              loading={generatingReport}
-              className="generate-btn"
-            >
-              生成报告
-            </Button>
-          </div>
-        </div>
-        
-        <div className="report-content">
-          <Input.TextArea
-            value={reportContent}
-            placeholder="点击上方按钮生成报告，报告内容将显示在这里..."
-            autoSize={{ minRows: 8, maxRows: 20 }}
-            readOnly
-            className="report-textarea"
-          />
-          <div className="report-hint">
-            报告将包含所选时间段内的任务统计、完成情况和赏金收入等信息
-          </div>
-        </div>
-      </Card>
+      <DashboardReports />
 
       {/* Bounty History Drawer */}
       {user?.id && (

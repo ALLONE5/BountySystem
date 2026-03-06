@@ -110,7 +110,7 @@ export class SystemConfigService {
    * Update system configuration
    */
   async updateConfig(updates: SystemConfigUpdateDTO): Promise<SystemConfigResponse> {
-    console.log('🐛 updateConfig called with:', updates);
+    logger.debug('updateConfig called', { updates });
     
     // Validate input
     this.validateConfigData(updates);
@@ -148,7 +148,7 @@ export class SystemConfigService {
     if (updates.debugMode !== undefined) {
       fields.push(`debug_mode = $${paramCount++}`);
       values.push(updates.debugMode);
-      console.log('🐛 Debug mode update:', updates.debugMode);
+      logger.debug('Debug mode update', { debugMode: updates.debugMode });
     }
 
     if (updates.maxFileSize !== undefined) {
@@ -225,8 +225,10 @@ export class SystemConfigService {
     // Add updated_at field
     fields.push(`updated_at = NOW()`);
 
-    console.log('🐛 SQL fields:', fields);
-    console.log('🐛 SQL values:', values);
+    logger.debug('SQL preparation', {
+      fields: fields.slice(0, -1), // 排除 updated_at
+      valuesCount: values.length
+    });
 
     const query = `
       UPDATE system_config 
@@ -256,7 +258,10 @@ export class SystemConfigService {
         updated_at as "updatedAt"
     `;
 
-    console.log('🐛 Final SQL query:', query);
+    logger.debug('Executing SQL query', {
+      query: query.substring(0, 100) + '...',
+      paramsCount: values.length
+    });
 
     const result = await pool.query(query, values);
     

@@ -3,7 +3,9 @@ import { TaskGroup, GroupMember, GroupMemberDetail } from '../models/TaskGroup.j
 import { Validator } from '../utils/Validator.js';
 import { pool } from '../config/database.js';
 import { NotFoundError, ValidationError } from '../utils/errors.js';
-import { logger } from '../utils/Logger.js';
+import { logger } from '../config/logger.js';
+import { ImprovedBaseRepository } from './ImprovedBaseRepository.js';
+import { HandleError } from '../utils/decorators/handleError.js';
 
 /**
  * Group Repository Interface
@@ -27,17 +29,16 @@ export interface IGroupRepository {
 
 /**
  * Group Repository
- * Handles all database operations for task groups (user collaboration groups)
- * Uses string IDs (UUIDs) instead of numeric IDs
- * Does not extend BaseRepository due to ID type mismatch
+ * Extends ImprovedBaseRepository with group-specific queries for task_groups
+ * Uses string IDs (UUIDs) for group identification
  */
-export class GroupRepository implements IGroupRepository {
-  private tableName = 'task_groups';
+export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implements IGroupRepository {
+  protected tableName = 'task_groups';
 
   /**
    * Transform database row to TaskGroup model
    */
-  private mapRowToModel(row: any): TaskGroup {
+  protected mapRowToModel(row: any): TaskGroup {
     return {
       id: row.id,
       name: row.name,
@@ -66,72 +67,49 @@ export class GroupRepository implements IGroupRepository {
   }
 
   /**
-   * Find group by ID (overrides base class to use string ID)
+   * Find group by ID (uses parent class implementation)
    */
+  @HandleError({ context: 'GroupRepository.findById' })
   async findById(id: string): Promise<TaskGroup | null> {
-    try {
-      Validator.required(id, 'id');
-
-      const query = `
-        SELECT id, name, creator_id, created_at, updated_at
-        FROM task_groups
-        WHERE id = $1
-      `;
-
-      const result = await pool.query(query, [id]);
-      
-      if (result.rows.length === 0) {
-        return null;
-      }
-
-      return this.mapRowToModel(result.rows[0]);
-    } catch (error) {
-      console.error('Error finding group by id:', error);
-      throw error;
-    }
+    Validator.required(id, 'id');
+    return super.findById(id);
   }
 
   /**
-   * Find all groups (overrides base class)
+   * Find all groups (uses parent class implementation)
    */
+  @HandleError({ context: 'GroupRepository.findAll' })
   async findAll(filters?: Record<string, any>): Promise<TaskGroup[]> {
-    try {
-      const query = `
-        SELECT id, name, creator_id, created_at, updated_at
-        FROM task_groups
-        ORDER BY created_at DESC
-      `;
-
-      const result = await pool.query(query);
-      return result.rows.map(row => this.mapRowToModel(row));
-    } catch (error) {
-      console.error('Error finding all groups:', error);
-      throw error;
-    }
+    return super.findAll(filters);
   }
 
   /**
-   * Create a new group (overrides base class)
+   * Create a new group (uses parent class implementation with custom validation)
    */
+  @HandleError({ context: 'GroupRepository.create' })
   async create(data: Partial<TaskGroup>, client?: PoolClient): Promise<TaskGroup> {
-    const conn = client || pool;
+    this.validateData(data, false);
     
-    try {
-      this.validateData(data, false);
-
-      const creatorId = (data as any).creator_id || (data as any).creatorId;
-
-      const query = `
-        INSERT INTO task_groups (name, creator_id)
-        VALUES ($1, $2)
-        RETURNING id, name, creator_id, created_at, updated_at
-      `;
-
-      const result = await conn.query(query, [data.name, creatorId]);
-      return this.mapRowToModel(result.rows[0]);
-    } catch (error) {
-      console.error('Error creating group:', error);
-      throw error;
+    // Normalize creator_id field
+    const normalizedData = {
+      ...data,
+      creator_id: (data as any).creator_id || (data as any).creatorId
+    };
+    
+    if (client) {
+      // Use transaction with provided client
+      return this.executeTransaction('create', async (transactionClient) => {
+        const query = `
+          INSERT INTO task_groups (name, creator_id)
+          VALUES ($1, $2)
+          RETURNING id, name, creator_id, created_at, updated_at
+        `;
+        const result = await transactionClient.query(query, [normalizedData.name, normalizedData.creator_id]);
+        return this.mapRowToModel(result.rows[0]);
+      });
+    } else {
+      // Use parent class implementation
+      return super.create(normalizedData);
     }
   }
 

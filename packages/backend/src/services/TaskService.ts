@@ -1338,7 +1338,11 @@ export class TaskService {
     
     if (existingBonus.rows.length > 0) {
       const existingDate = new Date(existingBonus.rows[0].created_at).toLocaleString();
-      console.log(`🚫 Duplicate bonus attempt blocked - Admin ${adminId} already gave bonus to task ${taskId} on ${existingDate}`);
+      logger.warn('Duplicate bonus attempt blocked', {
+        adminId,
+        taskId,
+        existingDate
+      });
       throw new ValidationError(`You have already given a bonus reward for this task on ${existingDate}`);
     }
 
@@ -1351,11 +1355,17 @@ export class TaskService {
     const totalBonusCount = parseInt(totalBonusResult.rows[0].count);
     
     if (totalBonusCount >= 5) {
-      console.log(`🚫 Maximum bonus limit reached - Task ${taskId} already has ${totalBonusCount} bonus rewards`);
+      logger.warn('Maximum bonus limit reached', {
+        taskId,
+        totalBonusCount
+      });
       throw new ValidationError('This task has already received the maximum number of bonus rewards');
     }
 
-    console.log(`✅ Bonus validation passed - Admin ${adminId} can give bonus to task ${taskId}`);
+    logger.info('Bonus validation passed', {
+      adminId,
+      taskId
+    });
 
     // Update task bounty amount
     const newBountyAmount = Number(task.bountyAmount || 0) + bonusAmount;

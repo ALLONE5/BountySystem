@@ -1,9 +1,11 @@
 import { PoolClient } from 'pg';
 import { BaseRepository, IRepository } from './BaseRepository.js';
+import { ImprovedBaseRepository } from './ImprovedBaseRepository.js';
 import { Task, TaskStatus, Visibility } from '../models/Task.js';
 import { Position } from '../models/Position.js';
 import { Validator } from '../utils/Validator.js';
-import { logger } from '../utils/Logger.js';
+import { logger } from '../config/logger.js';
+import { HandleError } from '../utils/decorators/handleError.js';
 
 /**
  * Task Filters Interface
@@ -33,12 +35,10 @@ export interface ITaskRepository extends IRepository<Task> {
 
 /**
  * Task Repository
- * Handles all database operations for tasks
+ * Extends ImprovedBaseRepository with task-specific queries
  */
-export class TaskRepository extends BaseRepository<Task> implements ITaskRepository {
-  constructor() {
-    super('tasks');
-  }
+export class TaskRepository extends ImprovedBaseRepository<Task> implements ITaskRepository {
+  protected tableName = 'tasks';
 
   /**
    * Get all column names for the tasks table
@@ -172,10 +172,11 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
   /**
    * Find tasks by creator
    */
+  @HandleError({ context: 'TaskRepository.findByCreator' })
   async findByCreator(creatorId: string): Promise<Task[]> {
-    try {
-      Validator.required(creatorId, 'creatorId');
+    Validator.required(creatorId, 'creatorId');
 
+    return this.executeQuery('findByCreator', async () => {
       const query = `
         SELECT ${this.getColumns().join(', ')}
         FROM ${this.tableName}
@@ -183,24 +184,19 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
         ORDER BY created_at DESC
       `;
 
-      const rows = await this.executeQuery<any>(query, [creatorId]);
-      return rows.map(row => this.mapRowToModel(row));
-    } catch (error) {
-      logger.error('Error finding tasks by creator', { 
-        error: error instanceof Error ? error.message : String(error),
-        creatorId 
-      });
-      throw error;
-    }
+      const rows = await this.pool.query(query, [creatorId]);
+      return rows.rows.map(row => this.mapRowToModel(row));
+    }, { creatorId });
   }
 
   /**
    * Find tasks by group
    */
+  @HandleError({ context: 'TaskRepository.findByGroup' })
   async findByGroup(groupId: string): Promise<Task[]> {
-    try {
-      Validator.required(groupId, 'groupId');
+    Validator.required(groupId, 'groupId');
 
+    return this.executeQuery('findByGroup', async () => {
       const query = `
         SELECT ${this.getColumns().join(', ')}
         FROM ${this.tableName}
@@ -208,15 +204,9 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
         ORDER BY created_at DESC
       `;
 
-      const rows = await this.executeQuery<any>(query, [groupId]);
-      return rows.map(row => this.mapRowToModel(row));
-    } catch (error) {
-      logger.error('Error finding tasks by group', { 
-        error: error instanceof Error ? error.message : String(error),
-        groupId 
-      });
-      throw error;
-    }
+      const rows = await this.pool.query(query, [groupId]);
+      return rows.rows.map(row => this.mapRowToModel(row));
+    }, { groupId });
   }
 
   /**
@@ -254,63 +244,65 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
    */
   async findPublicTasks(filters?: TaskFilters): Promise<Task[]> {
     try {
-      let query = `
-        SELECT ${this.getColumns().join(', ')}
-        FROM ${this.tableName}
-        WHERE visibility = 'public'
-      `;
+      return this.executeQuery('findPublicTasks', async () => {
+        let query = `
+          SELECT ${this.getColumns().join(', ')}
+          FROM ${this.tableName}
+          WHERE visibility = 'public'
+        `;
 
-      const params: any[] = [];
-      let paramIndex = 1;
+        const params: any[] = [];
+        let paramIndex = 1;
 
-      if (filters) {
-        if (filters.status) {
-          query += ` AND status = $${paramIndex}`;
-          params.push(filters.status);
-          paramIndex++;
+        if (filters) {
+          if (filters.status) {
+            query += ` AND status = $${paramIndex}`;
+            params.push(filters.status);
+            paramIndex++;
+          }
+
+          if (filters.positionId) {
+            query += ` AND position_id = $${paramIndex}`;
+            params.push(filters.positionId);
+            paramIndex++;
+          }
+
+          if (filters.groupId) {
+            query += ` AND group_id = $${paramIndex}`;
+            params.push(filters.groupId);
+            paramIndex++;
+          }
+
+          if (filters.projectGroupId) {
+            query += ` AND project_group_id = $${paramIndex}`;
+            params.push(filters.projectGroupId);
+            paramIndex++;
+          }
+
+          if (filters.minBounty !== undefined) {
+            query += ` AND bounty_amount >= $${paramIndex}`;
+            params.push(filters.minBounty);
+            paramIndex++;
+          }
+
+          if (filters.maxBounty !== undefined) {
+            query += ` AND bounty_amount <= $${paramIndex}`;
+            params.push(filters.maxBounty);
+            paramIndex++;
+          }
+
+          if (filters.tags && filters.tags.length > 0) {
+            query += ` AND tags && $${paramIndex}`;
+            params.push(filters.tags);
+            paramIndex++;
+          }
         }
 
-        if (filters.positionId) {
-          query += ` AND position_id = $${paramIndex}`;
-          params.push(filters.positionId);
-          paramIndex++;
-        }
+        query += ' ORDER BY created_at DESC';
 
-        if (filters.groupId) {
-          query += ` AND group_id = $${paramIndex}`;
-          params.push(filters.groupId);
-          paramIndex++;
-        }
-
-        if (filters.projectGroupId) {
-          query += ` AND project_group_id = $${paramIndex}`;
-          params.push(filters.projectGroupId);
-          paramIndex++;
-        }
-
-        if (filters.minBounty !== undefined) {
-          query += ` AND bounty_amount >= $${paramIndex}`;
-          params.push(filters.minBounty);
-          paramIndex++;
-        }
-
-        if (filters.maxBounty !== undefined) {
-          query += ` AND bounty_amount <= $${paramIndex}`;
-          params.push(filters.maxBounty);
-          paramIndex++;
-        }
-
-        if (filters.tags && filters.tags.length > 0) {
-          query += ` AND tags && $${paramIndex}`;
-          params.push(filters.tags);
-          paramIndex++;
-        }
-      }
-
-      query += ' ORDER BY created_at DESC';
-
-      const rows = await this.executeQuery<any>(query, params);
-      return rows.map(row => this.mapRowToModel(row));
+        const rows = await this.pool.query(query, params);
+        return rows.rows.map(row => this.mapRowToModel(row));
+      }, { filters });
     } catch (error) {
       logger.error('Error finding public tasks', { 
         error: error instanceof Error ? error.message : String(error),
@@ -333,20 +325,22 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
         throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
       }
 
-      const query = `
-        UPDATE ${this.tableName}
-        SET status = $1, updated_at = NOW()
-        WHERE id = $2
-        RETURNING *
-      `;
+      return this.executeQuery('updateStatus', async () => {
+        const query = `
+          UPDATE ${this.tableName}
+          SET status = $1, updated_at = NOW()
+          WHERE id = $2
+          RETURNING *
+        `;
 
-      const rows = await this.executeQuery<any>(query, [status, taskId]);
+        const rows = await this.pool.query(query, [status, taskId]);
 
-      if (rows.length === 0) {
-        throw new Error('Task not found');
-      }
+        if (rows.rows.length === 0) {
+          throw new Error('Task not found');
+        }
 
-      return this.mapRowToModel(rows[0]);
+        return this.mapRowToModel(rows.rows[0]);
+      }, { taskId, status });
     } catch (error) {
       logger.error('Error updating task status', { 
         error: error instanceof Error ? error.message : String(error),
@@ -364,167 +358,49 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
     try {
       Validator.required(taskId, 'taskId');
 
-      const query = `
-        SELECT 
-          t.id, t.name, t.description, t.parent_id, t.depth, t.is_executable,
-          t.tags, t.created_at, t.planned_start_date, t.planned_end_date,
-          t.actual_start_date, t.actual_end_date, t.estimated_hours,
-          t.complexity, t.priority, t.status, t.position_id, t.visibility,
-          t.bounty_amount, t.bounty_algorithm_version, t.is_bounty_settled,
-          t.bounty_payer_id, t.is_published, t.published_at, t.published_by,
-          t.publisher_id, t.assignee_id, t.group_id, t.project_group_id,
-          t.progress, t.progress_locked, t.aggregated_estimated_hours,
-          t.aggregated_complexity, t.updated_at,
-          t.invited_user_id, t.invitation_status,
-          p.id as "publisher.id", p.username as "publisher.username", 
-          p.email as "publisher.email", p.avatar_id as "publisher.avatarId", 
-          p.role as "publisher.role", p.created_at as "publisher.createdAt",
-          p.last_login as "publisher.lastLogin",
-          pa.image_url as "publisher.avatarUrl",
-          a.id as "assignee.id", a.username as "assignee.username", 
-          a.email as "assignee.email", a.avatar_id as "assignee.avatarId", 
-          a.role as "assignee.role", a.created_at as "assignee.createdAt",
-          a.last_login as "assignee.lastLogin",
-          aa.image_url as "assignee.avatarUrl",
-          tg.name as "groupName",
-          pg.name as "projectGroupName"
-        FROM tasks t
-        LEFT JOIN users p ON t.publisher_id = p.id
-        LEFT JOIN avatars pa ON p.avatar_id = pa.id
-        LEFT JOIN users a ON t.assignee_id = a.id
-        LEFT JOIN avatars aa ON a.avatar_id = aa.id
-        LEFT JOIN task_groups tg ON t.group_id = tg.id
-        LEFT JOIN project_groups pg ON t.project_group_id = pg.id
-        WHERE t.id = $1
-      `;
+      return this.executeQuery('findByIdWithRelations', async () => {
+        const query = `
+          SELECT 
+            t.id, t.name, t.description, t.parent_id, t.depth, t.is_executable,
+            t.tags, t.created_at, t.planned_start_date, t.planned_end_date,
+            t.actual_start_date, t.actual_end_date, t.estimated_hours,
+            t.complexity, t.priority, t.status, t.position_id, t.visibility,
+            t.bounty_amount, t.bounty_algorithm_version, t.is_bounty_settled,
+            t.bounty_payer_id, t.is_published, t.published_at, t.published_by,
+            t.publisher_id, t.assignee_id, t.group_id, t.project_group_id,
+            t.progress, t.progress_locked, t.aggregated_estimated_hours,
+            t.aggregated_complexity, t.updated_at,
+            t.invited_user_id, t.invitation_status,
+            p.id as "publisher.id", p.username as "publisher.username", 
+            p.email as "publisher.email", p.avatar_id as "publisher.avatarId", 
+            p.role as "publisher.role", p.created_at as "publisher.createdAt",
+            p.last_login as "publisher.lastLogin",
+            pa.image_url as "publisher.avatarUrl",
+            a.id as "assignee.id", a.username as "assignee.username", 
+            a.email as "assignee.email", a.avatar_id as "assignee.avatarId", 
+            a.role as "assignee.role", a.created_at as "assignee.createdAt",
+            a.last_login as "assignee.lastLogin",
+            aa.image_url as "assignee.avatarUrl",
+            tg.name as "groupName",
+            pg.name as "projectGroupName"
+          FROM tasks t
+          LEFT JOIN users p ON t.publisher_id = p.id
+          LEFT JOIN avatars pa ON p.avatar_id = pa.id
+          LEFT JOIN users a ON t.assignee_id = a.id
+          LEFT JOIN avatars aa ON a.avatar_id = aa.id
+          LEFT JOIN task_groups tg ON t.group_id = tg.id
+          LEFT JOIN project_groups pg ON t.project_group_id = pg.id
+          WHERE t.id = $1
+        `;
 
-      const rows = await this.executeQuery<any>(query, [taskId]);
-      
-      if (rows.length === 0) {
-        return null;
-      }
+        const rows = await this.pool.query(query, [taskId]);
+        
+        if (rows.rows.length === 0) {
+          return null;
+        }
 
-      const row = rows[0];
-      
-      // Map publisher if exists
-      const publisher = row['publisher.id'] ? {
-        id: row['publisher.id'],
-        username: row['publisher.username'],
-        email: row['publisher.email'],
-        avatarId: row['publisher.avatarId'],
-        avatarUrl: row['publisher.avatarUrl'],
-        role: row['publisher.role'],
-        createdAt: row['publisher.createdAt'],
-        lastLogin: row['publisher.lastLogin'],
-      } : undefined;
-
-      // Map assignee if exists
-      const assignee = row['assignee.id'] ? {
-        id: row['assignee.id'],
-        username: row['assignee.username'],
-        email: row['assignee.email'],
-        avatarId: row['assignee.avatarId'],
-        avatarUrl: row['assignee.avatarUrl'],
-        role: row['assignee.role'],
-        createdAt: row['assignee.createdAt'],
-        lastLogin: row['assignee.lastLogin'],
-      } : undefined;
-
-      // Map task
-      const task: any = {
-        id: row.id,
-        name: row.name,
-        description: row.description,
-        parentId: row.parent_id,
-        depth: row.depth,
-        isExecutable: row.is_executable,
-        tags: row.tags || [],
-        createdAt: row.created_at,
-        plannedStartDate: row.planned_start_date,
-        plannedEndDate: row.planned_end_date,
-        actualStartDate: row.actual_start_date,
-        actualEndDate: row.actual_end_date,
-        estimatedHours: row.estimated_hours,
-        complexity: row.complexity,
-        priority: row.priority,
-        status: row.status,
-        positionId: row.position_id,
-        visibility: row.visibility,
-        bountyAmount: parseFloat(row.bounty_amount) || 0,
-        bountyAlgorithmVersion: row.bounty_algorithm_version,
-        isBountySettled: row.is_bounty_settled,
-        bountyPayerId: row.bounty_payer_id,
-        isPublished: row.is_published !== undefined ? row.is_published : true,
-        publishedAt: row.published_at,
-        publishedBy: row.published_by,
-        publisherId: row.publisher_id,
-        assigneeId: row.assignee_id,
-        groupId: row.group_id,
-        projectGroupId: row.project_group_id,
-        progress: row.progress || 0,
-        progressLocked: row.progress_locked || false,
-        aggregatedEstimatedHours: row.aggregated_estimated_hours,
-        aggregatedComplexity: row.aggregated_complexity,
-        invitedUserId: row.invited_user_id,
-        invitationStatus: row.invitation_status,
-        updatedAt: row.updated_at,
-        groupName: row.groupName,
-        projectGroupName: row.projectGroupName
-      };
-
-      if (publisher) task.publisher = publisher;
-      if (assignee) task.assignee = assignee;
-
-      return task;
-    } catch (error) {
-      logger.error('Error finding task by ID with relations', { 
-        error: error instanceof Error ? error.message : String(error),
-        taskId 
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Find subtasks of a parent task
-   */
-  async findSubtasks(parentId: string): Promise<Task[]> {
-    try {
-      Validator.required(parentId, 'parentId');
-
-      const query = `
-        SELECT 
-          t.id, t.name, t.description, t.parent_id, t.depth, t.is_executable,
-          t.tags, t.created_at, t.planned_start_date, t.planned_end_date,
-          t.actual_start_date, t.actual_end_date, t.estimated_hours,
-          t.complexity, t.priority, t.status, t.position_id, t.visibility,
-          t.bounty_amount, t.bounty_algorithm_version, t.is_bounty_settled,
-          t.bounty_payer_id, t.is_published, t.published_at, t.published_by,
-          t.publisher_id, t.assignee_id, t.group_id, t.project_group_id,
-          t.progress, t.progress_locked, t.aggregated_estimated_hours,
-          t.aggregated_complexity, t.updated_at,
-          p.id as "publisher.id", p.username as "publisher.username", 
-          p.email as "publisher.email", p.avatar_id as "publisher.avatarId", 
-          p.role as "publisher.role", p.created_at as "publisher.createdAt",
-          p.last_login as "publisher.lastLogin",
-          pa.image_url as "publisher.avatarUrl",
-          a.id as "assignee.id", a.username as "assignee.username", 
-          a.email as "assignee.email", a.avatar_id as "assignee.avatarId", 
-          a.role as "assignee.role", a.created_at as "assignee.createdAt",
-          a.last_login as "assignee.lastLogin",
-          aa.image_url as "assignee.avatarUrl"
-        FROM ${this.tableName} t
-        LEFT JOIN users p ON t.publisher_id = p.id
-        LEFT JOIN avatars pa ON p.avatar_id = pa.id
-        LEFT JOIN users a ON t.assignee_id = a.id
-        LEFT JOIN avatars aa ON a.avatar_id = aa.id
-        WHERE t.parent_id = $1
-        ORDER BY t.created_at ASC
-      `;
-
-      const rows = await this.executeQuery<any>(query, [parentId]);
-      
-      return rows.map(row => {
+        const row = rows.rows[0];
+        
         // Map publisher if exists
         const publisher = row['publisher.id'] ? {
           id: row['publisher.id'],
@@ -549,6 +425,7 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
           lastLogin: row['assignee.lastLogin'],
         } : undefined;
 
+        // Map task
         const task: any = {
           id: row.id,
           name: row.name,
@@ -583,20 +460,142 @@ export class TaskRepository extends BaseRepository<Task> implements ITaskReposit
           progressLocked: row.progress_locked || false,
           aggregatedEstimatedHours: row.aggregated_estimated_hours,
           aggregatedComplexity: row.aggregated_complexity,
-          updatedAt: row.updated_at
+          invitedUserId: row.invited_user_id,
+          invitationStatus: row.invitation_status,
+          updatedAt: row.updated_at,
+          groupName: row.groupName,
+          projectGroupName: row.projectGroupName
         };
 
         if (publisher) task.publisher = publisher;
         if (assignee) task.assignee = assignee;
 
         return task;
-      });
+      }, { taskId });
     } catch (error) {
-      logger.error('Error finding subtasks', { 
+      logger.error('Error finding task by ID with relations', { 
         error: error instanceof Error ? error.message : String(error),
-        parentId 
+        taskId 
       });
       throw error;
     }
   }
+
+  /**
+   * Find subtasks of a parent task
+   */
+  async findSubtasks(parentId: string): Promise<Task[]> {
+      try {
+        Validator.required(parentId, 'parentId');
+
+        return this.executeQuery('findSubtasks', async () => {
+          const query = `
+            SELECT 
+              t.id, t.name, t.description, t.parent_id, t.depth, t.is_executable,
+              t.tags, t.created_at, t.planned_start_date, t.planned_end_date,
+              t.actual_start_date, t.actual_end_date, t.estimated_hours,
+              t.complexity, t.priority, t.status, t.position_id, t.visibility,
+              t.bounty_amount, t.bounty_algorithm_version, t.is_bounty_settled,
+              t.bounty_payer_id, t.is_published, t.published_at, t.published_by,
+              t.publisher_id, t.assignee_id, t.group_id, t.project_group_id,
+              t.progress, t.progress_locked, t.aggregated_estimated_hours,
+              t.aggregated_complexity, t.updated_at,
+              p.id as "publisher.id", p.username as "publisher.username", 
+              p.email as "publisher.email", p.avatar_id as "publisher.avatarId", 
+              p.role as "publisher.role", p.created_at as "publisher.createdAt",
+              p.last_login as "publisher.lastLogin",
+              pa.image_url as "publisher.avatarUrl",
+              a.id as "assignee.id", a.username as "assignee.username", 
+              a.email as "assignee.email", a.avatar_id as "assignee.avatarId", 
+              a.role as "assignee.role", a.created_at as "assignee.createdAt",
+              a.last_login as "assignee.lastLogin",
+              aa.image_url as "assignee.avatarUrl"
+            FROM ${this.tableName} t
+            LEFT JOIN users p ON t.publisher_id = p.id
+            LEFT JOIN avatars pa ON p.avatar_id = pa.id
+            LEFT JOIN users a ON t.assignee_id = a.id
+            LEFT JOIN avatars aa ON a.avatar_id = aa.id
+            WHERE t.parent_id = $1
+            ORDER BY t.created_at ASC
+          `;
+
+          const rows = await this.pool.query(query, [parentId]);
+
+          return rows.rows.map(row => {
+            // Map publisher if exists
+            const publisher = row['publisher.id'] ? {
+              id: row['publisher.id'],
+              username: row['publisher.username'],
+              email: row['publisher.email'],
+              avatarId: row['publisher.avatarId'],
+              avatarUrl: row['publisher.avatarUrl'],
+              role: row['publisher.role'],
+              createdAt: row['publisher.createdAt'],
+              lastLogin: row['publisher.lastLogin'],
+            } : undefined;
+
+            // Map assignee if exists
+            const assignee = row['assignee.id'] ? {
+              id: row['assignee.id'],
+              username: row['assignee.username'],
+              email: row['assignee.email'],
+              avatarId: row['assignee.avatarId'],
+              avatarUrl: row['assignee.avatarUrl'],
+              role: row['assignee.role'],
+              createdAt: row['assignee.createdAt'],
+              lastLogin: row['assignee.lastLogin'],
+            } : undefined;
+
+            const task: any = {
+              id: row.id,
+              name: row.name,
+              description: row.description,
+              parentId: row.parent_id,
+              depth: row.depth,
+              isExecutable: row.is_executable,
+              tags: row.tags || [],
+              createdAt: row.created_at,
+              plannedStartDate: row.planned_start_date,
+              plannedEndDate: row.planned_end_date,
+              actualStartDate: row.actual_start_date,
+              actualEndDate: row.actual_end_date,
+              estimatedHours: row.estimated_hours,
+              complexity: row.complexity,
+              priority: row.priority,
+              status: row.status,
+              positionId: row.position_id,
+              visibility: row.visibility,
+              bountyAmount: parseFloat(row.bounty_amount) || 0,
+              bountyAlgorithmVersion: row.bounty_algorithm_version,
+              isBountySettled: row.is_bounty_settled,
+              bountyPayerId: row.bounty_payer_id,
+              isPublished: row.is_published !== undefined ? row.is_published : true,
+              publishedAt: row.published_at,
+              publishedBy: row.published_by,
+              publisherId: row.publisher_id,
+              assigneeId: row.assignee_id,
+              groupId: row.group_id,
+              projectGroupId: row.project_group_id,
+              progress: row.progress || 0,
+              progressLocked: row.progress_locked || false,
+              aggregatedEstimatedHours: row.aggregated_estimated_hours,
+              aggregatedComplexity: row.aggregated_complexity,
+              updatedAt: row.updated_at
+            };
+
+            if (publisher) task.publisher = publisher;
+            if (assignee) task.assignee = assignee;
+
+            return task;
+          });
+        }, { parentId });
+      } catch (error) {
+        logger.error('Error finding subtasks', { 
+          error: error instanceof Error ? error.message : String(error),
+          parentId 
+        });
+        throw error;
+      }
+    }
+
 }

@@ -1,5 +1,5 @@
 import { createApiMethod, createApiMethodWithParams } from './createApiClient';
-import { User, Task, UserRole, PositionApplication, ReviewApplicationRequest } from '../types';
+import { User, Task, UserRole, PositionApplication } from '../types';
 
 // Update user request
 export interface UpdateUserRequest {

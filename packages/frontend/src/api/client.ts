@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { message } from 'antd';
+import { message } from '../utils/message';
 import { log } from '../utils/logger';
 
 // 创建 axios 实例

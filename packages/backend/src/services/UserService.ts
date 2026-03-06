@@ -6,6 +6,8 @@ import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { UserMapper } from '../utils/mappers/UserMapper.js';
 import { AuthorizationError, NotFoundError, ValidationError } from '../utils/errors.js';
 import { Validator } from '../utils/Validator.js';
+import { HandleError } from '../utils/decorators/handleError.js';
+import { UserCache, CacheEvict } from '../utils/decorators/cache.js';
 
 const SALT_ROUNDS = 10;
 
@@ -77,6 +79,8 @@ export class UserService {
    * Requirement 6.1: Use UserRepository for database operations
    * Requirement 6.4: Use Mapper classes for data transformations
    */
+  @UserCache(1800) // 缓存30分钟
+  @HandleError({ context: 'UserService.getUserById' })
   async getUserById(userId: string): Promise<UserResponse> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -136,6 +140,11 @@ export class UserService {
    * Requirement 6.5: Use Permission_Checker for authorization
    * Requirement 6.8: Receive dependencies through DI Container
    */
+  @CacheEvict({
+    keyGenerator: (requesterId: string, userId: string) => [`user:${userId}`],
+    patterns: (requesterId: string, userId: string) => [`user:${userId}*`]
+  })
+  @HandleError({ context: 'UserService.updateUser' })
   async updateUser(requesterId: string, userId: string, updates: UserUpdateDTO): Promise<UserResponse> {
     // Permission check: user can update their own profile, or admin can update any user
     if (requesterId !== userId) {

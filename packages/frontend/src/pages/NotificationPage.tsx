@@ -1,30 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  List,
-  Card,
-  Badge,
-  Button,
-  Space,
-  Typography,
-  Tag,
-  Empty,
-  Spin,
-  message,
-  Tabs,
-  Modal,
-  Input,
-} from 'antd';
-import {
-  BellOutlined,
-  CheckOutlined,
-  ClockCircleOutlined,
-  FileTextOutlined,
-  TeamOutlined,
-  WarningOutlined,
-  UserOutlined,
-  CloseOutlined,
-  MailOutlined,
-} from '@ant-design/icons';
+import { Card, Button, Typography, message } from 'antd';
+import { BellOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Notification } from '../types';
 import {
@@ -35,13 +11,17 @@ import {
 import { groupApi } from '../api/group';
 import { taskApi } from '../api/task';
 import { useNotificationContext } from '../contexts/NotificationContext';
+import { useErrorHandler } from '../hooks/useErrorHandler';
+import { NotificationTabs } from '../components/Notifications/NotificationTabs';
+import { NotificationList } from '../components/Notifications/NotificationList';
+import { RejectTaskModal } from '../components/Notifications/RejectTaskModal';
 
-const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
+const { Title, Text } = Typography;
 
 export const NotificationPage: React.FC = () => {
   const navigate = useNavigate();
   const { refreshUnreadCount } = useNotificationContext();
+  const { handleAsyncError } = useErrorHandler();
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
@@ -68,28 +48,27 @@ export const NotificationPage: React.FC = () => {
     }
   };
 
-  const handleMarkAsRead = async (notificationId: string) => {
-    try {
-      await markAsRead(notificationId);
-      message.success('已标记为已读');
-      loadNotifications();
-      refreshUnreadCount();
-    } catch (error) {
-      message.error('标记失败');
-      console.error('Error marking as read:', error);
-    }
+  const handleMarkAsRead = async (notificationId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    await handleAsyncError(
+      () => markAsRead(notificationId),
+      'NotificationPage.markAsRead',
+      '已标记为已读',
+      '标记失败'
+    );
+    loadNotifications();
+    refreshUnreadCount();
   };
 
   const handleMarkAllAsRead = async () => {
-    try {
-      await markAllAsRead();
-      message.success('已全部标记为已读');
-      loadNotifications();
-      refreshUnreadCount();
-    } catch (error) {
-      message.error('标记失败');
-      console.error('Error marking all as read:', error);
-    }
+    await handleAsyncError(
+      () => markAllAsRead(),
+      'NotificationPage.markAllAsRead',
+      '已全部标记为已读',
+      '标记失败'
+    );
+    loadNotifications();
+    refreshUnreadCount();
   };
 
   const handleNotificationClick = (notification: Notification) => {
@@ -128,14 +107,13 @@ export const NotificationPage: React.FC = () => {
     const match = notification.message.match(/Group ID: ([a-f0-9-]+)/);
     if (match && match[1]) {
       const groupId = match[1];
-      try {
-        await groupApi.joinGroup(groupId);
-        message.success('Successfully joined the group');
-        await handleMarkAsRead(notification.id);
-      } catch (error) {
-        message.error('Failed to join group');
-        console.error(error);
-      }
+      await handleAsyncError(
+        () => groupApi.joinGroup(groupId),
+        'NotificationPage.joinGroup',
+        'Successfully joined the group',
+        'Failed to join group'
+      );
+      await handleMarkAsRead(notification.id);
     } else {
       message.error('Invalid invitation format');
     }
@@ -150,13 +128,14 @@ export const NotificationPage: React.FC = () => {
 
     setActionLoading(notification.id);
     try {
-      await taskApi.acceptTaskAssignment(notification.relatedTaskId);
-      message.success('已接受任务');
+      await handleAsyncError(
+        () => taskApi.acceptTaskAssignment(notification.relatedTaskId!),
+        'NotificationPage.acceptTask',
+        '已接受任务',
+        '接受任务失败'
+      );
       await handleMarkAsRead(notification.id);
       loadNotifications();
-    } catch (error: any) {
-      message.error(error.response?.data?.message || '接受任务失败');
-      console.error('Failed to accept task:', error);
     } finally {
       setActionLoading(null);
     }
@@ -174,89 +153,26 @@ export const NotificationPage: React.FC = () => {
 
     setActionLoading(selectedNotification.id);
     try {
-      await taskApi.rejectTaskAssignment(selectedNotification.relatedTaskId, rejectReason);
-      message.success('已拒绝任务');
+      await handleAsyncError(
+        () => taskApi.rejectTaskAssignment(selectedNotification.relatedTaskId!, rejectReason),
+        'NotificationPage.rejectTask',
+        '已拒绝任务',
+        '拒绝任务失败'
+      );
       await handleMarkAsRead(selectedNotification.id);
       setRejectModalVisible(false);
       setSelectedNotification(null);
       setRejectReason('');
       loadNotifications();
-    } catch (error: any) {
-      message.error(error.response?.data?.message || '拒绝任务失败');
-      console.error('Failed to reject task:', error);
     } finally {
       setActionLoading(null);
     }
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'group_invitation':
-        return <TeamOutlined style={{ color: '#1890ff' }} />;
-      case 'task_assigned':
-        return <FileTextOutlined style={{ color: '#1890ff' }} />;
-      case 'task_invitation':
-        return <MailOutlined style={{ color: '#722ed1' }} />;
-      case 'task_invitation_accepted':
-        return <CheckOutlined style={{ color: '#52c41a' }} />;
-      case 'task_invitation_rejected':
-        return <CloseOutlined style={{ color: '#ff4d4f' }} />;
-      case 'deadline_reminder':
-        return <ClockCircleOutlined style={{ color: '#faad14' }} />;
-      case 'dependency_resolved':
-        return <CheckOutlined style={{ color: '#52c41a' }} />;
-      case 'status_changed':
-        return <FileTextOutlined style={{ color: '#722ed1' }} />;
-      case 'position_approved':
-        return <CheckOutlined style={{ color: '#52c41a' }} />;
-      case 'position_rejected':
-        return <WarningOutlined style={{ color: '#ff4d4f' }} />;
-      case 'review_required':
-        return <WarningOutlined style={{ color: '#fa8c16' }} />;
-      case 'broadcast':
-        return <TeamOutlined style={{ color: '#13c2c2' }} />;
-      case 'account_updated':
-        return <UserOutlined style={{ color: '#2f54eb' }} />;
-      default:
-        return <BellOutlined />;
-    }
-  };
-
-  const getNotificationTypeTag = (type: string) => {
-    const typeMap: Record<string, { text: string; color: string }> = {
-      group_invitation: { text: '团队邀请', color: 'geekblue' },
-      task_assigned: { text: '任务分配', color: 'blue' },
-      task_invitation: { text: '任务邀请', color: 'purple' },
-      task_invitation_accepted: { text: '邀请已接受', color: 'green' },
-      task_invitation_rejected: { text: '邀请已拒绝', color: 'red' },
-      deadline_reminder: { text: '截止提醒', color: 'orange' },
-      dependency_resolved: { text: '依赖解除', color: 'green' },
-      status_changed: { text: '状态变更', color: 'purple' },
-      position_approved: { text: '岗位通过', color: 'green' },
-      position_rejected: { text: '岗位拒绝', color: 'red' },
-      review_required: { text: '审核提醒', color: 'orange' },
-      broadcast: { text: '系统广播', color: 'cyan' },
-      account_updated: { text: '账户变更', color: 'geekblue' },
-    };
-
-    const config = typeMap[type] || { text: '通知', color: 'default' };
-    return <Tag color={config.color}>{config.text}</Tag>;
-  };
-
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const notificationDate = new Date(date);
-    const diffMs = now.getTime() - notificationDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-    
-    return notificationDate.toLocaleDateString('zh-CN');
+  const handleRejectModalCancel = () => {
+    setRejectModalVisible(false);
+    setSelectedNotification(null);
+    setRejectReason('');
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -279,185 +195,34 @@ export const NotificationPage: React.FC = () => {
       </div>
 
       <Card>
-        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <Tabs 
-            activeKey={activeTab} 
-            onChange={(key) => setActiveTab(key as 'all' | 'unread')}
-            items={[
-              {
-                key: 'all',
-                label: (
-                  <span style={{ fontSize: 15 }}>
-                    全部通知
-                    {activeTab === 'all' && unreadCount > 0 && (
-                      <Badge count={unreadCount} style={{ marginLeft: 8 }} />
-                    )}
-                  </span>
-                ),
-                children: null
-              },
-              {
-                key: 'unread',
-                label: (
-                  <span style={{ fontSize: 15 }}>
-                    未读通知
-                    <Badge count={unreadCount} style={{ marginLeft: 8 }} />
-                  </span>
-                ),
-                children: null
-              }
-            ]}
-          />
+        <NotificationTabs
+          activeTab={activeTab}
+          unreadCount={unreadCount}
+          onTabChange={setActiveTab}
+        />
 
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '50px 0' }}>
-              <Spin size="large" />
-            </div>
-          ) : notifications.length === 0 ? (
-            <Empty
-              description={activeTab === 'unread' ? '没有未读通知' : '暂无通知'}
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
-          ) : (
-            <List
-              itemLayout="horizontal"
-              dataSource={notifications}
-              renderItem={(notification) => (
-                <List.Item
-                  className="task-card"
-                  style={{
-                    backgroundColor: notification.isRead ? 'transparent' : '#f0f5ff',
-                    padding: '16px',
-                    borderRadius: '4px',
-                    marginBottom: '8px',
-                    cursor: notification.relatedTaskId ? 'pointer' : 'default',
-                    borderLeft: notification.isRead ? 'none' : '4px solid #1890ff',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onClick={() => handleNotificationClick(notification)}
-                  actions={[
-                    notification.type === 'group_invitation' && !notification.isRead && (
-                      <Button
-                        type="primary"
-                        size="small"
-                        onClick={(e) => handleAcceptInvitation(notification, e)}
-                      >
-                        接受邀请
-                      </Button>
-                    ),
-                    notification.type === 'task_invitation' && !notification.isRead && (
-                      <Button
-                        type="primary"
-                        size="small"
-                        icon={<CheckOutlined />}
-                        onClick={(e) => handleAcceptTaskInvitation(notification, e)}
-                        loading={actionLoading === notification.id}
-                      >
-                        接受
-                      </Button>
-                    ),
-                    notification.type === 'task_invitation' && !notification.isRead && (
-                      <Button
-                        danger
-                        size="small"
-                        icon={<CloseOutlined />}
-                        onClick={(e) => handleRejectTaskInvitation(notification, e)}
-                        loading={actionLoading === notification.id}
-                      >
-                        拒绝
-                      </Button>
-                    ),
-                    !notification.isRead && (
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMarkAsRead(notification.id);
-                        }}
-                      >
-                        {notification.type === 'group_invitation' || notification.type === 'task_invitation' ? '忽略' : '标记已读'}
-                      </Button>
-                    ),
-                  ]}
-
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Badge dot={!notification.isRead}>
-                        <div style={{ 
-                          fontSize: 28, 
-                          width: 48, 
-                          height: 48, 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          borderRadius: '50%',
-                          backgroundColor: notification.isRead ? '#f5f5f5' : '#e6f7ff',
-                        }}>
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                      </Badge>
-                    }
-                    title={
-                      <Space>
-                        <Text strong={!notification.isRead} style={{ fontSize: 15 }}>
-                          {notification.title}
-                        </Text>
-                        {getNotificationTypeTag(notification.type)}
-                      </Space>
-                    }
-                    description={
-                      <Space orientation="vertical" size="small" style={{ width: '100%' }}>
-                        <Paragraph
-                          style={{ margin: 0, fontSize: 14 }}
-                          ellipsis={{ rows: 2, expandable: true }}
-                        >
-                          {notification.message}
-                        </Paragraph>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                          <ClockCircleOutlined /> {formatDate(notification.createdAt)}
-                        </Text>
-                      </Space>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          )}
-        </Space>
+        <NotificationList
+          notifications={notifications}
+          loading={loading}
+          activeTab={activeTab}
+          actionLoading={actionLoading}
+          onNotificationClick={handleNotificationClick}
+          onAcceptInvitation={handleAcceptInvitation}
+          onAcceptTaskInvitation={handleAcceptTaskInvitation}
+          onRejectTaskInvitation={handleRejectTaskInvitation}
+          onMarkAsRead={handleMarkAsRead}
+        />
       </Card>
 
-      {/* 拒绝任务邀请模态框 */}
-      <Modal
-        title="拒绝任务邀请"
-        open={rejectModalVisible}
-        onOk={handleRejectTaskInvitationConfirm}
-        onCancel={() => {
-          setRejectModalVisible(false);
-          setSelectedNotification(null);
-          setRejectReason('');
-        }}
-        okText="确认拒绝"
-        cancelText="取消"
-        okButtonProps={{ danger: true, loading: actionLoading === selectedNotification?.id }}
-      >
-        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
-          <Text>您确定要拒绝这个任务邀请吗？</Text>
-          
-          <div>
-            <Text>拒绝原因（可选）：</Text>
-            <TextArea
-              rows={4}
-              placeholder="请输入拒绝原因，这将发送给任务发布者"
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              maxLength={500}
-              showCount
-            />
-          </div>
-        </Space>
-      </Modal>
+      <RejectTaskModal
+        visible={rejectModalVisible}
+        notification={selectedNotification}
+        rejectReason={rejectReason}
+        loading={actionLoading === selectedNotification?.id}
+        onReasonChange={setRejectReason}
+        onConfirm={handleRejectTaskInvitationConfirm}
+        onCancel={handleRejectModalCancel}
+      />
     </div>
   );
 };
