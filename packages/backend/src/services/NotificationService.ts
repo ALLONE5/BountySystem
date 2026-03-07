@@ -6,6 +6,8 @@ import {
   NotificationType,
 } from '../models/Notification.js';
 import { NotificationPushService } from './NotificationPushService.js';
+import { logger } from '../config/logger.js';
+import { NotificationCache, CacheEvict } from '../utils/decorators/cache.js';
 
 export class NotificationService {
   private pushService: NotificationPushService;
@@ -175,6 +177,8 @@ export class NotificationService {
   /**
    * Get unread notification count for a user
    */
+  @NotificationCache(30) // 缓存30秒
+
   async getUnreadCount(userId: string): Promise<number> {
     const query = `
       SELECT COUNT(*) as count

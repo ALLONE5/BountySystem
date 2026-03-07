@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { logger } from '../config/logger.js';
+import { RankingCache, CacheEvict } from '../utils/decorators/cache.js';
 import {
   Ranking,
   RankingCreateDTO,
@@ -141,7 +142,7 @@ export class RankingService {
   /**
    * Get rankings for a specific period
    */
-  async getRankings(query: RankingQueryDTO): Promise<UserRankingInfo[]> {
+  async getRankings(query: any): Promise<any[]> {
     const { period, year, month, quarter, userId, limit } = query;
 
     let whereClause = 'WHERE r.period = $1';

@@ -4,6 +4,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
+import { logger } from '../config/logger.js';
 import { CacheService } from '../services/CacheService';
 
 export interface CacheMiddlewareOptions {
@@ -57,7 +58,7 @@ export function cacheMiddleware(options: CacheMiddlewareOptions = {}) {
       res.json = function (data: any) {
         // Cache the response
         CacheService.set(cacheKey, data, { ttl }).catch((error) => {
-          console.error('Error caching response:', error);
+          logger.error('Error caching response:', error);
         });
 
         // Call original json method
@@ -66,7 +67,7 @@ export function cacheMiddleware(options: CacheMiddlewareOptions = {}) {
 
       next();
     } catch (error) {
-      console.error('Cache middleware error:', error);
+      logger.error('Cache middleware error:', error);
       next();
     }
   };
@@ -108,7 +109,7 @@ export function cacheInvalidationMiddleware(patterns: string[]) {
           Promise.all(
             patterns.map((pattern) => CacheService.deletePattern(pattern))
           ).catch((error) => {
-            console.error('Error invalidating cache:', error);
+            logger.error('Error invalidating cache:', error);
           });
         }
 

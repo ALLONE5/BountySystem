@@ -12,7 +12,7 @@ describe('PositionService', () => {
 
   beforeEach(async () => {
     positionService = new PositionService();
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
 
     // Create a test user
     const user = await userService.createUser({
@@ -389,7 +389,7 @@ describe('PositionService - Refactored with Repository and Mapper', () => {
 
     // Create service with dependencies
     positionService = new PositionService(positionRepository, permissionChecker);
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
 
     // Create a test user
     const user = await userService.createUser({

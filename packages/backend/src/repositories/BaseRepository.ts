@@ -91,7 +91,7 @@ export abstract class BaseRepository<T extends { id?: number }> implements IRepo
 
       return this.mapRowToModel(result.rows[0]);
     } catch (error) {
-      console.error(`Error finding ${this.tableName} by id:`, error);
+      logger.error(`Error finding ${this.tableName} by id:`, error);
       throw error;
     } finally {
       if (client) {
@@ -136,7 +136,7 @@ export abstract class BaseRepository<T extends { id?: number }> implements IRepo
       const result = await client.query(query);
       return result.rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error(`Error finding all ${this.tableName}:`, error);
+      logger.error(`Error finding all ${this.tableName}:`, error);
       throw error;
     } finally {
       if (client) {
@@ -180,7 +180,7 @@ export abstract class BaseRepository<T extends { id?: number }> implements IRepo
 
       return this.mapRowToModel(result.rows[0]);
     } catch (error) {
-      console.error(`Error creating ${this.tableName}:`, error);
+      logger.error(`Error creating ${this.tableName}:`, error);
       throw error;
     } finally {
       if (shouldReleaseClient && localClient) {
@@ -241,7 +241,7 @@ export abstract class BaseRepository<T extends { id?: number }> implements IRepo
 
       return this.mapRowToModel(result.rows[0]);
     } catch (error) {
-      console.error(`Error updating ${this.tableName}:`, error);
+      logger.error(`Error updating ${this.tableName}:`, error);
       throw error;
     } finally {
       if (shouldReleaseClient && localClient) {
@@ -277,7 +277,7 @@ export abstract class BaseRepository<T extends { id?: number }> implements IRepo
       const query = `DELETE FROM ${this.tableName} WHERE ${this.getPrimaryKey()} = $1`;
       await localClient.query(query, [id]);
     } catch (error) {
-      console.error(`Error deleting ${this.tableName}:`, error);
+      logger.error(`Error deleting ${this.tableName}:`, error);
       throw error;
     } finally {
       if (shouldReleaseClient && localClient) {
@@ -305,7 +305,7 @@ export abstract class BaseRepository<T extends { id?: number }> implements IRepo
       const result = await localClient.query(query, params);
       return result.rows;
     } catch (error) {
-      console.error(`Error executing query on ${this.tableName}:`, error);
+      logger.error(`Error executing query on ${this.tableName}:`, error);
       throw error;
     } finally {
       if (shouldReleaseClient && localClient) {

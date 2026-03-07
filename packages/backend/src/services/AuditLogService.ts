@@ -413,7 +413,7 @@ export class AuditLogService {
       });
     } catch (error) {
       // Log audit logging errors but don't throw to avoid breaking the main operation
-      console.error('Failed to create audit log:', error);
+      logger.error('Failed to create audit log:', error);
     }
   }
 }

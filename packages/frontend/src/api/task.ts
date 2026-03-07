@@ -1,6 +1,7 @@
 import apiClient from './client';
 import { createApiMethod, createApiMethodWithParams } from './createApiClient';
 import { Task, TaskStats } from '../types';
+import { logger } from '../utils/logger';
 
 export interface TaskQueryParams {
   role?: 'publisher' | 'assignee';
@@ -46,13 +47,13 @@ export const taskApi = {
   // 更新任务进度
   updateProgress: async (taskId: string, progress: number): Promise<Task> => {
     const response = await createApiMethodWithParams<any, string>('put', (id) => `/tasks/${id}/progress`)(taskId, { progress });
-    console.log('[taskApi.updateProgress] Raw response:', response);
+    logger.debug('Task progress update response', { taskId, progress, response });
     // The response might be the task directly, or wrapped in { task, completionPrompt, message }
     if (response.task) {
-      console.log('[taskApi.updateProgress] Returning response.task:', response.task);
+      logger.debug('Returning task from response wrapper', { task: response.task });
       return response.task;
     }
-    console.log('[taskApi.updateProgress] Returning response directly:', response);
+    logger.debug('Returning response directly as task', { response });
     return response;
   },
 

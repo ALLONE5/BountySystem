@@ -42,6 +42,8 @@ export class UserService {
    * Uses UserRepository for data access
    * Requirement 6.1: Use UserRepository for database operations
    */
+  @UserCache(900) // 缓存15分钟
+  @HandleError({ context: 'UserService.findByEmail' })
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findByEmail(email);
   }
@@ -69,6 +71,8 @@ export class UserService {
    * Uses UserRepository for data access
    * Requirement 6.1: Use UserRepository for database operations
    */
+  @UserCache(900) // 缓存15分钟
+  @HandleError({ context: 'UserService.findById' })
   async findById(userId: string): Promise<User | null> {
     return this.userRepository.findById(userId);
   }
@@ -95,6 +99,8 @@ export class UserService {
    * Requirement 6.1: Use UserRepository for database operations
    * Requirement 6.4: Use Mapper classes for data transformations
    */
+  @UserCache(600) // 缓存10分钟
+  @HandleError({ context: 'UserService.getUserWithStats' })
   async getUserWithStats(userId: string): Promise<UserResponse & { stats: any }> {
     const userWithStats = await this.userRepository.findWithStats(userId);
     return {
@@ -128,6 +134,8 @@ export class UserService {
    * Uses UserRepository for data access
    * Requirement 6.1: Use UserRepository for database operations
    */
+  @UserCache(900) // 缓存15分钟
+  @HandleError({ context: 'UserService.findByUsername' })
   async findByUsername(username: string): Promise<User | null> {
     return this.userRepository.findByUsername(username);
   }
@@ -142,7 +150,7 @@ export class UserService {
    */
   @CacheEvict({
     keyGenerator: (requesterId: string, userId: string) => [`user:${userId}`],
-    patterns: (requesterId: string, userId: string) => [`user:${userId}*`]
+    patterns: ['user:*']
   })
   @HandleError({ context: 'UserService.updateUser' })
   async updateUser(requesterId: string, userId: string, updates: UserUpdateDTO): Promise<UserResponse> {

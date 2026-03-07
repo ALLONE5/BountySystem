@@ -7,6 +7,8 @@ export interface User {
   avatarUrl?: string;
   avatarId?: string;
   bounty: number;
+  positions?: Position[];
+  managedPositions?: Position[];
   createdAt: string;
   updatedAt: string;
 }
@@ -133,6 +135,8 @@ export interface TaskGroup {
   name: string;
   description?: string;
   creatorId: string;
+  creatorName?: string;
+  creatorAvatarUrl?: string;
   memberIds?: string[];
   members?: User[];
   createdAt: string;

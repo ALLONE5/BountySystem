@@ -12,7 +12,7 @@ describe('TaskService', () => {
 
   beforeEach(async () => {
     taskService = new TaskService();
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
 
     // Create a test user
     const user = await userService.createUser({
@@ -480,7 +480,7 @@ describe('TaskService', () => {
         publisherId: testUserId,
       });
 
-      await taskService.deleteTask(task.id);
+      await taskService.deleteTask(task.id, testUserId);
 
       const deleted = await taskService.getTask(task.id);
       expect(deleted).toBeNull();
@@ -509,7 +509,7 @@ describe('TaskService', () => {
       let parent = await taskService.getTask(parentTask.id);
       expect(parseFloat(parent?.aggregatedEstimatedHours as any)).toBe(30);
 
-      await taskService.deleteTask(subtask1.id);
+      await taskService.deleteTask(subtask1.id, testUserId);
 
       parent = await taskService.getTask(parentTask.id);
       expect(parseFloat(parent?.aggregatedEstimatedHours as any)).toBe(20);
@@ -1147,7 +1147,7 @@ describe('TaskService', () => {
         });
 
         // Complete and lock the task
-        await taskService.completeTask(task.id);
+        await taskService.completeTask(task.id, testUserId);
 
         await expect(taskService.updateProgress(task.id, 50)).rejects.toThrow(
           'Progress is locked for completed tasks'
@@ -1259,7 +1259,7 @@ describe('TaskService', () => {
         });
 
         // Complete the task
-        await taskService.completeTask(task.id);
+        await taskService.completeTask(task.id, testUserId);
 
         // Verify progress is locked
         const updatedTask = await taskService.getTask(task.id);
@@ -1293,7 +1293,7 @@ describe('TaskService', () => {
         });
 
         await taskService.updateProgress(task.id, 50);
-        await taskService.completeTask(task.id);
+        await taskService.completeTask(task.id, testUserId);
 
         const completedTask = await taskService.getTask(task.id);
         expect(completedTask?.status).toBe(TaskStatus.COMPLETED);

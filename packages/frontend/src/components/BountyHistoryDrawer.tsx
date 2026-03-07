@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { bountyApi, BountyTransactionWithDetails, BountySummary } from '../api/bounty';
 import { TransactionType } from '../types';
 import { formatBounty } from '../utils/formatters';
+import { logger } from '../utils/logger';
 
 const { Text } = Typography;
 
@@ -102,7 +103,7 @@ export const BountyHistoryDrawer: React.FC<BountyHistoryDrawerProps> = ({
         loading: false,
       }));
     } catch (error: any) {
-      console.error('Failed to fetch transaction history:', error);
+      logger.error('Failed to fetch transaction history:', error);
       setState(prev => ({
         ...prev,
         loading: false,

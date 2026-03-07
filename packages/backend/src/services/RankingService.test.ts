@@ -25,7 +25,7 @@ describe('RankingService', () => {
     });
 
     rankingService = new RankingService(pool);
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
     taskService = new TaskService();
 
     // Create test users

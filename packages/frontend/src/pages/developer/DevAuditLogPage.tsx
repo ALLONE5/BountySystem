@@ -12,6 +12,7 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { auditLogApi, AuditLog, AuditLogFilters } from '../../api/auditLog';
 import './DevAuditLogPage.css';
+import { logger } from '../../utils/logger';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -56,7 +57,7 @@ export const DevAuditLogPage: React.FC = () => {
         total: data.pagination.total,
       }));
     } catch (error: any) {
-      console.error('Failed to load audit logs:', error);
+      logger.error('Failed to load audit logs:', error);
       message.error('加载审计日志失败');
       
       // 如果是权限问题，显示友好提示
@@ -74,7 +75,7 @@ export const DevAuditLogPage: React.FC = () => {
       setSelectedLog(detailedLog);
       setDetailsVisible(true);
     } catch (error: any) {
-      console.error('Failed to load log details:', error);
+      logger.error('Failed to load log details:', error);
       message.error('加载日志详情失败');
     }
   };
@@ -96,7 +97,7 @@ export const DevAuditLogPage: React.FC = () => {
       
       message.success('审计日志导出成功');
     } catch (error: any) {
-      console.error('Failed to export logs:', error);
+      logger.error('Failed to export logs:', error);
       if (error.response?.status === 403) {
         message.warning('当前用户暂无导出权限');
       } else {

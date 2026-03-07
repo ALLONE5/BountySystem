@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Form, Select, Button, Space, Typography } from 'antd';
 import { GlobalOutlined } from '@ant-design/icons';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { logger } from '../../utils/logger';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -55,7 +56,7 @@ export const TimezoneSettings: React.FC<TimezoneSettingsProps> = ({ onSuccess })
       
       onSuccess?.();
     } catch (error) {
-      console.error('Failed to update timezone settings:', error);
+      logger.error('Failed to update timezone settings:', error);
     } finally {
       setLoading(false);
     }

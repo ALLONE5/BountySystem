@@ -140,7 +140,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
       const result = await conn.query(query, [data.name, id]);
       return this.mapRowToModel(result.rows[0]);
     } catch (error) {
-      console.error('Error updating group:', error);
+      logger.error('Error updating group:', error);
       throw error;
     }
   }
@@ -166,7 +166,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
       // Delete group
       await conn.query('DELETE FROM task_groups WHERE id = $1', [id]);
     } catch (error) {
-      console.error('Error deleting group:', error);
+      logger.error('Error deleting group:', error);
       throw error;
     }
   }
@@ -188,7 +188,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
       const result = await pool.query(query, [creatorId]);
       return result.rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding groups by creator:', error);
+      logger.error('Error finding groups by creator:', error);
       throw error;
     }
   }
@@ -211,7 +211,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
       const result = await pool.query(query, [userId]);
       return result.rows.map(row => this.mapRowToModel(row));
     } catch (error) {
-      console.error('Error finding groups by member:', error);
+      logger.error('Error finding groups by member:', error);
       throw error;
     }
   }
@@ -236,7 +236,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
         members
       };
     } catch (error) {
-      console.error('Error finding group with members:', error);
+      logger.error('Error finding group with members:', error);
       throw error;
     }
   }
@@ -277,7 +277,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
         joinedAt: row.joined_at
       };
     } catch (error) {
-      console.error('Error adding member to group:', error);
+      logger.error('Error adding member to group:', error);
       throw error;
     }
   }
@@ -305,7 +305,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
       const query = 'DELETE FROM group_members WHERE group_id = $1 AND user_id = $2';
       await pool.query(query, [groupId, userId]);
     } catch (error) {
-      console.error('Error removing member from group:', error);
+      logger.error('Error removing member from group:', error);
       throw error;
     }
   }
@@ -328,7 +328,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
       const result = await pool.query(query, [groupId, userId]);
       return result.rows[0].is_member;
     } catch (error) {
-      console.error('Error checking group membership:', error);
+      logger.error('Error checking group membership:', error);
       throw error;
     }
   }
@@ -369,7 +369,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
         avatarId: row.avatar_id
       }));
     } catch (error) {
-      console.error('Error getting group members:', error);
+      logger.error('Error getting group members:', error);
       throw error;
     }
   }

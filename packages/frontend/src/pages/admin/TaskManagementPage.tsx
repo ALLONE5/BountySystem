@@ -90,8 +90,8 @@ export const TaskManagementPage: React.FC = () => {
         name: data.name as string,
         description: data.description as string,
         tags: data.tags as string[],
-        plannedStartDate: data.plannedStartDate as Date,
-        plannedEndDate: data.plannedEndDate as Date,
+        plannedStartDate: data.plannedStartDate ? new Date(data.plannedStartDate) : undefined,
+        plannedEndDate: data.plannedEndDate ? new Date(data.plannedEndDate) : undefined,
         estimatedHours: data.estimatedHours as number,
         complexity: data.complexity as number,
         priority: data.priority as number,
@@ -226,7 +226,7 @@ export const TaskManagementPage: React.FC = () => {
       [TaskStatus.IN_PROGRESS]: { color: 'processing', text: '进行中' },
       [TaskStatus.COMPLETED]: { color: 'success', text: '已完成' },
     };
-    const config = statusMap[status];
+    const config = statusMap[status as keyof typeof statusMap] || { color: "default", text: status };
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
@@ -392,6 +392,8 @@ export const TaskManagementPage: React.FC = () => {
         open={userDrawer.visible}
         onClose={userDrawer.close}
         currentUser={currentUser}
+        onEdit={() => {}}
+        onDelete={() => {}}
       />
 
       {/* 添加协作者 */}

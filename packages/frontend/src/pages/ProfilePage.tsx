@@ -11,6 +11,7 @@ import { avatarApi, Avatar as AvatarType } from '../api/avatar';
 import { positionApi } from '../api/position';
 import { userApi } from '../api/user';
 import { Position } from '../types';
+import { logger } from '../utils/logger';
 
 const { Title, Text } = Typography;
 
@@ -62,7 +63,7 @@ export const ProfilePage: React.FC = () => {
       } catch (error: any) {
         // User has no avatar - this is normal, don't show error
         if (error.response?.status !== 404) {
-          console.error('Failed to load user avatar:', error);
+          logger.error('Failed to load user avatar:', error);
         }
         setCurrentAvatar(null);
       }

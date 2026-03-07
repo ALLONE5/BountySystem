@@ -23,6 +23,7 @@ import { CrudFormModal } from '../../components/common/CrudFormModal';
 import { useCrudOperations } from '../../hooks/useCrudOperations';
 import { useModalState } from '../../hooks/useModalState';
 import { formRules } from '../../utils/formRules';
+import { logger } from '../../utils/logger';
 
 const { Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -95,7 +96,7 @@ export const BountyAlgorithmPage: React.FC = () => {
       const data = await bountyApi.getCurrentAlgorithm();
       setCurrentAlgorithm(normalizeAlgorithm(data));
     } catch (error: any) {
-      console.error('Failed to load current algorithm:', error);
+      logger.error('Failed to load current algorithm:', error);
     }
   };
 

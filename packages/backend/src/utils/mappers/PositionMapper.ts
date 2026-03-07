@@ -1,4 +1,5 @@
-import type { Position, PositionApplication, ApplicationStatus } from '../../models/Position.js';
+import type { Position, PositionApplication } from '../../models/Position.js';
+import { ApplicationStatus } from '../../models/Position.js';
 import { UserMapper } from './UserMapper.js';
 
 /**

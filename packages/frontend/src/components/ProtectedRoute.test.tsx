@@ -10,16 +10,18 @@ describe('ProtectedRoute Authentication', () => {
 
   it('should store and retrieve auth token', () => {
     const mockUser = {
-      id: '1',
-      username: 'testuser',
-      email: 'test@example.com',
-      avatarId: 'avatar1',
-      role: UserRole.USER,
-      positions: [],
-      balance: 0,
-      createdAt: new Date(),
-      lastLogin: new Date(),
-    };
+    id: 'test-user-id',
+    username: 'testuser',
+    email: 'test@example.com',
+    avatarId: 'avatar-1',
+    role: UserRole.USER,
+    positions: [],
+    balance: 100,
+    bounty: 0,
+    createdAt: new Date(),
+    lastLogin: new Date(),
+    updatedAt: new Date()
+  };
 
     const mockToken = 'test-jwt-token';
 

@@ -5,6 +5,7 @@ import { taskApi } from '../api/task';
 import { userApi } from '../api/user';
 import { useAuthStore } from '../store/authStore';
 import { Task, UserRole, User } from '../types';
+import { logger } from '../utils/logger';
 
 export interface Assistant {
   id: string;
@@ -64,7 +65,7 @@ export const TaskAssistants: React.FC<TaskAssistantsProps> = ({ taskId, task }) 
         const users = await userApi.searchUsers(value);
         setUserOptions(users);
       } catch (error) {
-        console.error('Failed to search users', error);
+        logger.error('Failed to search users', error);
       } finally {
         setSearching(false);
       }

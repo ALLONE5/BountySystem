@@ -17,7 +17,7 @@ describe('TaskReviewService', () => {
 
   beforeEach(async () => {
     service = new TaskReviewService();
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
     taskService = new TaskService();
 
     // Create test user

@@ -22,7 +22,7 @@ describe('SchedulerService', () => {
   beforeEach(async () => {
     schedulerService = new SchedulerService();
     taskService = new TaskService();
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
     dependencyService = new DependencyService();
 
     // Create test users with unique identifiers

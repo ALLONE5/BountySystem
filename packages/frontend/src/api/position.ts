@@ -1,6 +1,9 @@
 import { createExtendedApi, createApiMethod, createApiMethodWithParams } from './createApiClient';
 import { Position, PositionApplication } from '../types';
 
+// 重新导出类型以供其他模块使用
+export type { Position, PositionApplication };
+
 // 使用工厂函数创建API客户端
 const baseCrudApi = createExtendedApi<Position>({
   basePath: '/positions',

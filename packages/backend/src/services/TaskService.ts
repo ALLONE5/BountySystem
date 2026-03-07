@@ -19,6 +19,8 @@ import { CacheService } from './CacheService.js';
 import { performanceMonitor } from '../utils/PerformanceMonitor.js';
 import { Validator } from '../utils/Validator.js';
 import { OwnershipValidator } from '../utils/OwnershipValidator.js';
+import { HandleError } from '../utils/decorators/handleError.js';
+import { Cache, CacheEvict, TaskCache } from '../utils/decorators/cache.js';
 import { logger } from '../config/logger.js';
 
 export class TaskService {
@@ -124,6 +126,10 @@ export class TaskService {
    * Validates hierarchy depth (max 3 levels: 0, 1, 2)
    * Automatically marks leaf nodes as executable
    */
+  @CacheEvict({
+    patterns: ['available_tasks:*', 'visible_tasks:*', 'task_stats:*']
+  })
+  @HandleError({ context: 'TaskService.createTask' })
   async createTask(taskData: TaskCreateDTO): Promise<Task> {
     const {
       name,
@@ -403,6 +409,8 @@ export class TaskService {
   /**
    * Get task by ID
    */
+  @TaskCache(300) // 缓存5分钟
+  @HandleError({ context: 'TaskService.getTask' })
   async getTask(taskId: string): Promise<Task | null> {
     return this.taskRepository.findByIdWithRelations(taskId);
   }
@@ -423,6 +431,11 @@ export class TaskService {
    * Update task
    * Records actual start/end times based on status changes
    */
+  @CacheEvict({
+    keyGenerator: (taskId: string) => [`task:${taskId}`, `visible_tasks:*`, `task_stats:*`],
+    patterns: ['task:*', 'available_tasks:*']
+  })
+  @HandleError({ context: 'TaskService.updateTask' })
   async updateTask(taskId: string, updates: TaskUpdateDTO): Promise<Task> {
     const task = await this.getTask(taskId);
     if (!task) {
@@ -776,6 +789,8 @@ export class TaskService {
   /**
    * Get subtasks of a task
    */
+  @TaskCache(180) // 缓存3分钟
+  @HandleError({ context: 'TaskService.getSubtasks' })
   async getSubtasks(parentId: string): Promise<Task[]> {
     return this.taskRepository.findSubtasks(parentId);
   }
@@ -1229,6 +1244,11 @@ export class TaskService {
    * - Dependency resolution is async for tasks without dependencies
    * - Ranking updates are async (fire-and-forget)
    */
+  @CacheEvict({
+    keyGenerator: (taskId: string) => [`task:${taskId}`],
+    patterns: ['available_tasks:*', 'visible_tasks:*', 'task_stats:*']
+  })
+  @HandleError({ context: 'TaskService.completeTask' })
   async completeTask(taskId: string, userId: string): Promise<string[]> {
     const task = await this.getTask(taskId);
     if (!task) {
@@ -1482,6 +1502,12 @@ export class TaskService {
    * - POSITION_ONLY: visible only to users with matching position
    * - PRIVATE: visible only to publisher and assignee
    */
+  @Cache({ 
+    ttl: 120, // 缓存2分钟
+    prefix: 'visible_tasks',
+    keyGenerator: (userId: string, userRole?: string) => `visible_tasks:${userId}:${userRole || 'hunter'}`
+  })
+  @HandleError({ context: 'TaskService.getVisibleTasks' })
   async getVisibleTasks(userId: string, userRole?: string): Promise<Task[]> {
     const query = `
       SELECT DISTINCT
@@ -2172,6 +2198,12 @@ export class TaskService {
    * Get task statistics for a user
    * Returns aggregated statistics for published and assigned tasks
    */
+  @Cache({ 
+    ttl: 600, // 缓存10分钟
+    prefix: 'task_stats',
+    keyGenerator: (userId: string) => `task_stats:${userId}`
+  })
+  @HandleError({ context: 'TaskService.getTaskStats' })
   async getTaskStats(userId: string): Promise<{
     publishedTotal: number;
     publishedNotStarted: number;

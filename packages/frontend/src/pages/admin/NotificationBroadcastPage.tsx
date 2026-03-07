@@ -15,6 +15,7 @@ import { SendOutlined } from '@ant-design/icons';
 import { broadcastNotification } from '../../api/notification';
 import { positionApi } from '../../api/position';
 import { userApi } from '../../api/user';
+import { logger } from '../../utils/logger';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -37,7 +38,7 @@ export const NotificationBroadcastPage: React.FC = () => {
       const data = await positionApi.getAllPositions();
       setPositions(data);
     } catch (error) {
-      console.error('Failed to load positions:', error);
+      logger.error('Failed to load positions:', error);
     }
   };
 
@@ -52,7 +53,7 @@ export const NotificationBroadcastPage: React.FC = () => {
       const results = await userApi.searchUsers(keyword);
       setUsers(results);
     } catch (error) {
-      console.error('Failed to search users:', error);
+      logger.error('Failed to search users:', error);
     } finally {
       setSearchingUsers(false);
     }

@@ -17,7 +17,7 @@ describe('DependencyService', () => {
   beforeEach(async () => {
     dependencyService = new DependencyService();
     taskService = new TaskService();
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
 
     // Create a test user
     const user = await userService.createUser({

@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { logger } from './logger';
 
 /**
  * Get user's preferred timezone from localStorage
@@ -43,7 +44,7 @@ export const getTimezoneDisplayName = (timezone: string): string => {
 export const initializeUserSettings = () => {
   const timezone = getUserTimezone();
   
-  console.log('User settings initialized:', {
+  logger.info('User settings initialized', {
     timezone: timezone
   });
 };

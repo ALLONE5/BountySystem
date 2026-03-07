@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../store/authStore';
 import { Notification } from '../types';
+import { logger } from '../utils/logger';
 
 interface UseWebSocketOptions {
   onNotification?: (notification: Notification) => void;
@@ -41,7 +42,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Handle connection
     socket.on('connect', () => {
-      console.log('WebSocket connected successfully');
+      logger.info('WebSocket connected successfully');
       setIsConnected(true);
       setError(null);
       
@@ -56,9 +57,9 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
     // Handle authentication response
     socket.on('authenticated', (data: { success: boolean; userId?: string; error?: string }) => {
       if (data.success) {
-        console.log('WebSocket authenticated for user:', data.userId);
+        logger.info('WebSocket authenticated for user:', data.userId);
       } else {
-        console.error('WebSocket authentication failed:', data.error);
+        logger.error('WebSocket authentication failed:', data.error);
         setError(new Error(data.error || 'Authentication failed'));
         if (optionsRef.current.onError) {
           optionsRef.current.onError(new Error(data.error || 'Authentication failed'));
@@ -68,7 +69,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Handle notifications
     socket.on('notification', (notification: Notification) => {
-      console.log('Received notification:', notification);
+      logger.info('Received notification:', notification);
       if (optionsRef.current.onNotification) {
         optionsRef.current.onNotification(notification);
       }
@@ -76,7 +77,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Handle disconnection
     socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected (this is normal when backend is not running):', reason);
+      logger.info('WebSocket disconnected (this is normal when backend is not running):', reason);
       setIsConnected(false);
       if (optionsRef.current.onDisconnect) {
         optionsRef.current.onDisconnect();
@@ -85,7 +86,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Handle errors
     socket.on('connect_error', (err) => {
-      console.log('WebSocket connection error (this is normal in development):', err.message);
+      logger.info('WebSocket connection error (this is normal in development):', err.message);
       setError(err);
       if (optionsRef.current.onError) {
         optionsRef.current.onError(err);
@@ -94,7 +95,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
     // Cleanup on unmount
     return () => {
-      console.log('Cleaning up WebSocket connection');
+      logger.info('Cleaning up WebSocket connection');
       socket.disconnect();
       socketRef.current = null;
     };

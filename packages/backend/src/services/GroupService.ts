@@ -9,7 +9,8 @@ import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { GroupMapper } from '../utils/mappers/GroupMapper.js';
 import { Validator } from '../utils/Validator.js';
 import { OwnershipValidator } from '../utils/OwnershipValidator.js';
-
+import { Cache, CacheEvict } from '../utils/decorators/cache.js';
+import { logger } from '../config/logger.js';
 import { UserResponse } from '../models/User.js';
 import { Task } from '../models/Task.js';
 
@@ -158,6 +159,8 @@ export class GroupService {
   /**
    * Get all members of a task group
    */
+  @Cache({ ttl: 180, prefix: 'group_members', keyGenerator: (groupId: string) => `group_members:${groupId}` })
+
   async getGroupMembers(groupId: string): Promise<any[]> {
     const members = await this.groupRepository.getGroupMembers(groupId);
     return GroupMapper.mapMembersToDTOList(members);

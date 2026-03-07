@@ -5,7 +5,7 @@
 
 import type { Pool } from 'pg';
 import { logger } from '../config/logger.js';
-import type { QueueName, QueueJob } from '../services/QueueService';
+import { QueueName, QueueJob } from '../services/QueueService';
 import { QueueService } from '../services/QueueService';
 import { NotificationService } from '../services/NotificationService';
 import { RankingService } from '../services/RankingService';

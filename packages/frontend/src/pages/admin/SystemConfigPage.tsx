@@ -20,6 +20,7 @@ import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined, BgColors
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { systemConfigApi, SystemConfig, SystemConfigUpdate, UploadedLogo } from '../../api/systemConfig';
 import { useSystemConfig } from '../../contexts/SystemConfigContext';
+import { logger } from '../../utils/logger';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -45,7 +46,7 @@ export const SystemConfigPage: React.FC = () => {
       setConfig(data);
       form.setFieldsValue(data);
     } catch (error: any) {
-      console.error('Failed to load system config:', error);
+      logger.error('Failed to load system config:', error);
       message.error('加载系统配置失败');
     } finally {
       setLoading(false);
@@ -57,7 +58,7 @@ export const SystemConfigPage: React.FC = () => {
       const data = await systemConfigApi.getLogos();
       setLogos(data);
     } catch (error: any) {
-      console.error('Failed to load logos:', error);
+      logger.error('Failed to load logos:', error);
     }
   };
 
@@ -72,7 +73,7 @@ export const SystemConfigPage: React.FC = () => {
       
       message.success('系统配置保存成功');
     } catch (error: any) {
-      console.error('Failed to save system config:', error);
+      logger.error('Failed to save system config:', error);
       message.error('保存系统配置失败');
     } finally {
       setLoading(false);
@@ -88,7 +89,7 @@ export const SystemConfigPage: React.FC = () => {
       loadLogos(); // Refresh logos list
       return false; // Prevent default upload behavior
     } catch (error: any) {
-      console.error('Failed to upload logo:', error);
+      logger.error('Failed to upload logo:', error);
       message.error('Logo上传失败');
       return false;
     } finally {
@@ -108,7 +109,7 @@ export const SystemConfigPage: React.FC = () => {
         form.setFieldValue('logoUrl', '');
       }
     } catch (error: any) {
-      console.error('Failed to delete logo:', error);
+      logger.error('Failed to delete logo:', error);
       message.error('Logo删除失败');
     }
   };
@@ -187,7 +188,7 @@ export const SystemConfigPage: React.FC = () => {
                               src={logo.url.startsWith('http') ? logo.url : `http://localhost:3000${logo.url}`}
                               style={{ height: 80, objectFit: 'contain', padding: 8 }}
                               onError={(e) => {
-                                console.error('Logo failed to load:', logo.url);
+                                logger.error('Logo failed to load:', logo.url);
                                 e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMiAyMCAyNCAyMiAyNCAyNEMyNCAyNiAyMiAyOCAyMCAyOEMxOCAyOCAxNiAyNiAxNiAyNEMxNiAyMiAxOCAyMCAyMCAyMFoiIGZpbGw9IiNEOUQ5RDkiLz4KPC9zdmc+';
                               }}
                             />

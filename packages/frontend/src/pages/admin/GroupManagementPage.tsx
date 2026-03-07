@@ -21,6 +21,7 @@ import { TaskGroup } from '../../types';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { TableCard } from '../../components/common/TableCard';
 import { UserChip } from '../../components/common/UserChip';
+import { logger } from '../../utils/logger';
 
 const { Search } = Input;
 
@@ -39,17 +40,17 @@ export const GroupManagementPage: React.FC = () => {
   const loadGroups = async () => {
     try {
       setLoading(true);
-      console.log('Fetching groups...');
+      logger.info('Fetching groups...');
       const data = await adminApi.getGroups();
-      console.log('Groups data:', data);
+      logger.info('Groups data:', data);
       if (data && data.groups) {
         setGroups(data.groups);
       } else {
-        console.warn('No groups found in response:', data);
+        logger.warn('No groups found in response:', data);
         setGroups([]);
       }
     } catch (error) {
-      console.error('Error loading groups:', error);
+      logger.error('Error loading groups:', error);
       message.error('加载组群列表失败');
     } finally {
       setLoading(false);

@@ -14,6 +14,7 @@ import { useAuthStore } from '../store/authStore';
 import { groupApi } from '../api/group';
 import { userApi } from '../api/user';
 import { taskApi } from '../api/task';
+import { logger } from '../utils/logger';
 
 const { Title, Text } = Typography;
 
@@ -30,7 +31,7 @@ export const GroupsPage: React.FC = () => {
   const [createTaskModalVisible, setCreateTaskModalVisible] = useState(false);
   const [createTaskLoading, setCreateTaskLoading] = useState(false);
   const [taskDetailDrawerVisible, setTaskDetailDrawerVisible] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTask] = useState<Task | null>(null); // 移除未使用的setter
   const { handleAsyncError } = useErrorHandler();
 
   // 数据获取
@@ -50,9 +51,9 @@ export const GroupsPage: React.FC = () => {
           groupApi.getGroupTasks(group.id),
         ]);
 
-        console.log('[GroupsPage] Loaded group tasks:', tasks.length, 'tasks');
-        console.log('[GroupsPage] Tasks with parentId:', tasks.filter(t => t.parentId).length);
-        console.log('[GroupsPage] Top-level tasks:', tasks.filter(t => !t.parentId).length);
+        logger.info('[GroupsPage] Loaded group tasks:', tasks.length + ' tasks');
+        logger.info('[GroupsPage] Tasks with parentId:', tasks.filter(t => t.parentId).length);
+        logger.info('[GroupsPage] Top-level tasks:', tasks.filter(t => !t.parentId).length);
 
         setSelectedGroup({ ...details, members });
         setGroupTasks(tasks);
@@ -104,7 +105,7 @@ export const GroupsPage: React.FC = () => {
         avatarUrl: u.avatarUrl
       }));
     } catch (error) {
-      console.error('Failed to search users:', error);
+      logger.error('Failed to search users:', error);
       return [];
     }
   };
@@ -201,20 +202,6 @@ export const GroupsPage: React.FC = () => {
       const tasks = await groupApi.getGroupTasks(selectedGroup.id);
       setGroupTasks(tasks);
     }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTaskClick = async (taskId: string) => {
-    await handleAsyncError(
-      async () => {
-        const task = await taskApi.getTask(taskId);
-        setSelectedTask(task);
-        setTaskDetailDrawerVisible(true);
-      },
-      'GroupsPage.taskClick',
-      undefined,
-      '加载任务详情失败'
-    );
   };
 
   return (

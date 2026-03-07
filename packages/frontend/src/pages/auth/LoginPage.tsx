@@ -4,6 +4,7 @@ import { UserOutlined, LockOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSystemConfig } from '../../contexts/SystemConfigContext';
+import { logger } from '../../utils/logger';
 
 const { Title, Text } = Typography;
 
@@ -80,7 +81,7 @@ export const LoginPage: React.FC = () => {
               alt="Logo" 
               style={{ height: '48px', width: 'auto', marginBottom: '16px' }}
               onError={(e) => {
-                console.error('Logo failed to load:', systemConfig.logoUrl);
+                logger.error('Logo failed to load:', systemConfig.logoUrl);
                 e.currentTarget.style.display = 'none';
               }}
             />

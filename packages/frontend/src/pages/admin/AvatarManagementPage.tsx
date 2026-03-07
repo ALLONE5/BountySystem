@@ -16,6 +16,7 @@ import { CrudFormModal } from '../../components/common/CrudFormModal';
 import { useCrudOperations } from '../../hooks/useCrudOperations';
 import { useModalState } from '../../hooks/useModalState';
 import { formRules, commonRuleSets } from '../../utils/formRules';
+import { logger } from '../../utils/logger';
 
 export const AvatarManagementPage: React.FC = () => {
   const [form] = Form.useForm();
@@ -96,8 +97,8 @@ export const AvatarManagementPage: React.FC = () => {
             mask: '预览',
           }}
           onError={(e) => {
-            console.error('图片加载失败:', url);
-            console.error('错误详情:', e);
+            logger.error('图片加载失败:', url);
+            logger.error('错误详情:', e);
           }}
         />
       ),

@@ -12,10 +12,12 @@ import {
 import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
-import { adminApi, PositionApplication } from '../../api/admin';
+import { adminApi } from '../../api/admin';
+import type { PositionApplication } from '../../types';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { TableCard } from '../../components/common/TableCard';
 import { StatusTag } from '../../components/common/StatusTag';
+import { logger } from '../../utils/logger';
 const { TextArea } = Input;
 
 export const ApplicationReviewPage: React.FC = () => {
@@ -37,7 +39,7 @@ export const ApplicationReviewPage: React.FC = () => {
       setApplications(data.applications);
     } catch (error: any) {
       message.error(error.response?.data?.message || '加载申请列表失败');
-      console.error('Failed to load applications:', error);
+      logger.error('Failed to load applications:', error);
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ export const ApplicationReviewPage: React.FC = () => {
       setReviewModalVisible(true);
     } catch (error: any) {
       message.error(error.response?.data?.message || '加载申请详情失败');
-      console.error('Failed to load application details:', error);
+      logger.error('Failed to load application details:', error);
     }
   };
 
@@ -95,7 +97,7 @@ export const ApplicationReviewPage: React.FC = () => {
       window.dispatchEvent(new Event('application-reviewed'));
     } catch (error: any) {
       message.error(error.response?.data?.message || '批准申请失败');
-      console.error('Failed to approve application:', error);
+      logger.error('Failed to approve application:', error);
     }
   };
 
@@ -120,7 +122,7 @@ export const ApplicationReviewPage: React.FC = () => {
       window.dispatchEvent(new Event('application-reviewed'));
     } catch (error: any) {
       message.error(error.response?.data?.message || '拒绝申请失败');
-      console.error('Failed to reject application:', error);
+      logger.error('Failed to reject application:', error);
     }
   };
 

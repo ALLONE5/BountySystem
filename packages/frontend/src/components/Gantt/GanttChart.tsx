@@ -53,9 +53,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({
     
     Object.entries(grouped).forEach(([projectName, projectTasks]) => {
       // Calculate project summary dates (earliest start, latest end)
-      const projectStart = new Date(Math.min(...projectTasks.map(t => new Date(t.plannedStartDate).getTime())));
-      const projectEnd = new Date(Math.max(...projectTasks.map(t => new Date(t.plannedEndDate).getTime())));
-      const avgProgress = Math.round(projectTasks.reduce((sum, t) => sum + t.progress, 0) / projectTasks.length);
+      const projectStart = new Date(Math.min(...projectTasks.map(t => new Date(t.plannedStartDate || new Date()).getTime())));
+      const projectEnd = new Date(Math.max(...projectTasks.map(t => new Date(t.plannedEndDate || new Date()).getTime())));
+      const avgProgress = Math.round(projectTasks.reduce((sum, t) => sum + (t.progress || 0), 0) / projectTasks.length);
       
       // Add project as a summary task
       items.push({ 
@@ -135,8 +135,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
     // Calculate time scale from filtered tasks
     const allTasks = filteredTasks;
-    const minDate = d3.min(allTasks, d => new Date(d.plannedStartDate)) || new Date();
-    const maxDate = d3.max(allTasks, d => new Date(d.plannedEndDate)) || new Date();
+    const minDate = d3.min(allTasks, d => new Date(d.plannedStartDate || new Date())) || new Date();
+    const maxDate = d3.max(allTasks, d => new Date(d.plannedEndDate || new Date())) || new Date();
     
     const xScale = d3.scaleTime()
       .domain([minDate, maxDate])

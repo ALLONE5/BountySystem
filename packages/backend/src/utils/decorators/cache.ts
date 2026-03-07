@@ -68,7 +68,7 @@ export const Cache = (options: CacheOptions = {}) => {
         return result;
       } catch (error) {
         logger.error('Cache operation failed, executing method directly', {
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           method: `${target.constructor.name}.${propertyKey}`,
           key: cacheKey
         });
@@ -125,7 +125,7 @@ export const CacheEvict = (options: {
         });
       } catch (error) {
         logger.error('Cache eviction failed', {
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           method: `${target.constructor.name}.${propertyKey}`
         });
       }

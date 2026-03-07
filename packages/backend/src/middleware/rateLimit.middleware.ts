@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { logger } from '../config/logger.js';
 import { redisClient } from '../config/redis.js';
 import { AppError } from '../utils/errors.js';
 
@@ -96,7 +97,7 @@ export const createRateLimiter = (options: RateLimitOptions) => {
       }
 
       // If Redis is down, allow the request but log the error
-      console.error('Rate limiter error:', error);
+      logger.error('Rate limiter error:', error);
       next();
     }
   };
@@ -218,7 +219,7 @@ export const createSlidingWindowRateLimiter = (options: RateLimitOptions) => {
         return next(error);
       }
 
-      console.error('Sliding window rate limiter error:', error);
+      logger.error('Sliding window rate limiter error:', error);
       next();
     }
   };

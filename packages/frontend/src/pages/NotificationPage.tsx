@@ -15,6 +15,7 @@ import { useErrorHandler } from '../hooks/useErrorHandler';
 import { NotificationTabs } from '../components/Notifications/NotificationTabs';
 import { NotificationList } from '../components/Notifications/NotificationList';
 import { RejectTaskModal } from '../components/Notifications/RejectTaskModal';
+import { logger } from '../utils/logger';
 
 const { Title, Text } = Typography;
 
@@ -42,7 +43,7 @@ export const NotificationPage: React.FC = () => {
       setNotifications(data);
     } catch (error) {
       message.error('加载通知失败');
-      console.error('Error loading notifications:', error);
+      logger.error('Error loading notifications:', error);
     } finally {
       setLoading(false);
     }
@@ -216,7 +217,7 @@ export const NotificationPage: React.FC = () => {
 
       <RejectTaskModal
         visible={rejectModalVisible}
-        notification={selectedNotification}
+        task={selectedNotification?.relatedTask || null}
         rejectReason={rejectReason}
         loading={actionLoading === selectedNotification?.id}
         onReasonChange={setRejectReason}

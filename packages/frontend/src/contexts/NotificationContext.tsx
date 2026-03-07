@@ -5,6 +5,7 @@ import { Notification } from '../types';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { getUnreadCount } from '../api/notification';
 import { useAuth } from './AuthContext';
+import { logger } from '../utils/logger';
 
 interface NotificationContextType {
   unreadCount: number;
@@ -36,7 +37,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const count = await getUnreadCount();
       setUnreadCount(count);
     } catch (error) {
-      console.error('Error loading unread count:', error);
+      logger.error('Error loading unread count:', error);
       // Don't throw error, just log it
     }
   }, [isAuthenticated]);
@@ -63,7 +64,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Handle real-time notifications
   const handleNotification = useCallback(
     (notification: Notification) => {
-      console.log('New notification received:', notification);
+      logger.info('New notification received:', notification);
       
       // Increment unread count
       setUnreadCount((prev) => prev + 1);
@@ -88,14 +89,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useWebSocket({
     onNotification: handleNotification,
     onConnect: () => {
-      console.log('WebSocket connected - notifications enabled');
+      logger.info('WebSocket connected - notifications enabled');
       // Don't refresh count here - it's already loaded in useEffect
     },
     onDisconnect: () => {
-      console.log('WebSocket disconnected - notifications disabled (this is normal in development)');
+      logger.info('WebSocket disconnected - notifications disabled (this is normal in development)');
     },
     onError: (error) => {
-      console.log('WebSocket error (this is normal when backend is not running):', error.message);
+      logger.info('WebSocket error (this is normal when backend is not running):', error.message);
     },
   });
 

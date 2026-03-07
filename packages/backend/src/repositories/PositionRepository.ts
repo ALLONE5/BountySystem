@@ -1,14 +1,19 @@
 import { PoolClient } from 'pg';
-import { BaseRepository, IRepository } from './BaseRepository.js';
+import { ImprovedBaseRepository } from './ImprovedBaseRepository.js';
 import { Position, PositionApplication, ApplicationStatus } from '../models/Position.js';
 import { Validator } from '../utils/Validator.js';
-import { logger } from '../utils/Logger.js';
+import { logger } from '../config/logger.js';
 
 /**
  * Position Repository Interface
  * Extends base repository with position-specific queries
  */
-export interface IPositionRepository extends IRepository<Position> {
+export interface IPositionRepository {
+  findById(id: string): Promise<Position | null>;
+  findAll(filters?: Record<string, any>): Promise<Position[]>;
+  create(data: Partial<Position>): Promise<Position>;
+  update(id: string, data: Partial<Position>): Promise<Position | null>;
+  delete(id: string): Promise<boolean>;
   findByTask(taskId: string): Promise<Position[]>;
   findByUser(userId: string): Promise<Position[]>;
   findWithApplications(positionId: string): Promise<Position & { applications: PositionApplication[] }>;
@@ -19,24 +24,8 @@ export interface IPositionRepository extends IRepository<Position> {
  * Position Repository
  * Handles all database operations for positions
  */
-export class PositionRepository extends BaseRepository<Position> implements IPositionRepository {
-  constructor() {
-    super('positions');
-  }
-
-  /**
-   * Get all column names for the positions table
-   */
-  protected getColumns(): string[] {
-    return [
-      'id',
-      'name',
-      'description',
-      'required_skills',
-      'created_at',
-      'updated_at'
-    ];
-  }
+export class PositionRepository extends ImprovedBaseRepository<Position> implements IPositionRepository {
+  protected tableName = 'positions';
 
   /**
    * Transform database row to Position model
@@ -53,94 +42,56 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
   }
 
   /**
-   * Validate position data before create/update
-   */
-  protected validateData(data: Partial<Position>, isUpdate: boolean = false): void {
-    if (!isUpdate) {
-      // Required fields for creation
-      Validator.required(data.name, 'name');
-    }
-
-    // Validate name length if provided
-    if (data.name) {
-      Validator.minLength(data.name, 1, 'name');
-      Validator.maxLength(data.name, 255, 'name');
-    }
-
-    // Validate required_skills is an array if provided
-    if (data.requiredSkills !== undefined && !Array.isArray(data.requiredSkills)) {
-      throw new Error('requiredSkills must be an array');
-    }
-  }
-
-  /**
    * Find positions by task
-   * Note: In the current schema, tasks reference positions via position_id,
-   * not the other way around. This method finds the position referenced by a task.
    */
   async findByTask(taskId: string): Promise<Position[]> {
-    try {
+    return this.executeQuery('findByTask', async () => {
       Validator.required(taskId, 'taskId');
 
       const query = `
-        SELECT DISTINCT ${this.getColumns().map(col => `p.${col}`).join(', ')}
+        SELECT DISTINCT p.*
         FROM ${this.tableName} p
         INNER JOIN tasks t ON t.position_id = p.id
         WHERE t.id = $1
       `;
 
-      const rows = await this.executeQuery<any>(query, [taskId]);
-      return rows.map(row => this.mapRowToModel(row));
-    } catch (error) {
-      logger.error('Error finding positions by task', { 
-        error: error instanceof Error ? error.message : String(error),
-        taskId 
-      });
-      throw error;
-    }
+      const result = await this.pool.query(query, [taskId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { taskId });
   }
 
   /**
    * Find positions by user
-   * Returns positions that a user has been granted
    */
   async findByUser(userId: string): Promise<Position[]> {
-    try {
+    return this.executeQuery('findByUser', async () => {
       Validator.required(userId, 'userId');
 
       const query = `
-        SELECT ${this.getColumns().map(col => `p.${col}`).join(', ')}
+        SELECT p.*
         FROM ${this.tableName} p
         INNER JOIN user_positions up ON up.position_id = p.id
         WHERE up.user_id = $1
         ORDER BY up.granted_at DESC
       `;
 
-      const rows = await this.executeQuery<any>(query, [userId]);
-      return rows.map(row => this.mapRowToModel(row));
-    } catch (error) {
-      logger.error('Error finding positions by user', { 
-        error: error instanceof Error ? error.message : String(error),
-        userId 
-      });
-      throw error;
-    }
+      const result = await this.pool.query(query, [userId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { userId });
   }
 
   /**
    * Find position with applications
    */
   async findWithApplications(positionId: string): Promise<Position & { applications: PositionApplication[] }> {
-    try {
+    return this.executeQuery('findWithApplications', async () => {
       Validator.required(positionId, 'positionId');
 
       const position = await this.findById(positionId);
-      
       if (!position) {
         throw new Error('Position not found');
       }
 
-      // Fetch applications for this position
       const applicationsQuery = `
         SELECT 
           pa.id,
@@ -158,9 +109,8 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
         ORDER BY pa.created_at DESC
       `;
 
-      const applicationRows = await this.executeQuery<any>(applicationsQuery, [positionId]);
-      
-      const applications: PositionApplication[] = applicationRows.map(row => ({
+      const result = await this.pool.query(applicationsQuery, [positionId]);
+      const applications: PositionApplication[] = result.rows.map(row => ({
         id: row.id,
         userId: row.user_id,
         positionId: row.position_id,
@@ -173,26 +123,15 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
         updatedAt: row.updated_at
       }));
 
-      return {
-        ...position,
-        applications
-      };
-    } catch (error) {
-      logger.error('Error finding position with applications', { 
-        error: error instanceof Error ? error.message : String(error),
-        positionId 
-      });
-      throw error;
-    }
+      return { ...position, applications };
+    }, { positionId });
   }
 
   /**
    * Update position ranking
-   * Note: The current schema doesn't have a ranking field on positions.
-   * This is a placeholder that does nothing until the schema is extended.
    */
   async updateRanking(positionId: string, ranking: number): Promise<Position> {
-    try {
+    return this.executeQuery('updateRanking', async () => {
       Validator.required(positionId, 'positionId');
       Validator.required(ranking, 'ranking');
 
@@ -200,25 +139,14 @@ export class PositionRepository extends BaseRepository<Position> implements IPos
         throw new Error('Ranking must be non-negative');
       }
 
-      // Verify position exists
       const position = await this.findById(positionId);
-      
       if (!position) {
         throw new Error('Position not found');
       }
 
       // Current schema doesn't have a ranking field on positions
       logger.warn('updateRanking: positions table does not have a ranking column', { positionId });
-      
-      // Return the position unchanged as a placeholder
       return position;
-    } catch (error) {
-      logger.error('Error updating position ranking', { 
-        error: error instanceof Error ? error.message : String(error),
-        positionId,
-        ranking 
-      });
-      throw error;
-    }
+    }, { positionId, ranking });
   }
 }

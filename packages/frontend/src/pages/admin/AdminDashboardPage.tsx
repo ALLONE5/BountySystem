@@ -18,6 +18,7 @@ import {
   ActivityLog 
 } from '../../api/systemMonitor';
 import './AdminDashboardPage.css';
+import { logger } from '../../utils/logger';
 
 export const AdminDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -60,7 +61,7 @@ export const AdminDashboardPage: React.FC = () => {
       
       setLoading(false);
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      logger.error('Failed to load dashboard data:', error);
       message.error('加载仪表盘数据失败');
       setLoading(false);
     }

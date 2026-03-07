@@ -10,7 +10,8 @@ import { EditOutlined, UserOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { adminApi, UpdateUserRequest } from '../../api/admin';
-import { positionApi, Position } from '../../api/position';
+import { positionApi } from '../../api/position';
+import type { Position } from '../../types';
 import { User, UserRole } from '../../types';
 import { useAuthStore } from '../../store/authStore';
 import { UserDetailsDrawer } from '../../components/admin/UserDetailsDrawer';
@@ -23,6 +24,7 @@ import { CrudFormModal } from '../../components/common/CrudFormModal';
 import { useCrudOperations } from '../../hooks/useCrudOperations';
 import { useModalState } from '../../hooks/useModalState';
 import { formRules } from '../../utils/formRules';
+import { logger } from '../../utils/logger';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -88,7 +90,7 @@ export const UserManagementPage: React.FC = () => {
       const data = await positionApi.getAllPositions();
       setPositions(data);
     } catch (error: any) {
-      console.error('Failed to load positions:', error);
+      logger.error('Failed to load positions:', error);
     }
   };
 

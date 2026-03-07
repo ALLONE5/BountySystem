@@ -6,7 +6,8 @@ import {
   Input,
 } from 'antd';
 import { PlusOutlined, EditOutlined } from '@ant-design/icons';
-import { positionApi, Position } from '../../api/position';
+import { positionApi } from '../../api/position';
+import type { Position } from '../../api/position';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { TableCard } from '../../components/common/TableCard';
 import { TagList } from '../../components/common/TagList';

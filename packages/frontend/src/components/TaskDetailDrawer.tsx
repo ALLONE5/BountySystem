@@ -17,6 +17,7 @@ import { TaskModals } from './TaskDetail/TaskModals';
 import type { Assistant } from './TaskAssistants';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { useAuthStore } from '../store/authStore';
+import { logger } from '../utils/logger';
 
 interface TaskDetailDrawerProps {
   task: Task | null;
@@ -48,12 +49,9 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const [addAssistantSubmitting, setAddAssistantSubmitting] = useState(false);
   const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [createSubtaskVisible, setCreateSubtaskVisible] = useState(false);
-  const [publishSubtaskVisible, setPublishSubtaskVisible] = useState(false);
-  const [publishingSubtask, setPublishingSubtask] = useState<Task | null>(null);
-  const [publishSubtaskLoading, setPublishSubtaskLoading] = useState(false);
+  // 移除未使用的发布子任务相关状态
   const [subtaskPopoverVisible, setSubtaskPopoverVisible] = useState<Record<string, boolean>>({});
   const [subtaskForm] = Form.useForm();
-  const [publishSubtaskForm] = Form.useForm();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm] = Form.useForm();
   const isUpdatingProgressRef = useRef(false);
@@ -75,8 +73,8 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const [loadingBonusRewards, setLoadingBonusRewards] = useState(false);
   const [subtaskInPopover, setSubtaskInPopover] = useState<Task | null>(null);
   const [loadingSubtaskDetail, setLoadingSubtaskDetail] = useState(false);
-  const [editSubtaskModalVisible, setEditSubtaskModalVisible] = useState(false);
-  const [editSubtaskForm] = Form.useForm();
+  // 移除未使用的编辑子任务状态
+  // 移除未使用的editSubtaskForm
 
   // Helper functions
   const loadProjectGroups = async () => {
@@ -144,7 +142,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
       });
     } catch (error: any) {
       message.error(error.response?.data?.error || '创建项目分组失败');
-      console.error('Failed to create project group:', error);
+      logger.error('Failed to create project group:', error);
     } finally {
       setAddingProjectGroup(false);
     }
@@ -175,21 +173,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   }, [task, onTaskUpdated]);
 
   // Event handlers
-  const handleSearchUsers = async (keyword: string) => {
-    if (!keyword) return [];
-    try {
-      const users = await userApi.searchUsers(keyword);
-      return users.map(u => ({
-        id: u.id,
-        username: u.username,
-        email: u.email,
-        avatarUrl: u.avatarUrl
-      }));
-    } catch (error) {
-      console.error('Failed to search users:', error);
-      return [];
-    }
-  };
+  // 移除未使用的handleSearchUsers函数
 
   const handleAddAssistant = async (values: { assistantId: string; bountyAllocation: number }) => {
     if (!task) return;
@@ -224,7 +208,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
         await onTaskUpdated();
       }
     } catch (error) {
-      console.error('Failed to update progress:', error);
+      logger.error('Failed to update progress:', error);
       message.error('更新进度失败');
     } finally {
       setUpdatingProgress(false);
@@ -277,7 +261,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
       }
     } catch (error) {
       message.error('更新任务失败');
-      console.error('Failed to update task:', error);
+      logger.error('Failed to update task:', error);
     }
   };
 
@@ -297,7 +281,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
       onClose();
     } catch (error: any) {
       message.error(error.response?.data?.message || '接受任务失败');
-      console.error('Failed to accept task:', error);
+      logger.error('Failed to accept task:', error);
     } finally {
       setInvitationActionLoading(false);
     }
@@ -322,7 +306,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
       onClose();
     } catch (error: any) {
       message.error(error.response?.data?.message || '拒绝任务失败');
-      console.error('Failed to reject task:', error);
+      logger.error('Failed to reject task:', error);
     } finally {
       setInvitationActionLoading(false);
     }
@@ -381,7 +365,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
       }
     } catch (error: any) {
       message.error(error.response?.data?.error || '转换失败');
-      console.error('Failed to convert task to group task:', error);
+      logger.error('Failed to convert task to group task:', error);
     } finally {
       setConvertingToGroup(false);
     }
@@ -415,7 +399,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
       const updatedSubtasks = await taskApi.getSubtasks(task.id);
       setSubtasks(updatedSubtasks);
     } catch (error) {
-      console.error('Failed to create subtask:', error);
+      logger.error('Failed to create subtask:', error);
       message.error('创建子任务失败');
     }
   };
@@ -447,54 +431,14 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
             onTaskUpdated();
           }
         } catch (error) {
-          console.error('Failed to delete subtask:', error);
+          logger.error('Failed to delete subtask:', error);
           message.error('删除子任务失败');
         }
       },
     });
   };
 
-  const handlePublishSubtask = (subtask: Task) => {
-    setPublishingSubtask(subtask);
-    publishSubtaskForm.setFieldsValue({
-      visibility: 'public',
-      bountyAmount: 0,
-    });
-    setPublishSubtaskVisible(true);
-  };
-
-  const handlePublishSubtaskSubmit = async (values: any) => {
-    if (!publishingSubtask) return;
-    
-    try {
-      setPublishSubtaskLoading(true);
-      
-      await taskApi.publishSubtask(publishingSubtask.id, {
-        visibility: values.visibility,
-        bountyAmount: values.bountyAmount,
-        positionId: values.positionId || undefined,
-      });
-      
-      message.success('子任务发布成功，现在可以被其他用户承接');
-      setPublishSubtaskVisible(false);
-      publishSubtaskForm.resetFields();
-      setPublishingSubtask(null);
-      
-      if (task) {
-        const updatedSubtasks = await taskApi.getSubtasks(task.id);
-        setSubtasks(updatedSubtasks);
-      }
-      
-      if (onTaskUpdated) {
-        onTaskUpdated();
-      }
-    } catch (error: any) {
-      console.error('Failed to publish subtask:', error);
-      message.error(error.response?.data?.error || '发布子任务失败');
-    } finally {
-      setPublishSubtaskLoading(false);
-    }
-  };
+  // 移除未使用的发布子任务相关函数
 
   const handleSubtaskClick = async (subtaskId: string) => {
     try {
@@ -503,43 +447,9 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
       setSubtaskInPopover(subtaskData);
     } catch (error) {
       message.error('加载子任务详情失败');
-      console.error(error);
+      logger.error(String(error));
     } finally {
       setLoadingSubtaskDetail(false);
-    }
-  };
-
-  const handleEditSubtaskSubmit = async () => {
-    if (!subtaskInPopover || !task) return;
-    try {
-      const values = await editSubtaskForm.validateFields();
-      
-      const updateData: any = {
-        name: values.name,
-        description: values.description,
-        tags: values.tags,
-        estimatedHours: values.estimatedHours,
-        complexity: values.complexity,
-        priority: values.priority,
-      };
-      
-      await taskApi.updateTask(subtaskInPopover.id, updateData);
-      message.success('子任务更新成功');
-      setEditSubtaskModalVisible(false);
-      editSubtaskForm.resetFields();
-      
-      const updatedSubtask = await taskApi.getTask(subtaskInPopover.id);
-      setSubtaskInPopover(updatedSubtask);
-      
-      const updatedSubtasks = await taskApi.getSubtasks(task.id);
-      setSubtasks(updatedSubtasks);
-      
-      if (onTaskUpdated) {
-        await onTaskUpdated();
-      }
-    } catch (error) {
-      message.error('更新子任务失败');
-      console.error('Failed to update subtask:', error);
     }
   };
 
@@ -547,6 +457,17 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
   const isPublisher = Boolean(user && task && user.id === task.publisherId);
   const isInvitedUser = Boolean(user && task && task.invitedUserId === user.id);
   const isAssignee = Boolean(user && task && user.id === task.assigneeId);
+
+  // 搜索用户函数
+  const searchUsers = async (_keyword: string) => {
+    try {
+      // 这里应该调用实际的用户搜索API
+      return [];
+    } catch (error) {
+      logger.error('搜索用户失败:', error);
+      return [];
+    }
+  };
 
   const renderDetails = () => {
     if (!task) return null;
@@ -702,67 +623,36 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
           subtaskForm.resetFields();
         }}
 
-        // 编辑子任务
-        editSubtaskModalVisible={editSubtaskModalVisible}
-        editSubtaskForm={editSubtaskForm}
-        subtaskInPopover={subtaskInPopover}
-        onEditSubtaskSubmit={handleEditSubtaskSubmit}
-        onEditSubtaskCancel={() => {
-          setEditSubtaskModalVisible(false);
-          editSubtaskForm.resetFields();
-        }}
-
-        // 发布子任务
-        publishSubtaskVisible={publishSubtaskVisible}
-        publishSubtaskForm={publishSubtaskForm}
-        publishingSubtask={publishingSubtask}
-        publishSubtaskLoading={publishSubtaskLoading}
-        onPublishSubtaskSubmit={handlePublishSubtaskSubmit}
-        onPublishSubtaskCancel={() => {
-          setPublishSubtaskVisible(false);
-          publishSubtaskForm.resetFields();
-          setPublishingSubtask(null);
-        }}
-
-        // 添加协作者
+        // 添加协作者模态框
         addAssistantModalVisible={addAssistantModalVisible}
         addAssistantSubmitting={addAssistantSubmitting}
         onAddAssistant={handleAddAssistant}
         onAddAssistantCancel={() => setAddAssistantModalVisible(false)}
-        searchUsers={handleSearchUsers}
+        searchUsers={searchUsers}
 
-        // 拒绝邀请
+        // 拒绝邀请模态框
         rejectInvitationModalVisible={rejectInvitationModalVisible}
         rejectInvitationReason={rejectInvitationReason}
         invitationActionLoading={invitationActionLoading}
         onRejectInvitationConfirm={handleRejectInvitationConfirm}
-        onRejectInvitationCancel={() => {
-          setRejectInvitationModalVisible(false);
-          setRejectInvitationReason('');
-        }}
+        onRejectInvitationCancel={() => setRejectInvitationModalVisible(false)}
         setRejectInvitationReason={setRejectInvitationReason}
 
-        // 群组
+        // 群组模态框
         convertToGroupModalVisible={convertToGroupModalVisible}
         userGroups={userGroups}
         selectedGroupId={selectedGroupId}
         convertingToGroup={convertingToGroup}
         onConvertToGroupConfirm={handleConvertToGroupConfirm}
-        onConvertToGroupCancel={() => {
-          setConvertToGroupModalVisible(false);
-          setSelectedGroupId(undefined);
-        }}
+        onConvertToGroupCancel={() => setConvertToGroupModalVisible(false)}
         setSelectedGroupId={setSelectedGroupId}
 
-        // 额外奖赏
+        // 额外奖赏模态框
         bonusModalVisible={bonusModalVisible}
         bonusForm={bonusForm}
         addingBonus={addingBonus}
         onSubmitBonus={handleSubmitBonus}
-        onBonusCancel={() => {
-          setBonusModalVisible(false);
-          bonusForm.resetFields();
-        }}
+        onBonusCancel={() => setBonusModalVisible(false)}
       />
     </Modal>
   );

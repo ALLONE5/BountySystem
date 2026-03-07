@@ -20,6 +20,7 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { auditLogApi, AuditLog, AuditLogFilters } from '../../api/auditLog';
+import { logger } from '../../utils/logger';
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -63,7 +64,7 @@ export const AuditLogPage: React.FC = () => {
         total: data.pagination.total,
       }));
     } catch (error: any) {
-      console.error('Failed to load audit logs:', error);
+      logger.error('Failed to load audit logs:', error);
       message.error('加载审计日志失败');
     } finally {
       setLoading(false);
@@ -76,7 +77,7 @@ export const AuditLogPage: React.FC = () => {
       setSelectedLog(detailedLog);
       setDetailsVisible(true);
     } catch (error: any) {
-      console.error('Failed to load log details:', error);
+      logger.error('Failed to load log details:', error);
       message.error('加载日志详情失败');
     }
   };
@@ -98,7 +99,7 @@ export const AuditLogPage: React.FC = () => {
       
       message.success('审计日志导出成功');
     } catch (error: any) {
-      console.error('Failed to export logs:', error);
+      logger.error('Failed to export logs:', error);
       message.error('导出审计日志失败');
     } finally {
       setLoading(false);
@@ -111,7 +112,7 @@ export const AuditLogPage: React.FC = () => {
       message.success(`已删除 ${result.deletedCount} 条旧日志记录`);
       loadAuditLogs(); // Refresh the list
     } catch (error: any) {
-      console.error('Failed to cleanup logs:', error);
+      logger.error('Failed to cleanup logs:', error);
       message.error('清理旧日志失败');
     }
   };

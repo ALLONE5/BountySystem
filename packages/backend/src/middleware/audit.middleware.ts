@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { logger } from '../config/logger.js';
 import { AuditLogService } from '../services/AuditLogService.js';
 import { AuditAction, AuditResource } from '../models/AuditLog.js';
 
@@ -75,7 +76,7 @@ export const auditMiddleware = (options: AuditOptions) => {
           success
         );
       } catch (error) {
-        console.error('Audit logging failed:', error);
+        logger.error('Audit logging failed:', error);
       }
     });
   };
@@ -214,7 +215,7 @@ export const auditLogin = async (
       success
     );
   } catch (error) {
-    console.error('Login audit logging failed:', error);
+    logger.error('Login audit logging failed:', error);
   }
 };
 
@@ -240,6 +241,6 @@ export const auditLogout = async (
       true
     );
   } catch (error) {
-    console.error('Logout audit logging failed:', error);
+    logger.error('Logout audit logging failed:', error);
   }
 };

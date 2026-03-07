@@ -389,6 +389,77 @@ body {
   background: var(--bg-tertiary) !important;
 }
 
+/* 表格固定列样式增强 */
+.ant-table-cell-fix-left,
+.ant-table-cell-fix-right {
+  position: sticky !important;
+  z-index: 2 !important;
+}
+
+.ant-table-thead > tr > th.ant-table-cell-fix-left,
+.ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background: var(--bg-secondary) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.ant-table-tbody > tr > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr > td.ant-table-cell-fix-right {
+  background: var(--bg-elevated) !important;
+  backdrop-filter: blur(15px) !important;
+}
+
+.ant-table-tbody > tr:hover > td.ant-table-cell-fix-left,
+.ant-table-tbody > tr:hover > td.ant-table-cell-fix-right {
+  background: var(--primary-50) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+[data-theme="dark"] .ant-table-tbody > tr:hover > td.ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-tbody > tr:hover > td.ant-table-cell-fix-right {
+  background: var(--bg-tertiary) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* 修复表格固定列显示问题 */
+.ant-table-fixed-right {
+  z-index: 2 !important;
+}
+
+.ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background: var(--bg-secondary) !important;
+  z-index: 3 !important;
+  position: sticky !important;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ant-table-tbody > tr > td.ant-table-cell-fix-right {
+  background: var(--bg-elevated) !important;
+  z-index: 2 !important;
+  position: sticky !important;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1) !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.ant-table-tbody > tr:hover > td.ant-table-cell-fix-right {
+  background: var(--primary-50) !important;
+}
+
+/* 确保固定列在暗色主题下也有正确的背景 */
+[data-theme="dark"] .ant-table-thead > tr > th.ant-table-cell-fix-right {
+  background: var(--bg-secondary) !important;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .ant-table-tbody > tr > td.ant-table-cell-fix-right {
+  background: var(--bg-elevated) !important;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .ant-table-tbody > tr:hover > td.ant-table-cell-fix-right {
+  background: var(--bg-tertiary) !important;
+}
+
 /* Tabs */
 .ant-tabs-tab {
   color: var(--text-secondary) !important;

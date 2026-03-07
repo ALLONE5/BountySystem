@@ -35,9 +35,18 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
   const { themeMode, toggleTheme } = useTheme();
   const { config: systemConfig } = useSystemConfig();
   const { unreadCount } = useNotificationContext();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    // 从localStorage读取折叠状态，默认为false
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
   const [isMobile, setIsMobile] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+
+  // 保存折叠状态到localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(collapsed));
+  }, [collapsed]);
 
   // 响应式检测
   useEffect(() => {
@@ -54,15 +63,22 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 初始化展开的菜单
+  // 初始化展开的菜单 - 只在导航栏展开时自动展开子菜单
   useEffect(() => {
     const path = location.pathname;
-    const newExpanded = [];
-    if (path.startsWith('/admin/')) newExpanded.push('admin');
-    if (path.startsWith('/dev/')) newExpanded.push('developer');
-    if (path.startsWith('/my/')) newExpanded.push('workspace');
-    setExpandedMenus(newExpanded);
-  }, [location.pathname]);
+    
+    if (collapsed) {
+      // 折叠状态下清空展开的菜单
+      setExpandedMenus([]);
+    } else {
+      // 展开状态下根据路径自动展开相应菜单
+      const newExpanded = [];
+      if (path.startsWith('/admin/')) newExpanded.push('admin');
+      if (path.startsWith('/dev/')) newExpanded.push('developer');
+      if (path.startsWith('/my/')) newExpanded.push('workspace');
+      setExpandedMenus(newExpanded);
+    }
+  }, [location.pathname, collapsed]);
 
   // 切换菜单展开状态
   const toggleMenuExpansion = (key: string) => {
@@ -73,6 +89,82 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
         ? prev.filter(k => k !== key)
         : [...prev, key]
     );
+  };
+
+  // 创建悬浮菜单的通用函数
+  const createHoverMenu = (e: React.MouseEvent<HTMLDivElement>, menuItems: Array<{path: string, label: string}>, className: string) => {
+    // 清理所有已存在的悬浮菜单，防止重复创建
+    const existingDropdowns = document.querySelectorAll('.custom-dropdown-menu');
+    existingDropdowns.forEach(dropdown => {
+      if (dropdown.parentNode) {
+        dropdown.parentNode.removeChild(dropdown);
+      }
+    });
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dropdown = document.createElement('div');
+    dropdown.className = `custom-dropdown-menu ${className}`;
+    dropdown.innerHTML = menuItems.map(item => 
+      `<div class="custom-dropdown-item" data-path="${item.path}">${item.label}</div>`
+    ).join('');
+    
+    dropdown.style.position = 'fixed';
+    dropdown.style.left = `${rect.right + 8}px`;
+    dropdown.style.top = `${rect.top + rect.height / 2}px`;
+    dropdown.style.transform = 'translateY(-50%)';
+    dropdown.style.zIndex = '1070';
+    document.body.appendChild(dropdown);
+    
+    // 添加点击事件监听器
+    dropdown.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const path = target.getAttribute('data-path');
+      if (path) {
+        navigate(path);
+        // 移除下拉菜单
+        if (dropdown.parentNode) {
+          dropdown.parentNode.removeChild(dropdown);
+        }
+      }
+    });
+    
+    let isHoveringTrigger = true;
+    let isHoveringDropdown = false;
+    let removeTimeout: NodeJS.Timeout | null = null;
+    
+    const removeDropdown = () => {
+      if (removeTimeout) {
+        clearTimeout(removeTimeout);
+      }
+      removeTimeout = setTimeout(() => {
+        if (!isHoveringTrigger && !isHoveringDropdown && dropdown.parentNode) {
+          dropdown.parentNode.removeChild(dropdown);
+        }
+      }, 150);
+    };
+    
+    // 设置触发器的鼠标离开事件
+    const triggerElement = e.currentTarget;
+    const originalOnMouseLeave = triggerElement.onmouseleave;
+    triggerElement.onmouseleave = () => {
+      isHoveringTrigger = false;
+      removeDropdown();
+      // 恢复原始事件处理器
+      triggerElement.onmouseleave = originalOnMouseLeave;
+    };
+    
+    dropdown.onmouseenter = () => {
+      isHoveringDropdown = true;
+      if (removeTimeout) {
+        clearTimeout(removeTimeout);
+        removeTimeout = null;
+      }
+    };
+    
+    dropdown.onmouseleave = () => {
+      isHoveringDropdown = false;
+      removeDropdown();
+    };
   };
 
   // 主导航菜单项 - 根据用户角色动态显示
@@ -271,47 +363,11 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                       {collapsed ? (
                         <div 
                           className="custom-dropdown-trigger"
-                          onMouseEnter={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const dropdown = document.createElement('div');
-                            dropdown.className = 'custom-dropdown-menu workspace-dropdown';
-                            dropdown.innerHTML = `
-                              <div class="custom-dropdown-item" onclick="window.location.href='/my/bounties'">我的悬赏</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/my/tasks'">我的任务</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/my/groups'">我的组群</div>
-                            `;
-                            dropdown.style.position = 'fixed';
-                            dropdown.style.left = `${rect.right + 8}px`;
-                            dropdown.style.top = `${rect.top + rect.height / 2}px`;
-                            dropdown.style.transform = 'translateY(-50%)';
-                            dropdown.style.zIndex = '1070';
-                            document.body.appendChild(dropdown);
-                            
-                            let isHoveringTrigger = true;
-                            let isHoveringDropdown = false;
-                            
-                            const removeDropdown = () => {
-                              setTimeout(() => {
-                                if (!isHoveringTrigger && !isHoveringDropdown && dropdown.parentNode) {
-                                  dropdown.parentNode.removeChild(dropdown);
-                                }
-                              }, 100);
-                            };
-                            
-                            e.currentTarget.onmouseleave = () => {
-                              isHoveringTrigger = false;
-                              removeDropdown();
-                            };
-                            
-                            dropdown.onmouseenter = () => {
-                              isHoveringDropdown = true;
-                            };
-                            
-                            dropdown.onmouseleave = () => {
-                              isHoveringDropdown = false;
-                              removeDropdown();
-                            };
-                          }}
+                          onMouseEnter={(e) => createHoverMenu(e, [
+                            { path: '/my/bounties', label: '我的悬赏' },
+                            { path: '/my/tasks', label: '我的任务' },
+                            { path: '/my/groups', label: '我的组群' }
+                          ], 'workspace-dropdown')}
                         >
                           <div className={`menu-item menu-item-expandable ${expandedMenus.includes('workspace') ? 'expanded' : ''}`}>
                             <div className="menu-item-icon">{item.icon}</div>
@@ -363,50 +419,14 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                       {collapsed ? (
                         <div 
                           className="custom-dropdown-trigger"
-                          onMouseEnter={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const dropdown = document.createElement('div');
-                            dropdown.className = 'custom-dropdown-menu admin-dropdown';
-                            dropdown.innerHTML = `
-                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/dashboard'">监控仪表盘</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/users'">用户管理</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/groups'">组群管理</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/tasks'">任务管理</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/approval'">申请审核</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/admin/bounty-algorithm'">赏金算法</div>
-                            `;
-                            dropdown.style.position = 'fixed';
-                            dropdown.style.left = `${rect.right + 8}px`;
-                            dropdown.style.top = `${rect.top + rect.height / 2}px`;
-                            dropdown.style.transform = 'translateY(-50%)';
-                            dropdown.style.zIndex = '1070';
-                            document.body.appendChild(dropdown);
-                            
-                            let isHoveringTrigger = true;
-                            let isHoveringDropdown = false;
-                            
-                            const removeDropdown = () => {
-                              setTimeout(() => {
-                                if (!isHoveringTrigger && !isHoveringDropdown && dropdown.parentNode) {
-                                  dropdown.parentNode.removeChild(dropdown);
-                                }
-                              }, 100);
-                            };
-                            
-                            e.currentTarget.onmouseleave = () => {
-                              isHoveringTrigger = false;
-                              removeDropdown();
-                            };
-                            
-                            dropdown.onmouseenter = () => {
-                              isHoveringDropdown = true;
-                            };
-                            
-                            dropdown.onmouseleave = () => {
-                              isHoveringDropdown = false;
-                              removeDropdown();
-                            };
-                          }}
+                          onMouseEnter={(e) => createHoverMenu(e, [
+                            { path: '/admin/dashboard', label: '监控仪表盘' },
+                            { path: '/admin/users', label: '用户管理' },
+                            { path: '/admin/groups', label: '组群管理' },
+                            { path: '/admin/tasks', label: '任务管理' },
+                            { path: '/admin/approval', label: '申请审核' },
+                            { path: '/admin/bounty-algorithm', label: '赏金算法' }
+                          ], 'admin-dropdown')}
                         >
                           <div className={`menu-item menu-item-expandable ${expandedMenus.includes('admin') ? 'expanded' : ''}`}>
                             <div className="menu-item-icon">{item.icon}</div>
@@ -450,47 +470,11 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                       {collapsed ? (
                         <div 
                           className="custom-dropdown-trigger"
-                          onMouseEnter={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const dropdown = document.createElement('div');
-                            dropdown.className = 'custom-dropdown-menu developer-dropdown';
-                            dropdown.innerHTML = `
-                              <div class="custom-dropdown-item" onclick="window.location.href='/dev/system-config'">系统配置</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/dev/audit-logs'">审计日志</div>
-                              <div class="custom-dropdown-item" onclick="window.location.href='/dev/system-monitor'">系统监控</div>
-                            `;
-                            dropdown.style.position = 'fixed';
-                            dropdown.style.left = `${rect.right + 8}px`;
-                            dropdown.style.top = `${rect.top + rect.height / 2}px`;
-                            dropdown.style.transform = 'translateY(-50%)';
-                            dropdown.style.zIndex = '1070';
-                            document.body.appendChild(dropdown);
-                            
-                            let isHoveringTrigger = true;
-                            let isHoveringDropdown = false;
-                            
-                            const removeDropdown = () => {
-                              setTimeout(() => {
-                                if (!isHoveringTrigger && !isHoveringDropdown && dropdown.parentNode) {
-                                  dropdown.parentNode.removeChild(dropdown);
-                                }
-                              }, 100);
-                            };
-                            
-                            e.currentTarget.onmouseleave = () => {
-                              isHoveringTrigger = false;
-                              removeDropdown();
-                            };
-                            
-                            dropdown.onmouseenter = () => {
-                              isHoveringDropdown = true;
-                            };
-                            
-                            dropdown.onmouseleave = () => {
-                              isHoveringDropdown = false;
-                              removeDropdown();
-                            };
-                          }}
+                          onMouseEnter={(e) => createHoverMenu(e, [
+                            { path: '/dev/system-config', label: '系统配置' },
+                            { path: '/dev/audit-logs', label: '审计日志' },
+                            { path: '/dev/system-monitor', label: '系统监控' }
+                          ], 'developer-dropdown')}
                         >
                           <div className={`menu-item menu-item-expandable ${expandedMenus.includes('developer') ? 'expanded' : ''}`}>
                             <div className="menu-item-icon">{item.icon}</div>

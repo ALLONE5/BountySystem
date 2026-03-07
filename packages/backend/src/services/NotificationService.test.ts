@@ -17,7 +17,7 @@ describe('NotificationService', () => {
 
   beforeEach(async () => {
     notificationService = new NotificationService();
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
     taskService = new TaskService();
 
     // Mock the push service methods to avoid Redis connection issues

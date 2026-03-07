@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+import { logger } from './logger.js';
 import { config } from './env.js';
 
 const redisOptions: any = {
@@ -8,7 +9,7 @@ const redisOptions: any = {
     ...(config.redis.tls && { tls: true }),
     reconnectStrategy: (retries: number) => {
       if (retries > config.redis.maxRetries) {
-        console.error('Redis max retries reached');
+        logger.error('Redis max retries reached');
         return new Error('Redis max retries reached');
       }
       // Exponential backoff: 50ms, 100ms, 200ms, etc.
@@ -25,27 +26,27 @@ export const redisClient = createClient(redisOptions);
 export const redisSubscriber = createClient(redisOptions);
 
 redisClient.on('error', (err) => {
-  console.error('Redis Client Error:', err);
+  logger.error('Redis Client Error:', err);
 });
 
 redisClient.on('connect', () => {
-  console.log('Redis client connected');
+  logger.info('Redis client connected');
 });
 
 redisClient.on('ready', () => {
-  console.log('Redis client ready');
+  logger.info('Redis client ready');
 });
 
 redisSubscriber.on('error', (err) => {
-  console.error('Redis Subscriber Error:', err);
+  logger.error('Redis Subscriber Error:', err);
 });
 
 redisSubscriber.on('connect', () => {
-  console.log('Redis subscriber connected');
+  logger.info('Redis subscriber connected');
 });
 
 redisSubscriber.on('ready', () => {
-  console.log('Redis subscriber ready');
+  logger.info('Redis subscriber ready');
 });
 
 export const connectRedis = async (): Promise<boolean> => {
@@ -54,7 +55,7 @@ export const connectRedis = async (): Promise<boolean> => {
     await redisSubscriber.connect();
     return true;
   } catch (error) {
-    console.error('Redis connection failed:', error);
+    logger.error('Redis connection failed:', error);
     return false;
   }
 };
@@ -63,19 +64,19 @@ export const disconnectRedis = async (): Promise<void> => {
   try {
     await redisClient.quit();
     await redisSubscriber.quit();
-    console.log('Redis clients disconnected');
+    logger.info('Redis clients disconnected');
   } catch (error) {
-    console.error('Redis disconnect error:', error);
+    logger.error('Redis disconnect error:', error);
   }
 };
 
 export const testRedisConnection = async (): Promise<boolean> => {
   try {
     await redisClient.ping();
-    console.log('Redis connection successful');
+    logger.info('Redis connection successful');
     return true;
   } catch (error) {
-    console.error('Redis connection test failed:', error);
+    logger.error('Redis connection test failed:', error);
     return false;
   }
 };

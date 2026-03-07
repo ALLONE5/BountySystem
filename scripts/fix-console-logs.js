@@ -26,6 +26,12 @@ class ConsoleLogFixer {
   }
 
   shouldExcludeFile(filePath) {
+    // 特殊处理：跳过logger.ts文件本身和一些特殊文件
+    if (filePath.includes('logger.ts') || 
+        filePath.includes('statusConfig.ts') || 
+        filePath.includes('vitest.teardown.ts')) {
+      return true;
+    }
     return this.excludePatterns.some(pattern => pattern.test(filePath));
   }
 

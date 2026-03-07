@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { message } from 'antd';
+import { logger } from '../utils/logger';
 
 export interface UseCrudOperationsOptions<T> {
   fetchAll: () => Promise<T[]>;
@@ -76,7 +77,7 @@ export function useCrudOperations<T extends { id: string }>(
       const errorMsg = errorMessages.fetch || error.response?.data?.message || '加载数据失败';
       message.error(errorMsg);
       onError?.('fetch', error);
-      console.error('Failed to fetch data:', error);
+      logger.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
     }
@@ -86,7 +87,7 @@ export function useCrudOperations<T extends { id: string }>(
   // 加载单个数据
   const loadOne = useCallback(async (id: string): Promise<T | null> => {
     if (!fetchOne) {
-      console.warn('fetchOne is not provided');
+      logger.warn('fetchOne is not provided');
       return null;
     }
 
@@ -100,7 +101,7 @@ export function useCrudOperations<T extends { id: string }>(
       const errorMsg = errorMessages.fetch || error.response?.data?.message || '加载数据失败';
       message.error(errorMsg);
       onError?.('fetch', error);
-      console.error('Failed to fetch item:', error);
+      logger.error('Failed to fetch item:', error);
       return null;
     } finally {
       setLoading(false);
@@ -111,7 +112,7 @@ export function useCrudOperations<T extends { id: string }>(
   // 创建数据
   const create = useCallback(async (data: Partial<T>): Promise<T | null> => {
     if (!createFn) {
-      console.warn('create function is not provided');
+      logger.warn('create function is not provided');
       return null;
     }
 
@@ -127,7 +128,7 @@ export function useCrudOperations<T extends { id: string }>(
       const errorMsg = errorMessages.create || error.response?.data?.message || '创建失败';
       message.error(errorMsg);
       onError?.('create', error);
-      console.error('Failed to create item:', error);
+      logger.error('Failed to create item:', error);
       return null;
     } finally {
       setLoading(false);
@@ -138,7 +139,7 @@ export function useCrudOperations<T extends { id: string }>(
   // 更新数据
   const update = useCallback(async (id: string, updateData: Partial<T>): Promise<T | null> => {
     if (!updateFn) {
-      console.warn('update function is not provided');
+      logger.warn('update function is not provided');
       return null;
     }
 
@@ -157,7 +158,7 @@ export function useCrudOperations<T extends { id: string }>(
       const errorMsg = errorMessages.update || error.response?.data?.message || '更新失败';
       message.error(errorMsg);
       onError?.('update', error);
-      console.error('Failed to update item:', error);
+      logger.error('Failed to update item:', error);
       return null;
     } finally {
       setLoading(false);
@@ -168,7 +169,7 @@ export function useCrudOperations<T extends { id: string }>(
   // 删除数据
   const deleteItem = useCallback(async (id: string): Promise<boolean> => {
     if (!deleteFn) {
-      console.warn('delete function is not provided');
+      logger.warn('delete function is not provided');
       return false;
     }
 
@@ -187,7 +188,7 @@ export function useCrudOperations<T extends { id: string }>(
       const errorMsg = errorMessages.delete || error.response?.data?.message || '删除失败';
       message.error(errorMsg);
       onError?.('delete', error);
-      console.error('Failed to delete item:', error);
+      logger.error('Failed to delete item:', error);
       return false;
     } finally {
       setLoading(false);

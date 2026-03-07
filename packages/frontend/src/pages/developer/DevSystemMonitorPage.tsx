@@ -5,6 +5,7 @@ import {
   DatabaseOutlined,
 } from '@ant-design/icons';
 import { systemMonitorApi } from '../../api/systemMonitor';
+import { logger } from '../../utils/logger';
 
 interface SystemMetrics {
   serverStatus: 'healthy' | 'warning' | 'error';
@@ -54,7 +55,7 @@ export const DevSystemMonitorPage: React.FC = () => {
       
       setLoading(false);
     } catch (error) {
-      console.error('Failed to load system metrics:', error);
+      logger.error('Failed to load system metrics:', error);
       message.error('加载系统监控数据失败');
       setLoading(false);
     }

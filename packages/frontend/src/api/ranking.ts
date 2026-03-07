@@ -1,5 +1,6 @@
 import { createApiMethod, createApiMethodWithParams } from './createApiClient';
 import { Ranking } from '../types';
+import { logger } from '../utils/logger';
 
 export interface RankingQueryParams {
   period: 'monthly' | 'quarterly' | 'all_time';
@@ -18,7 +19,7 @@ const getCurrentUserId = (): string | null => {
       return parsed?.state?.user?.id || null;
     }
   } catch (error) {
-    console.warn('Failed to get current user ID:', error);
+    logger.warn('Failed to get current user ID:', error);
   }
   return null;
 };

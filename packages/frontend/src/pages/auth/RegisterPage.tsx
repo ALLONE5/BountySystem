@@ -3,6 +3,7 @@ import { Form, Input, Button, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { logger } from '../../utils/logger';
 
 const { Title, Text } = Typography;
 
@@ -32,7 +33,7 @@ export const RegisterPage: React.FC = () => {
       await register(registerData);
       navigate('/dashboard');
     } catch (error: any) {
-      console.error('Registration error:', error);
+      logger.error('Registration error:', error);
       
       // Handle validation errors with detailed messages
       if (error.response?.data?.code === 'VALIDATION_ERROR' && error.response?.data?.details) {

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Modal, Form, Select, Spin, Button, Avatar, message } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+import { logger } from '../../utils/logger';
 
 export interface UserOption {
   id: string;
@@ -54,7 +55,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
       onCancel();
     } catch (error) {
       // Error handling should be done by parent or here if specific
-      console.error(error);
+      logger.error(String(error));
     }
   };
 

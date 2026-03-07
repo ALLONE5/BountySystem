@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { config } from './config/env.js';
+import { logger } from './config/logger.js';
 import { testConnection } from './config/database.js';
 import { connectRedis, testRedisConnection } from './config/redis.js';
 import authRoutes from './routes/auth.routes.js';
@@ -166,7 +167,7 @@ app.use('/api/bounty-history', createBountyHistoryRouter(pool));
 
 // 404 handler
 app.use((req, res) => {
-  console.log(`404 Not Found: ${req.method} ${req.url}`);
+  logger.warn('Route not found', { method: req.method, url: req.url });
   res.status(404).json({
     code: 'NOT_FOUND',
     message: 'Route not found',
@@ -176,7 +177,7 @@ app.use((req, res) => {
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
+  logger.error('Error:', err);
 
   // Handle AppError instances
   if (err instanceof AppError) {
@@ -214,7 +215,7 @@ const startServer = async () => {
     // Connect to Redis
     const redisConnected = await connectRedis();
     if (!redisConnected) {
-      console.warn('⚠️  Redis connection failed - running without Redis (缓存和速率限制功能将受限)');
+      logger.warn('⚠️  Redis connection failed - running without Redis (缓存和速率限制功能将受限)');
       // 在开发环境中允许继续运行
       if (config.server.nodeEnv === 'production') {
         throw new Error('Failed to connect to Redis');
@@ -226,20 +227,20 @@ const startServer = async () => {
 
     // Initialize WebSocket service
     wsService = new WebSocketService(httpServer);
-    console.log('WebSocket service initialized');
+    logger.info('WebSocket service initialized');
 
     // Start listening
     httpServer.listen(config.server.port, () => {
-      console.log(`Server running on port ${config.server.port}`);
-      console.log(`Environment: ${config.server.nodeEnv}`);
-      console.log('WebSocket server ready');
+      logger.info(`Server running on port ${config.server.port}`);
+      logger.info(`Environment: ${config.server.nodeEnv}`);
+      logger.info('WebSocket server ready');
       
       // Start system metrics collection
       metricsInterval = systemMetricsCollector.startMetricsCollection(30000); // Collect every 30 seconds
-      console.log('System metrics collection started');
+      logger.info('System metrics collection started');
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logger.error('Failed to start server:', error);
     process.exit(1);
   }
 };
@@ -250,7 +251,7 @@ startServer();
 let metricsInterval: NodeJS.Timeout | null = null;
 
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
+  logger.info('SIGTERM received, shutting down gracefully');
   if (metricsInterval) {
     systemMetricsCollector.stopMetricsCollection(metricsInterval);
   }
@@ -258,7 +259,7 @@ process.on('SIGTERM', () => {
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
+  logger.info('SIGINT received, shutting down gracefully');
   if (metricsInterval) {
     systemMetricsCollector.stopMetricsCollection(metricsInterval);
   }
