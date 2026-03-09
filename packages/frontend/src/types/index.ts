@@ -133,7 +133,6 @@ export interface ProjectGroup {
 export interface TaskGroup {
   id: string;
   name: string;
-  description?: string;
   creatorId: string;
   creatorName?: string;
   creatorAvatarUrl?: string;

@@ -16,8 +16,9 @@ export class GroupMapper {
     return {
       id: group.id,
       name: group.name,
-      description: group.description ?? null,
       creatorId: group.creatorId ?? group.creator_id,
+      creatorName: group.creatorName ?? group.creator_name,
+      creatorAvatarUrl: group.creatorAvatarUrl ?? group.creator_avatar_url,
       createdAt: group.createdAt ?? group.created_at,
       updatedAt: group.updatedAt ?? group.updated_at,
     };
@@ -86,7 +87,6 @@ export class GroupMapper {
     return [
       `${alias}.id`,
       `${alias}.name`,
-      `${alias}.description`,
       `${alias}.creator_id as "creatorId"`,
       `${alias}.created_at as "createdAt"`,
       `${alias}.updated_at as "updatedAt"`,

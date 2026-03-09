@@ -37,7 +37,10 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, onViewGroup }) => {
         description={
           <Space direction="vertical" size={4}>
             <Text type="secondary">
-              <UserOutlined /> 成员数: {group.members?.length || group.memberIds?.length || 0}
+              <UserOutlined /> 创建者: {group.creatorName || 'Unknown'}
+            </Text>
+            <Text type="secondary">
+              成员数: {group.members?.length || group.memberIds?.length || 0}
             </Text>
             <Text type="secondary">
               创建时间: {dayjs(group.createdAt).format('YYYY-MM-DD')}

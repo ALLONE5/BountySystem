@@ -438,7 +438,31 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
     });
   };
 
-  // 移除未使用的发布子任务相关函数
+  const handlePublishSubtaskFixed = async (subtask: Task) => {
+    if (!task) return;
+
+    try {
+      // 发布子任务，使用默认设置
+      await taskApi.publishSubtask(subtask.id, {
+        visibility: 'public', // 默认公开
+        bountyAmount: subtask.bountyAmount || 0, // 使用子任务的奖金金额
+        positionId: subtask.positionId || undefined // 使用子任务的职位要求
+      });
+
+      message.success('子任务发布成功');
+
+      // 刷新子任务列表
+      const updatedSubtasks = await taskApi.getSubtasks(task.id);
+      setSubtasks(updatedSubtasks);
+
+      if (onTaskUpdated) {
+        onTaskUpdated();
+      }
+    } catch (error: any) {
+      logger.error('Failed to publish subtask:', error);
+      message.error(error.response?.data?.error || '发布子任务失败');
+    }
+  };
 
   const handleSubtaskClick = async (subtaskId: string) => {
     try {
@@ -528,7 +552,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
         subtasks={subtasks}
         subtaskPopoverVisible={subtaskPopoverVisible}
         onSubtaskClick={handleSubtaskClick}
-        onPublishSubtask={handlePublishSubtask}
+        onPublishSubtask={handlePublishSubtaskFixed}
         onDeleteSubtask={handleDeleteSubtask}
         onCreateSubtask={() => setCreateSubtaskVisible(true)}
         renderSubtaskPopoverContent={renderSubtaskPopoverContent}

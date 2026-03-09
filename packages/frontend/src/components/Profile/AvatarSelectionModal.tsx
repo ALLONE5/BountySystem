@@ -26,7 +26,7 @@ export const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
   const { handleAsyncError } = useErrorHandler();
 
   const isAvatarUnlocked = (avatarId: string) => {
-    return availableAvatars.some((a) => a.id === avatarId);
+    return availableAvatars && availableAvatars.some((a) => a.id === avatarId);
   };
 
   const handleSelectAvatar = async (avatarId: string) => {
@@ -55,7 +55,7 @@ export const AvatarSelectionModal: React.FC<AvatarSelectionModalProps> = ({
         </Text>
       </div>
       <Row gutter={[16, 16]}>
-        {allAvatars.map((avatar) => {
+        {allAvatars && allAvatars.map((avatar) => {
           const unlocked = isAvatarUnlocked(avatar.id);
           return (
             <Col key={avatar.id} xs={12} sm={8} md={6}>

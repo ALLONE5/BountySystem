@@ -1,0 +1,246 @@
+/* 表格固定列核弹级修复 - 最高优先级强制覆盖 */
+
+/* 使用属性选择器和多重类名确保最高特异性 */
+.ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-content[class*="ant-table"] table.ant-table[class*="ant-table"] thead.ant-table-thead[class*="ant-table"] tr[class*="ant-table"] th.ant-table-cell.ant-table-cell-fix-right[class*="ant-table"],
+.ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-right[class*="ant-table"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  border-left: 12px solid #3b82f6 !important;
+  box-shadow: -30px 0 60px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 左固定列 */
+.ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-content[class*="ant-table"] table.ant-table[class*="ant-table"] thead.ant-table-thead[class*="ant-table"] tr[class*="ant-table"] th.ant-table-cell.ant-table-cell-fix-left[class*="ant-table"],
+.ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-left[class*="ant-table"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  border-right: 12px solid #3b82f6 !important;
+  box-shadow: 30px 0 60px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 悬停状态 - 右固定列 */
+.ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr:hover[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-right[class*="ant-table"] {
+  background: #eff6ff !important;
+  background-color: #eff6ff !important;
+  background-image: none !important;
+  border-left: 12px solid #3b82f6 !important;
+  box-shadow: -30px 0 70px rgba(59, 130, 246, 0.9) !important;
+}
+
+/* 悬停状态 - 左固定列 */
+.ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr:hover[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-left[class*="ant-table"] {
+  background: #eff6ff !important;
+  background-color: #eff6ff !important;
+  background-image: none !important;
+  border-right: 12px solid #3b82f6 !important;
+  box-shadow: 30px 0 70px rgba(59, 130, 246, 0.9) !important;
+}
+
+/* 暗色主题 - 右固定列 */
+[data-theme="dark"] .ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-content[class*="ant-table"] table.ant-table[class*="ant-table"] thead.ant-table-thead[class*="ant-table"] tr[class*="ant-table"] th.ant-table-cell.ant-table-cell-fix-right[class*="ant-table"],
+[data-theme="dark"] .ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-right[class*="ant-table"] {
+  background: #0f172a !important;
+  background-color: #0f172a !important;
+  background-image: none !important;
+  border-left: 12px solid #3b82f6 !important;
+  box-shadow: -30px 0 60px rgba(0, 0, 0, 1) !important;
+}
+
+/* 暗色主题 - 左固定列 */
+[data-theme="dark"] .ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-content[class*="ant-table"] table.ant-table[class*="ant-table"] thead.ant-table-thead[class*="ant-table"] tr[class*="ant-table"] th.ant-table-cell.ant-table-cell-fix-left[class*="ant-table"],
+[data-theme="dark"] .ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-left[class*="ant-table"] {
+  background: #0f172a !important;
+  background-color: #0f172a !important;
+  background-image: none !important;
+  border-right: 12px solid #3b82f6 !important;
+  box-shadow: 30px 0 60px rgba(0, 0, 0, 1) !important;
+}
+
+/* 暗色主题悬停状态 - 右固定列 */
+[data-theme="dark"] .ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr:hover[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-right[class*="ant-table"] {
+  background: #334155 !important;
+  background-color: #334155 !important;
+  background-image: none !important;
+  border-left: 12px solid #3b82f6 !important;
+  box-shadow: -30px 0 70px rgba(59, 130, 246, 0.9) !important;
+}
+
+/* 暗色主题悬停状态 - 左固定列 */
+[data-theme="dark"] .ant-table-wrapper[class*="ant-table"] .ant-table-container[class*="ant-table"] .ant-table-body[class*="ant-table"] table.ant-table[class*="ant-table"] tbody.ant-table-tbody[class*="ant-table"] tr:hover[class*="ant-table"] td.ant-table-cell.ant-table-cell-fix-left[class*="ant-table"] {
+  background: #334155 !important;
+  background-color: #334155 !important;
+  background-image: none !important;
+  border-right: 12px solid #3b82f6 !important;
+  box-shadow: 30px 0 70px rgba(59, 130, 246, 0.9) !important;
+}
+
+/* 通用固定列样式 - 最高优先级 */
+.ant-table-cell-fix-right[style],
+.ant-table-cell-fix-left[style] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-right[style],
+[data-theme="dark"] .ant-table-cell-fix-left[style] {
+  background: #0f172a !important;
+  background-color: #0f172a !important;
+  background-image: none !important;
+}
+
+/* 强制覆盖任何内联样式 */
+.ant-table-cell-fix-right {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.ant-table-cell-fix-left {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-right,
+[data-theme="dark"] .ant-table-cell-fix-left {
+  background: #0f172a !important;
+  background-color: #0f172a !important;
+  background-image: none !important;
+}
+
+/* 针对任务表格的特殊处理 */
+.task-table .ant-table-cell-fix-right,
+.task-table .ant-table-cell-fix-left {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  border-left: 15px solid #3b82f6 !important;
+  box-shadow: -35px 0 80px rgba(0, 0, 0, 0.9) !important;
+}
+
+[data-theme="dark"] .task-table .ant-table-cell-fix-right,
+[data-theme="dark"] .task-table .ant-table-cell-fix-left {
+  background: #0f172a !important;
+  background-color: #0f172a !important;
+  background-image: none !important;
+  border-left: 15px solid #3b82f6 !important;
+  box-shadow: -35px 0 80px rgba(0, 0, 0, 1) !important;
+}
+
+/* 增强类样式 */
+.fixed-column-enhanced .ant-table-cell-fix-right,
+.fixed-column-enhanced .ant-table-cell-fix-left {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  border-left: 20px solid #3b82f6 !important;
+  box-shadow: -40px 0 100px rgba(0, 0, 0, 1) !important;
+}
+
+[data-theme="dark"] .fixed-column-enhanced .ant-table-cell-fix-right,
+[data-theme="dark"] .fixed-column-enhanced .ant-table-cell-fix-left {
+  background: #0f172a !important;
+  background-color: #0f172a !important;
+  background-image: none !important;
+  border-left: 20px solid #3b82f6 !important;
+  box-shadow: -40px 0 100px rgba(0, 0, 0, 1) !important;
+}
+
+/* 确保操作按钮区域也有正确的背景 */
+.ant-table-cell-fix-right .action-buttons,
+.ant-table-cell-fix-left .action-buttons {
+  background: transparent !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.ant-table-cell-fix-right .action-buttons .ant-btn,
+.ant-table-cell-fix-left .action-buttons .ant-btn {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(5px) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-right .action-buttons .ant-btn,
+[data-theme="dark"] .ant-table-cell-fix-left .action-buttons .ant-btn {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(59, 130, 246, 0.5) !important;
+}
+
+/* 强制移除任何可能的透明效果 */
+.ant-table-cell-fix-right *,
+.ant-table-cell-fix-left * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* 使用CSS变量强制覆盖 */
+:root {
+  --fixed-column-bg-light: #ffffff;
+  --fixed-column-bg-dark: #0f172a;
+  --fixed-column-border: #3b82f6;
+}
+
+.ant-table-cell-fix-right {
+  background: var(--fixed-column-bg-light) !important;
+  background-color: var(--fixed-column-bg-light) !important;
+}
+
+.ant-table-cell-fix-left {
+  background: var(--fixed-column-bg-light) !important;
+  background-color: var(--fixed-column-bg-light) !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-right {
+  background: var(--fixed-column-bg-dark) !important;
+  background-color: var(--fixed-column-bg-dark) !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-left {
+  background: var(--fixed-column-bg-dark) !important;
+  background-color: var(--fixed-column-bg-dark) !important;
+}

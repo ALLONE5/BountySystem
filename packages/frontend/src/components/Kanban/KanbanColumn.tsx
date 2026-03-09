@@ -28,29 +28,28 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
 }) => {
   return (
     <div
+      className="kanban-column"
       style={{
         flex: '1',
         minWidth: '300px',
-        backgroundColor: '#fafafa',
         borderRadius: '8px',
         padding: '16px',
-        border: '1px solid #f0f0f0',
       }}
     >
       <div
+        className="kanban-column-header"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '16px',
           padding: '12px',
-          backgroundColor: 'white',
           borderRadius: '6px',
           borderLeft: `4px solid ${column.color}`,
           boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
         }}
       >
-        <span style={{ fontWeight: 600, fontSize: '15px' }}>
+        <span className="kanban-column-title" style={{ fontWeight: 600, fontSize: '15px' }}>
           {column.title}
         </span>
         <Badge
@@ -68,7 +67,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             style={{
               minHeight: '500px',
               backgroundColor: snapshot.isDraggingOver
-                ? '#e6f7ff'
+                ? 'rgba(59, 130, 246, 0.1)'
                 : 'transparent',
               borderRadius: '6px',
               transition: 'background-color 0.2s',

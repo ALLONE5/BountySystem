@@ -3,8 +3,8 @@
  * 处理任务数据的表格展示
  */
 
-import React from 'react';
-import { Table, Tag, Progress, Button, Badge, Modal } from 'antd';
+import React, { useEffect, useRef, useCallback } from 'react';
+import { Table, Tag, Progress, Button, Badge, Modal, ConfigProvider } from 'antd';
 import {
   DollarOutlined,
   FlagOutlined,
@@ -19,6 +19,9 @@ import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import { Task, TaskStatus } from '../../types';
 import { getTaskStatusConfig } from '../../utils/statusConfig';
+import { fixedColumnFixer } from '../../utils/fixedColumnFix';
+import { ultimateFixedColumnFixer } from '../../utils/ultimateFixedColumnFix';
+import { tableFixedColumnUltimateFixer } from '../../utils/tableFixedColumnUltimateFix';
 import dayjs from 'dayjs';
 
 interface TableParams {
@@ -79,6 +82,138 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
   onJoinGroup,
   onDeleteTask
 }) => {
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  // 强制修复固定列透明度的函数
+  const forceFixFixedColumns = useCallback(() => {
+    if (!tableRef.current) return;
+
+    // 获取所有可能的固定列选择器
+    const selectors = [
+      '.ant-table-cell-fix-left',
+      '.ant-table-cell-fix-right',
+      'td.ant-table-cell-fix-left',
+      'td.ant-table-cell-fix-right',
+      'th.ant-table-cell-fix-left',
+      'th.ant-table-cell-fix-right'
+    ];
+
+    selectors.forEach(selector => {
+      const fixedCells = tableRef.current!.querySelectorAll(selector);
+      
+      fixedCells.forEach((cell) => {
+        const element = cell as HTMLElement;
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const isHovered = element.closest('tr')?.matches(':hover');
+        
+        let bgColor = '#ffffff';
+        if (isDark) {
+          bgColor = isHovered ? '#334155' : '#1e293b';
+        } else {
+          bgColor = isHovered ? '#f8fafc' : '#ffffff';
+        }
+
+        // 暴力设置所有背景相关属性
+        element.style.setProperty('background', bgColor, 'important');
+        element.style.setProperty('background-color', bgColor, 'important');
+        element.style.setProperty('background-image', 'none', 'important');
+        element.style.setProperty('backgroundColor', bgColor, 'important');
+        
+        // 暴力设置透明度相关属性
+        element.style.setProperty('opacity', '1', 'important');
+        element.style.setProperty('filter', 'none', 'important');
+        element.style.setProperty('backdrop-filter', 'none', 'important');
+        element.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        element.style.setProperty('mix-blend-mode', 'normal', 'important');
+        
+        // 暴力设置定位相关属性
+        element.style.setProperty('position', 'sticky', 'important');
+        element.style.setProperty('z-index', '999999999', 'important');
+        element.style.setProperty('isolation', 'isolate', 'important');
+
+        // 创建超大阴影覆盖
+        const shadowLayers = [
+          `0 0 0 10000px ${bgColor}`,
+          `inset 0 0 0 10000px ${bgColor}`,
+          `0 -10000px 0 10000px ${bgColor}`,
+          `0 10000px 0 10000px ${bgColor}`,
+          `-10000px 0 0 10000px ${bgColor}`,
+          `10000px 0 0 10000px ${bgColor}`
+        ];
+        element.style.setProperty('box-shadow', shadowLayers.join(', '), 'important');
+
+        // 使用outline创建额外覆盖
+        element.style.setProperty('outline', `10000px solid ${bgColor}`, 'important');
+        element.style.setProperty('outline-offset', '-10000px', 'important');
+
+        // 设置边框
+        const borderColor = isDark ? '#374151' : '#e5e7eb';
+        if (element.classList.contains('ant-table-cell-fix-left')) {
+          element.style.setProperty('border-right', `2px solid ${borderColor}`, 'important');
+        }
+        if (element.classList.contains('ant-table-cell-fix-right')) {
+          element.style.setProperty('border-left', `2px solid ${borderColor}`, 'important');
+        }
+
+        // 强制重绘
+        element.style.setProperty('transform', 'translateZ(0) translate3d(0, 0, 0)', 'important');
+        element.style.setProperty('will-change', 'auto', 'important');
+        element.style.setProperty('backface-visibility', 'hidden', 'important');
+        element.style.setProperty('-webkit-backface-visibility', 'hidden', 'important');
+
+        // 处理子元素
+        const children = element.querySelectorAll('*');
+        children.forEach(child => {
+          const childElement = child as HTMLElement;
+          childElement.style.setProperty('position', 'relative', 'important');
+          childElement.style.setProperty('z-index', '100', 'important');
+          childElement.style.setProperty('background', 'transparent', 'important');
+          childElement.style.setProperty('opacity', '1', 'important');
+        });
+
+        // 触发重绘
+        element.offsetHeight;
+      });
+    });
+  }, []);
+
+  // 在组件挂载和数据变化时触发固定列修复
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fixedColumnFixer.refresh();
+      ultimateFixedColumnFixer.forceFixNow();
+      tableFixedColumnUltimateFixer.forceFixNow();
+      forceFixFixedColumns();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [tasks, loading, forceFixFixedColumns]);
+
+  // 设置高频率的修复定时器
+  useEffect(() => {
+    const interval = setInterval(forceFixFixedColumns, 50); // 更高频率：50ms
+    return () => clearInterval(interval);
+  }, [forceFixFixedColumns]);
+
+  // 监听鼠标事件以处理悬停状态
+  useEffect(() => {
+    const handleMouseEvents = () => {
+      setTimeout(forceFixFixedColumns, 10);
+    };
+
+    if (tableRef.current) {
+      tableRef.current.addEventListener('mouseover', handleMouseEvents);
+      tableRef.current.addEventListener('mouseout', handleMouseEvents);
+      
+      return () => {
+        if (tableRef.current) {
+          tableRef.current.removeEventListener('mouseover', handleMouseEvents);
+          tableRef.current.removeEventListener('mouseout', handleMouseEvents);
+        }
+      };
+    }
+  }, [forceFixFixedColumns]);
+
   const getPriorityColor = (priority: number): string => {
     if (priority >= 4) return 'red';
     if (priority >= 3) return 'orange';
@@ -458,19 +593,37 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
   }
 
   return (
-    <Table
-      columns={columns}
-      dataSource={tasks}
-      rowKey="id"
-      loading={loading}
-      pagination={tableParams.pagination}
-      onChange={onTableChange}
-      onRow={(record) => ({
-        onClick: () => onTaskClick(record),
-      })}
-      rowClassName={() => 'clickable-row'}
-      scroll={{ x: 1500 }}
-      size="small"
-    />
+    <div ref={tableRef} className="task-table-wrapper">
+      <ConfigProvider
+        theme={{
+          components: {
+            Table: {
+              // 强制设置表格背景
+              headerBg: '#ffffff',
+              bodySortBg: '#ffffff',
+              rowHoverBg: '#f8fafc',
+              colorBgContainer: '#ffffff',
+              colorBgElevated: '#ffffff',
+            } as any
+          }
+        }}
+      >
+        <Table
+          columns={columns}
+          dataSource={tasks}
+          rowKey="id"
+          loading={loading}
+          pagination={tableParams.pagination}
+          onChange={onTableChange}
+          onRow={(record) => ({
+            onClick: () => onTaskClick(record),
+          })}
+          rowClassName={() => 'clickable-row'}
+          scroll={{ x: 1500 }}
+          size="small"
+          className="task-table fixed-column-enhanced ultimate-fixed-table"
+        />
+      </ConfigProvider>
+    </div>
   );
 };

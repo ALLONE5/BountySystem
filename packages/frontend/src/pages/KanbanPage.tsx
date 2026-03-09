@@ -220,11 +220,10 @@ export const KanbanPage: React.FC<KanbanPageProps> = ({
         </div>
       ) : (
         <>
-          <div style={{ 
+          <div className="kanban-filters-wrapper" style={{ 
             marginTop: 16,
             marginBottom: 16, 
             padding: '12px 16px',
-            background: '#fafafa',
             borderRadius: '4px',
             display: 'flex', 
             justifyContent: 'flex-end',

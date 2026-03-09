@@ -15,7 +15,7 @@ export interface DataFetchOptions<T> {
 }
 
 export interface DataFetchResult<T> {
-  data: T | null;
+  data: T | undefined;
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<T | null>;
@@ -35,7 +35,7 @@ export const useDataFetch = <T>(
     context = 'dataFetch'
   } = options;
 
-  const [data, setData] = useState<T | null>(null);
+  const [data, setData] = useState<T | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const { handleError } = useErrorHandler();
@@ -73,7 +73,7 @@ export const useDataFetch = <T>(
   }, [fetchFn, onSuccess, onError, errorMessage, context, handleError]);
 
   const reset = useCallback(() => {
-    setData(null);
+    setData(undefined);
     setError(null);
     setLoading(false);
   }, []);

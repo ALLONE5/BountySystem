@@ -62,18 +62,18 @@ export const ProjectKanban: React.FC<ProjectKanbanProps> = ({
             header={
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <Space>
-                  <FolderOutlined style={{ color: '#722ed1', fontSize: 16 }} />
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>{projectName}</span>
-                  <Badge count={projectTasks.length} style={{ backgroundColor: '#722ed1' }} />
+                  <FolderOutlined className="project-kanban-icon" style={{ fontSize: 16 }} />
+                  <span className="project-kanban-title" style={{ fontWeight: 600, fontSize: 14 }}>{projectName}</span>
+                  <Badge count={projectTasks.length} className="project-kanban-badge" style={{ backgroundColor: '#722ed1' }} />
                 </Space>
                 <Space size="large" onClick={(e) => e.stopPropagation()}>
-                  <span style={{ fontSize: 13, color: '#666' }}>
+                  <span className="project-kanban-stat" style={{ fontSize: 13 }}>
                     {stats.inProgress} 进行中
                   </span>
-                  <span style={{ fontSize: 13, color: '#666' }}>
+                  <span className="project-kanban-stat" style={{ fontSize: 13 }}>
                     {stats.completed} 已完成
                   </span>
-                  <span style={{ fontSize: 13, color: '#f5222d', fontWeight: 600 }}>
+                  <span className="project-kanban-bounty" style={{ fontSize: 13, fontWeight: 600 }}>
                     ${stats.totalBounty.toFixed(2)}
                   </span>
                 </Space>

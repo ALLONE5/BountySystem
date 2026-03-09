@@ -1,0 +1,262 @@
+/* 表格固定列终极修复方案 - 彻底解决重叠问题 */
+
+/* 核心修复：使用最高优先级选择器和!important强制覆盖 */
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-left,
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-right,
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-left,
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-right {
+  /* 强制背景 - 使用纯色确保完全不透明 */
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  
+  /* 强制定位和层级 */
+  position: sticky !important;
+  z-index: 999999 !important;
+  
+  /* 移除所有透明效果 */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  
+  /* 强制边框和阴影 */
+  box-shadow: 0 0 0 1000px #ffffff !important;
+  
+  /* 确保内容在最上层 */
+  isolation: isolate !important;
+}
+
+/* 左固定列特殊处理 */
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-left,
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-left {
+  border-right: 2px solid #e5e7eb !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1), 0 0 0 1000px #ffffff !important;
+}
+
+/* 右固定列特殊处理 */
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-right,
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-right {
+  border-left: 2px solid #e5e7eb !important;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1), 0 0 0 1000px #ffffff !important;
+}
+
+/* 悬停状态 */
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-left,
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-right {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  box-shadow: 0 0 0 1000px #f8fafc !important;
+}
+
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-left {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15), 0 0 0 1000px #f8fafc !important;
+}
+
+.ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-right {
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15), 0 0 0 1000px #f8fafc !important;
+}
+
+/* 暗色主题 */
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-right,
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-right {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+  box-shadow: 0 0 0 1000px #1e293b !important;
+}
+
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-left {
+  border-right: 2px solid #374151 !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3), 0 0 0 1000px #1e293b !important;
+}
+
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-right,
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-right {
+  border-left: 2px solid #374151 !important;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3), 0 0 0 1000px #1e293b !important;
+}
+
+/* 暗色主题悬停状态 */
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-right {
+  background: #334155 !important;
+  background-color: #334155 !important;
+  box-shadow: 0 0 0 1000px #334155 !important;
+}
+
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-left {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.4), 0 0 0 1000px #334155 !important;
+}
+
+[data-theme="dark"] .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-right {
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.4), 0 0 0 1000px #334155 !important;
+}
+
+/* 通用固定列样式 - 最高优先级 */
+.ant-table-cell-fix-left,
+.ant-table-cell-fix-right {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  position: sticky !important;
+  z-index: 999999 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  isolation: isolate !important;
+  box-shadow: 0 0 0 1000px #ffffff !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-cell-fix-right {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+  box-shadow: 0 0 0 1000px #1e293b !important;
+}
+
+/* 确保内容区域的样式 */
+.ant-table-cell-fix-left *,
+.ant-table-cell-fix-right * {
+  position: relative !important;
+  z-index: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 操作按钮特殊处理 */
+.ant-table-cell-fix-right .action-buttons {
+  background: transparent !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.ant-table-cell-fix-right .action-buttons .ant-btn {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-right .action-buttons .ant-btn {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border: 1px solid #475569 !important;
+  color: #ffffff !important;
+}
+
+/* 任务表格特殊处理 */
+.task-table .ant-table-cell-fix-left,
+.task-table .ant-table-cell-fix-right {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 1000px #ffffff !important;
+}
+
+[data-theme="dark"] .task-table .ant-table-cell-fix-left,
+[data-theme="dark"] .task-table .ant-table-cell-fix-right {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+  box-shadow: 0 0 0 1000px #1e293b !important;
+}
+
+/* 强制覆盖任何内联样式 */
+.ant-table-cell-fix-left[style*="background"],
+.ant-table-cell-fix-right[style*="background"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-left[style*="background"],
+[data-theme="dark"] .ant-table-cell-fix-right[style*="background"] {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+  background-image: none !important;
+}
+
+/* 使用伪元素创建额外的背景层 */
+.ant-table-cell-fix-left::before,
+.ant-table-cell-fix-right::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -100px !important;
+  left: -100px !important;
+  right: -100px !important;
+  bottom: -100px !important;
+  background: #ffffff !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-left::before,
+[data-theme="dark"] .ant-table-cell-fix-right::before {
+  background: #1e293b !important;
+}
+
+/* 悬停状态的伪元素 */
+.ant-table-tbody tr:hover .ant-table-cell-fix-left::before,
+.ant-table-tbody tr:hover .ant-table-cell-fix-right::before {
+  background: #f8fafc !important;
+}
+
+[data-theme="dark"] .ant-table-tbody tr:hover .ant-table-cell-fix-left::before,
+[data-theme="dark"] .ant-table-tbody tr:hover .ant-table-cell-fix-right::before {
+  background: #334155 !important;
+}
+
+/* 确保表格容器的层级关系 */
+.ant-table-wrapper {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.ant-table-container {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.ant-table-content {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* 修复可能的滚动条问题 */
+.ant-table-body {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+/* 确保固定列在滚动时保持正确的位置 */
+.ant-table-ping-left .ant-table-cell-fix-left,
+.ant-table-ping-right .ant-table-cell-fix-right {
+  box-shadow: 0 0 0 1000px #ffffff !important;
+}
+
+[data-theme="dark"] .ant-table-ping-left .ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-ping-right .ant-table-cell-fix-right {
+  box-shadow: 0 0 0 1000px #1e293b !important;
+}
+
+/* 最终保险措施：使用CSS变量 */
+:root {
+  --table-fixed-bg-light: #ffffff;
+  --table-fixed-bg-dark: #1e293b;
+  --table-fixed-hover-light: #f8fafc;
+  --table-fixed-hover-dark: #334155;
+}
+
+.ant-table-cell-fix-left,
+.ant-table-cell-fix-right {
+  background: var(--table-fixed-bg-light) !important;
+  background-color: var(--table-fixed-bg-light) !important;
+}
+
+[data-theme="dark"] .ant-table-cell-fix-left,
+[data-theme="dark"] .ant-table-cell-fix-right {
+  background: var(--table-fixed-bg-dark) !important;
+  background-color: var(--table-fixed-bg-dark) !important;
+}

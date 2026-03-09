@@ -28,7 +28,7 @@ export const PositionChangeModal: React.FC<PositionChangeModalProps> = ({
   React.useEffect(() => {
     if (visible) {
       // Pre-populate with current positions
-      setSelectedPositions(userPositions.map(pos => pos.id));
+      setSelectedPositions(userPositions ? userPositions.map(pos => pos.id) : []);
       setPositionError('');
     }
   }, [visible, userPositions]);
@@ -46,7 +46,7 @@ export const PositionChangeModal: React.FC<PositionChangeModalProps> = ({
       return;
     }
     
-    const currentPositionIds = userPositions.map(pos => pos.id);
+    const currentPositionIds = userPositions ? userPositions.map(pos => pos.id) : [];
     const hasChanged = 
       selectedPositions.length !== currentPositionIds.length ||
       selectedPositions.some(posId => !currentPositionIds.includes(posId));
@@ -91,7 +91,7 @@ export const PositionChangeModal: React.FC<PositionChangeModalProps> = ({
     >
       <div style={{ marginBottom: 16 }}>
         <Text>当前岗位: </Text>
-        {userPositions.length > 0 ? (
+        {userPositions && userPositions.length > 0 ? (
           userPositions.map((pos) => (
             <Tag key={pos.id} color="green">
               {pos.name}
@@ -115,7 +115,7 @@ export const PositionChangeModal: React.FC<PositionChangeModalProps> = ({
             onChange={handlePositionChange}
             showSearch
           >
-            {allPositions.map((pos) => (
+            {allPositions && allPositions.map((pos) => (
               <Option key={pos.id} value={pos.id}>
                 {pos.name}
               </Option>

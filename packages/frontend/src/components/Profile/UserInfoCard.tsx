@@ -72,7 +72,7 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({
               <div style={{ marginBottom: 12 }}>
                 <Title level={5} style={{ margin: 0 }}>岗位信息</Title>
               </div>
-              {userPositions.length > 0 ? (
+              {userPositions && userPositions.length > 0 ? (
                 <div style={{ marginBottom: 16 }}>
                   <Space direction="vertical" size="small" style={{ width: '100%' }}>
                     {userPositions.map((pos) => (

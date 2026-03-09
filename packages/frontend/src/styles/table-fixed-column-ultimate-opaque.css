@@ -1,0 +1,237 @@
+/* 表格固定列终极不透明修复 - 最强力解决方案 */
+
+/* 使用最高优先级选择器和内联样式覆盖 */
+
+/* 基础强制覆盖 - 使用最高优先级 */
+html body div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-left,
+html body div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-right,
+html body div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-left,
+html body div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-right {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  mix-blend-mode: normal !important;
+  position: sticky !important;
+  z-index: 999999999 !important;
+  isolation: isolate !important;
+  contain: layout style paint !important;
+  transform: translateZ(0) translate3d(0, 0, 0) !important;
+  will-change: auto !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* 暗色主题 */
+html body [data-theme="dark"] div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-left,
+html body [data-theme="dark"] div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr td.ant-table-cell-fix-right,
+html body [data-theme="dark"] div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-left,
+html body [data-theme="dark"] div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table thead.ant-table-thead tr th.ant-table-cell-fix-right {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+  background-image: none !important;
+}
+
+/* 悬停状态 */
+html body div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-left,
+html body div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-right {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+}
+
+html body [data-theme="dark"] div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-left,
+html body [data-theme="dark"] div.task-table-wrapper .ant-table-wrapper .ant-table-container .ant-table-content table.ant-table tbody.ant-table-tbody tr:hover td.ant-table-cell-fix-right {
+  background: #334155 !important;
+  background-color: #334155 !important;
+}
+
+/* 强制覆盖任何内联样式 */
+.task-table-wrapper .ant-table-cell-fix-left[style*="background"],
+.task-table-wrapper .ant-table-cell-fix-right[style*="background"] {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-left[style*="background"],
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-right[style*="background"] {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+}
+
+/* 使用伪元素创建超大背景 */
+.task-table-wrapper .ant-table-cell-fix-left::before,
+.task-table-wrapper .ant-table-cell-fix-right::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -10000px !important;
+  left: -10000px !important;
+  right: -10000px !important;
+  bottom: -10000px !important;
+  width: 20000px !important;
+  height: 20000px !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-left::before,
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-right::before {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+}
+
+/* 悬停状态伪元素 */
+.task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-left::before,
+.task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-right::before {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-left::before,
+[data-theme="dark"] .task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-right::before {
+  background: #334155 !important;
+  background-color: #334155 !important;
+}
+
+/* 左固定列边框 */
+.task-table-wrapper .ant-table-cell-fix-left {
+  border-right: 2px solid #e5e7eb !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-left {
+  border-right: 2px solid #374151 !important;
+}
+
+/* 右固定列边框 */
+.task-table-wrapper .ant-table-cell-fix-right {
+  border-left: 2px solid #e5e7eb !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-right {
+  border-left: 2px solid #374151 !important;
+}
+
+/* 确保内容在最上层 */
+.task-table-wrapper .ant-table-cell-fix-left > *,
+.task-table-wrapper .ant-table-cell-fix-right > * {
+  position: relative !important;
+  z-index: 100 !important;
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+/* 表格容器层级管理 */
+.task-table-wrapper {
+  position: relative !important;
+  z-index: 1 !important;
+  isolation: isolate !important;
+}
+
+.task-table-wrapper .ant-table-wrapper {
+  position: relative !important;
+  z-index: 2 !important;
+  isolation: isolate !important;
+}
+
+.task-table-wrapper .ant-table-container {
+  position: relative !important;
+  z-index: 3 !important;
+  isolation: isolate !important;
+}
+
+.task-table-wrapper .ant-table-content {
+  position: relative !important;
+  z-index: 4 !important;
+  isolation: isolate !important;
+}
+
+/* 防止任何可能的透明度泄漏 */
+.task-table-wrapper .ant-table-cell-fix-left,
+.task-table-wrapper .ant-table-cell-fix-right {
+  clip-path: inset(0) !important;
+  -webkit-clip-path: inset(0) !important;
+}
+
+/* 滚动状态特殊处理 */
+.task-table-wrapper .ant-table-ping-left .ant-table-cell-fix-left,
+.task-table-wrapper .ant-table-ping-right .ant-table-cell-fix-right {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-ping-left .ant-table-cell-fix-left,
+[data-theme="dark"] .task-table-wrapper .ant-table-ping-right .ant-table-cell-fix-right {
+  background: #1e293b !important;
+  background-color: #1e293b !important;
+}
+
+/* 最终保险措施：使用outline创建额外边界 */
+.task-table-wrapper .ant-table-cell-fix-left {
+  outline: 5000px solid #ffffff !important;
+  outline-offset: -5000px !important;
+}
+
+.task-table-wrapper .ant-table-cell-fix-right {
+  outline: 5000px solid #ffffff !important;
+  outline-offset: -5000px !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-left {
+  outline: 5000px solid #1e293b !important;
+  outline-offset: -5000px !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-right {
+  outline: 5000px solid #1e293b !important;
+  outline-offset: -5000px !important;
+}
+
+/* 强制覆盖所有可能的透明度设置 */
+.task-table-wrapper .ant-table-cell-fix-left,
+.task-table-wrapper .ant-table-cell-fix-right,
+.task-table-wrapper .ant-table-cell-fix-left *,
+.task-table-wrapper .ant-table-cell-fix-right * {
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
+/* 使用CSS变量强制覆盖 */
+.task-table-wrapper {
+  --fixed-column-bg-light: #ffffff;
+  --fixed-column-bg-dark: #1e293b;
+  --fixed-column-hover-bg-light: #f8fafc;
+  --fixed-column-hover-bg-dark: #334155;
+}
+
+.task-table-wrapper .ant-table-cell-fix-left,
+.task-table-wrapper .ant-table-cell-fix-right {
+  background: var(--fixed-column-bg-light) !important;
+  background-color: var(--fixed-column-bg-light) !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-left,
+[data-theme="dark"] .task-table-wrapper .ant-table-cell-fix-right {
+  background: var(--fixed-column-bg-dark) !important;
+  background-color: var(--fixed-column-bg-dark) !important;
+}
+
+.task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-left,
+.task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-right {
+  background: var(--fixed-column-hover-bg-light) !important;
+  background-color: var(--fixed-column-hover-bg-light) !important;
+}
+
+[data-theme="dark"] .task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-left,
+[data-theme="dark"] .task-table-wrapper .ant-table-tbody tr:hover .ant-table-cell-fix-right {
+  background: var(--fixed-column-hover-bg-dark) !important;
+  background-color: var(--fixed-column-hover-bg-dark) !important;
+}

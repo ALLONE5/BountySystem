@@ -37,18 +37,17 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
   return (
     <Card
       size="small"
-      className="task-card"
+      className={`kanban-card task-card ${isDragging ? 'kanban-card-dragging' : ''}`}
       hoverable
       style={{
-        backgroundColor: isDragging ? '#e6f7ff' : 'white',
         cursor: 'move',
         borderLeft: `3px solid ${columnColor}`,
-        boxShadow: isDragging ? '0 4px 12px rgba(0,0,0,0.15)' : undefined,
       }}
       onClick={() => onTaskClick(task)}
     >
       <div style={{ marginBottom: '12px' }}>
         <div
+          className="kanban-card-title"
           style={{
             fontWeight: 600,
             marginBottom: '6px',
@@ -60,9 +59,9 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
         </div>
         {task.description && (
           <div
+            className="kanban-card-description"
             style={{
               fontSize: '12px',
-              color: '#666',
               marginBottom: '12px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -105,9 +104,9 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
       </div>
 
       <div
+        className="kanban-card-date"
         style={{
           fontSize: '12px',
-          color: '#999',
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
@@ -123,23 +122,23 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
       {(task.progress || 0) > 0 && (
         <div>
           <div
+            className="kanban-card-progress-label"
             style={{
               fontSize: '12px',
-              color: '#666',
               marginBottom: '6px',
               fontWeight: 500,
             }}
           >
             进度: {task.progress}%
           </div>
-          <div
-            style={{
-              height: '8px',
-              backgroundColor: '#f0f0f0',
-              borderRadius: '4px',
-              overflow: 'hidden',
-            }}
-          >
+      <div
+        className="kanban-card-progress-bar"
+        style={{
+          height: '8px',
+          borderRadius: '4px',
+          overflow: 'hidden',
+        }}
+      >
             <div
               style={{
                 height: '100%',

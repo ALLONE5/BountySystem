@@ -177,7 +177,26 @@ export class GroupService {
    * Get all groups a user is a member of
    */
   async getUserGroups(userId: string): Promise<any[]> {
-    const groups = await this.groupRepository.findByMember(userId);
+    // Query groups with creator information
+    const query = `
+      SELECT 
+        g.id, 
+        g.name, 
+        g.creator_id as "creatorId", 
+        g.created_at as "createdAt",
+        g.updated_at as "updatedAt",
+        u.username as "creatorName",
+        a.image_url as "creatorAvatarUrl"
+      FROM task_groups g
+      INNER JOIN group_members gm ON g.id = gm.group_id
+      LEFT JOIN users u ON g.creator_id = u.id
+      LEFT JOIN avatars a ON u.avatar_id = a.id
+      WHERE gm.user_id = $1
+      ORDER BY g.created_at DESC
+    `;
+
+    const result = await pool.query(query, [userId]);
+    const groups = result.rows;
 
     // Fetch members for each group
     const groupsWithMembers = await Promise.all(
@@ -462,13 +481,13 @@ export class GroupService {
         tg.name as group_name
       FROM tasks t
       INNER JOIN task_groups tg ON t.group_id = tg.id
-      INNER JOIN task_group_members tgm ON tg.id = tgm.group_id
+      INNER JOIN group_members gm ON tg.id = gm.group_id
       LEFT JOIN users u_publisher ON t.publisher_id = u_publisher.id
       LEFT JOIN users u_assignee ON t.assignee_id = u_assignee.id
       LEFT JOIN avatars a_publisher ON u_publisher.avatar_id = a_publisher.id
       LEFT JOIN avatars a_assignee ON u_assignee.avatar_id = a_assignee.id
       LEFT JOIN project_groups pg ON t.project_group_id = pg.id
-      WHERE tgm.user_id = $1 AND t.parent_id IS NULL
+      WHERE gm.user_id = $1 AND t.parent_id IS NULL
       ORDER BY t.created_at DESC
     `;
 

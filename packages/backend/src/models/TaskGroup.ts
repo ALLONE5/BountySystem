@@ -2,6 +2,8 @@ export interface TaskGroup {
   id: string;
   name: string;
   creatorId: string;
+  creatorName?: string;
+  creatorAvatarUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }

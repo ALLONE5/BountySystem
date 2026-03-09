@@ -9,10 +9,32 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { useEffect } from 'react';
 import { initializeUserSettings } from './utils/timezone';
 import { getThemeConfig } from './theme/index';
+import { startOpaqueFixedColumnFix } from './utils/tableFixedColumnOpaqueFix';
 import './styles/global.css';
 import './styles/global-theme.css';
 import './styles/glassmorphism.css';
 import './styles/components.css';
+import './styles/search-harmonization.css';
+import './styles/table-fixed-column-override.css';
+import './styles/table-fixed-column-nuclear.css';
+import './styles/table-fixed-column-ultimate-fix.css';
+import './styles/table-fixed-column-opaque-force.css';
+import './styles/table-fixed-column-opaque.css';
+import './styles/table-fixed-column-nuclear-opaque.css';
+import './styles/table-fixed-column-ultimate-opaque.css';
+import './styles/table-fixed-column-brute-force.css';
+import './utils/fixedColumnFix';
+import './utils/tableFixedColumnInlineStyles';
+import './utils/forceOpaqueFixedColumns';
+import './styles/table-fixed-column-absolute.css';
+import './utils/tableFixedColumnAbsoluteFix';
+import './utils/tableFixedColumnUltimateFix';
+import './styles/table-fixed-column-final-solution.css';
+import './utils/tableFixedColumnOpaqueFix';
+import './utils/nuclearOpaqueFixedColumns';
+import './utils/ultimateOpaqueFixedColumns';
+import './utils/bruteForceFixedColumnFix';
+import './utils/debugFixedColumns';
 
 // Import Google Fonts
 const fontLink = document.createElement('link');
@@ -26,6 +48,13 @@ document.head.appendChild(fontLink);
 function AppContent() {
   const { themeMode } = useTheme();
   const themeConfig = getThemeConfig(themeMode);
+
+  useEffect(() => {
+    // 启动表格固定列不透明修复
+    startOpaqueFixedColumnFix({
+      forceUpdate: true
+    });
+  }, []);
 
   return (
     <ConfigProvider locale={zhCN} theme={themeConfig}>
