@@ -2,6 +2,20 @@
 
 企业级任务管理和赏金分配系统
 
+> **最新更新**: 2026-03-12 - 完成文档重新分类整理（单层子目录结构）✅
+
+---
+
+## 📚 文档
+
+完整文档请查看 [docs/README.md](docs/README.md)
+
+### 快速链接
+- [项目概览](docs/PROJECT_OVERVIEW.md) - 项目简介和状态
+- [快速开始](docs/guides/QUICK_START.md) - 5分钟上手
+- [开发指南](docs/guides/DEVELOPMENT.md) - 开发规范
+- [系统架构](docs/reference/ARCHITECTURE.md) - 架构设计
+
 ---
 
 ## 🚀 快速开始
@@ -49,6 +63,61 @@ npm run dev:frontend # 终端2
 
 ---
 
+## 🧹 维护命令
+
+### 快速命令
+```bash
+# 清理缓存
+npm run clean:cache
+
+# 清理临时文件
+npm run clean:temp
+
+# 运行项目审计
+npm run audit
+
+# 类型检查
+npm run check:types
+```
+
+### 完整维护工具
+```bash
+# 查看所有维护命令
+node scripts/maintenance.js help
+
+# 清理缓存
+node scripts/maintenance.js clean-cache
+
+# 清理临时文件
+node scripts/maintenance.js clean-temp
+
+# 类型检查
+node scripts/maintenance.js check-types
+
+# 列出所有脚本
+node scripts/maintenance.js list-scripts
+```
+
+### 数据库管理
+```bash
+# 检查数据库连接
+node packages/backend/scripts/db-manager.js check
+
+# 运行种子脚本
+node packages/backend/scripts/db-manager.js seed
+
+# 创建测试数据
+node packages/backend/scripts/db-manager.js seed-test
+
+# 重置管理员密码
+node packages/backend/scripts/db-manager.js reset-admin
+
+# 刷新排名数据
+node packages/backend/scripts/db-manager.js refresh-ranks
+```
+
+---
+
 ## 📦 项目结构
 
 ```
@@ -61,21 +130,6 @@ BountyHunterPlatform/
 ├── docs/                  # 完整项目文档
 └── .kiro/                 # Kiro AI 配置
 ```
-
----
-
-## 📚 文档
-
-### 快速导航
-- 📖 [完整文档导航](docs/README.md) - 所有文档的索引
-- 🚀 [快速开始](docs/guides/QUICK_START.md) - 5分钟上手
-- 💻 [开发指南](docs/DEVELOPMENT.md) - 开发规范和工具
-- 🏗️ [系统架构](docs/ARCHITECTURE.md) - 架构设计
-- 🎯 [功能指南](docs/FEATURES_GUIDE.md) - 功能详解
-
-### 设置和运维
-- [数据库设置](docs/setup/DATABASE_SETUP.md)
-- [运维指南](docs/operations/OPERATIONS_GUIDE.md)
 
 ---
 
@@ -126,4 +180,5 @@ MIT License
 
 **维护者**: 开发团队  
 **版本**: 3.0.0  
-**最后更新**: 2026-03-11
+**最后更新**: 2026-03-12  
+**项目状态**: ✅ 优秀 (文档结构优化完成)

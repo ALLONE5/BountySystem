@@ -3,15 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/frontend",
+    "packages/backend",
+    "packages/database"
   ],
   "scripts": {
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:frontend-bak": "cd packages/frontend-bak && npm run dev",
-    "dev:compare": "node scripts/start-both-frontends.js",
     "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces"
+    "test": "npm run test --workspaces",
+    "clean:cache": "node scripts/maintenance.js clean-cache",
+    "clean:temp": "node scripts/maintenance.js clean-temp",
+    "audit": "node scripts/maintenance.js audit",
+    "check:types": "node scripts/maintenance.js check-types"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

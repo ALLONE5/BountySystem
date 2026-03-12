@@ -42,7 +42,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             <FileTextOutlined />
           </div>
           <div className="stat-trend up">
-            <span>↗ +12%</span>
+            <span>↑ +12%</span>
           </div>
         </div>
         <div className="stat-content">
@@ -60,7 +60,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             <CheckSquareOutlined />
           </div>
           <div className="stat-trend up">
-            <span>↗ +8%</span>
+            <span>↑ +8%</span>
           </div>
         </div>
         <div className="stat-content">
@@ -91,7 +91,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
                 {quarterlyHasData ? `当季 ${quarterlyBounty.toFixed(2)}` : '当季未参与'}
               </span>
               <span>
-                {allTimeHasData ? `累积 ${allTimeBounty.toFixed(2)}` : '累积未参与'}
+                {allTimeHasData ? `累计 ${allTimeBounty.toFixed(2)}` : '累计未参与'}
               </span>
             </div>
           </div>
@@ -146,7 +146,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       <Card className="stat-card">
         <div className="stat-header">
           <div className="stat-icon info">
-            🎯
+            🔄
           </div>
           <div className="stat-trend up">
             <span>活跃</span>

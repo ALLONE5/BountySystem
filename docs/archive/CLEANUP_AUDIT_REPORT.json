@@ -1,0 +1,348 @@
+{
+  "unusedFiles": [],
+  "duplicateCode": [],
+  "largeFiles": [
+    {
+      "file": "backend\\src\\services\\TaskService.ts",
+      "size": "85.11 KB",
+      "lines": 2264
+    }
+  ],
+  "todoComments": [
+    {
+      "file": "backend\\src\\index.ts",
+      "line": 336,
+      "comment": "// TODO: Send email/SMS/Slack notifications"
+    },
+    {
+      "file": "backend\\src\\services\\CacheWarmup.ts",
+      "line": 112,
+      "comment": "// TODO: 实现获取最近活跃用户的方法"
+    },
+    {
+      "file": "backend\\src\\services\\CacheWarmup.ts",
+      "line": 128,
+      "comment": "// TODO: 实现获取最近任务和进行中任务的方法"
+    },
+    {
+      "file": "backend\\src\\workers\\QueueWorker.ts",
+      "line": 165,
+      "comment": "// TODO: [Future Enhancement] Implement actual report generation logic"
+    },
+    {
+      "file": "backend\\src\\workers\\QueueWorker.ts",
+      "line": 191,
+      "comment": "// TODO: [Future Enhancement] Implement actual email sending logic"
+    }
+  ],
+  "consoleStatements": [
+    {
+      "file": "frontend\\src\\components\\TaskList\\TaskListContainer.tsx",
+      "line": 58,
+      "statement": "console.log('[TaskListContainer] User from authStore:', {"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskList\\TaskListContainer.tsx",
+      "line": 67,
+      "statement": "console.log('[TaskListContainer] Received actionProps:', {"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskList\\TaskListTable.tsx",
+      "line": 272,
+      "statement": "console.log('[TaskListTable] Received props:', {"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskList\\TaskListTable.tsx",
+      "line": 314,
+      "statement": "console.log(`[TaskListTable] Task ${record.id} (${record.name}):`, {"
+    },
+    {
+      "file": "frontend\\src\\layouts\\ModernLayout.tsx",
+      "line": 342,
+      "statement": "console.warn('Logo failed to load:', systemConfig.logoUrl);"
+    },
+    {
+      "file": "frontend\\src\\utils\\logger.ts",
+      "line": 3,
+      "statement": "* 用于替换项目中的 console.log/error 调用"
+    },
+    {
+      "file": "frontend\\src\\utils\\logger.ts",
+      "line": 46,
+      "statement": "console.log(this.formatMessage('DEBUG', message, context));"
+    },
+    {
+      "file": "frontend\\src\\utils\\logger.ts",
+      "line": 58,
+      "statement": "console.warn(this.formatMessage('WARN', message, context));"
+    },
+    {
+      "file": "frontend\\src\\utils\\logger.ts",
+      "line": 66,
+      "statement": "console.error(this.formatMessage('ERROR', message, fullContext));"
+    },
+    {
+      "file": "frontend\\src\\utils\\message.ts",
+      "line": 17,
+      "statement": "console.warn('Message instance not initialized. Content:', content);"
+    },
+    {
+      "file": "frontend\\src\\utils\\message.ts",
+      "line": 24,
+      "statement": "console.warn('Message instance not initialized. Content:', content);"
+    },
+    {
+      "file": "frontend\\src\\utils\\message.ts",
+      "line": 31,
+      "statement": "console.warn('Message instance not initialized. Content:', content);"
+    },
+    {
+      "file": "frontend\\src\\utils\\message.ts",
+      "line": 38,
+      "statement": "console.warn('Message instance not initialized. Content:', content);"
+    },
+    {
+      "file": "frontend\\src\\utils\\message.ts",
+      "line": 45,
+      "statement": "console.warn('Message instance not initialized. Content:', content);"
+    },
+    {
+      "file": "frontend\\src\\utils\\statusConfig.ts",
+      "line": 121,
+      "statement": "* console.log(config.color); // 'processing'"
+    },
+    {
+      "file": "frontend\\src\\utils\\statusConfig.ts",
+      "line": 122,
+      "statement": "* console.log(config.text);  // '进行中'"
+    },
+    {
+      "file": "frontend\\src\\utils\\statusConfig.ts",
+      "line": 141,
+      "statement": "* console.log(config.color); // 'orange'"
+    },
+    {
+      "file": "frontend\\src\\utils\\statusConfig.ts",
+      "line": 142,
+      "statement": "* console.log(config.text);  // '待审核'"
+    },
+    {
+      "file": "frontend\\src\\utils\\statusConfig.ts",
+      "line": 161,
+      "statement": "* console.log(config.color); // 'orange'"
+    },
+    {
+      "file": "frontend\\src\\utils\\statusConfig.ts",
+      "line": 162,
+      "statement": "* console.log(config.text);  // '待接受'"
+    },
+    {
+      "file": "backend\\src\\middleware\\rateLimit.middleware.ts",
+      "line": 86,
+      "statement": "redisClient.decr(key).catch(console.error);"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 154,
+      "statement": "console.log('[LOGIN] Token generated for user:', {"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 173,
+      "statement": "console.log('[LOGIN] Sending response with token');"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 192,
+      "statement": "console.log('[AUTH/ME] Request received', {"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 202,
+      "statement": "console.log('[AUTH/ME] No userId in request');"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 208,
+      "statement": "console.log('[AUTH/ME] User not found:', userId);"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 212,
+      "statement": "console.log('[AUTH/ME] User found, sending response');"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 229,
+      "statement": "console.log('[VERIFY-TOKEN] Token is valid', {"
+    },
+    {
+      "file": "backend\\src\\routes\\auth.routes.ts",
+      "line": 240,
+      "statement": "console.log('[VERIFY-TOKEN] Token is invalid', {"
+    }
+  ],
+  "deprecatedPatterns": [
+    {
+      "file": "frontend\\src\\components\\common\\InviteMemberModal.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskAssistants.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskAttachments.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskComments.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskDetailDrawer.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\components\\TaskList\\TaskListContainer.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\contexts\\AuthContext.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\hooks\\useCrudOperations.ts",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\hooks\\useErrorHandler.ts",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\pages\\admin\\ApplicationReviewPage.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\pages\\admin\\AuditLogPage.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\pages\\admin\\GroupManagementPage.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\pages\\admin\\NotificationBroadcastPage.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\pages\\admin\\SystemConfigPage.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\pages\\developer\\DevAuditLogPage.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    },
+    {
+      "file": "frontend\\src\\pages\\developer\\DevSystemConfigPage.tsx",
+      "pattern": "message.success",
+      "reason": "Should use custom message utility"
+    }
+  ],
+  "missingTests": [
+    {
+      "service": "AsyncNotificationService.ts",
+      "expectedTest": "AsyncNotificationService.test.ts"
+    },
+    {
+      "service": "AttachmentService.ts",
+      "expectedTest": "AttachmentService.test.ts"
+    },
+    {
+      "service": "AuditLogService.ts",
+      "expectedTest": "AuditLogService.test.ts"
+    },
+    {
+      "service": "CacheInvalidation.ts",
+      "expectedTest": "CacheInvalidation.test.ts"
+    },
+    {
+      "service": "CacheMonitor.ts",
+      "expectedTest": "CacheMonitor.test.ts"
+    },
+    {
+      "service": "CacheWarmup.ts",
+      "expectedTest": "CacheWarmup.test.ts"
+    },
+    {
+      "service": "CommentService.ts",
+      "expectedTest": "CommentService.test.ts"
+    },
+    {
+      "service": "DatabaseOptimizationService.ts",
+      "expectedTest": "DatabaseOptimizationService.test.ts"
+    },
+    {
+      "service": "PerformanceAlert.ts",
+      "expectedTest": "PerformanceAlert.test.ts"
+    },
+    {
+      "service": "PerformanceReport.ts",
+      "expectedTest": "PerformanceReport.test.ts"
+    },
+    {
+      "service": "ProjectGroupService.ts",
+      "expectedTest": "ProjectGroupService.test.ts"
+    },
+    {
+      "service": "QueueService.ts",
+      "expectedTest": "QueueService.test.ts"
+    },
+    {
+      "service": "RealTimeMetrics.ts",
+      "expectedTest": "RealTimeMetrics.test.ts"
+    },
+    {
+      "service": "SystemConfigService.ts",
+      "expectedTest": "SystemConfigService.test.ts"
+    },
+    {
+      "service": "SystemMonitorService.ts",
+      "expectedTest": "SystemMonitorService.test.ts"
+    },
+    {
+      "service": "TaskAssistantService.ts",
+      "expectedTest": "TaskAssistantService.test.ts"
+    },
+    {
+      "service": "WebSocketService.ts",
+      "expectedTest": "WebSocketService.test.ts"
+    }
+  ],
+  "redundantDependencies": [],
+  "unusedImports": [],
+  "documentationIssues": [
+    {
+      "count": 1,
+      "files": [
+        "PROJECT_CLEANUP_COMPLETE.md"
+      ],
+      "suggestion": "Consider moving to docs/reports/ directory"
+    }
+  ]
+}

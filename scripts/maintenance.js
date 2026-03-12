@@ -21,6 +21,8 @@ function showHelp() {
 命令:
   audit          - 运行项目审计，检查未使用的文件
   clean-temp     - 清理临时文件和备份文件
+  clean-cache    - 清理前端和后端缓存
+  clean-debug    - 清理代码中的调试日志
   check-types    - 检查 TypeScript 类型错误
   check-imports  - 检查未使用的导入
   list-scripts   - 列出所有可用的脚本
@@ -29,6 +31,8 @@ function showHelp() {
 示例:
   node scripts/maintenance.js audit
   node scripts/maintenance.js clean-temp
+  node scripts/maintenance.js clean-cache
+  node scripts/maintenance.js clean-debug
   node scripts/maintenance.js check-types
 `);
 }
@@ -174,6 +178,54 @@ function listScripts() {
   console.log();
 }
 
+// 清理缓存
+function cleanCache() {
+  console.log('🧹 清理缓存...\n');
+  
+  const cacheDirs = [
+    'packages/frontend/node_modules/.vite',
+    'packages/frontend/dist',
+    'packages/backend/dist',
+    'packages/backend/node_modules/.cache'
+  ];
+  
+  let totalDeleted = 0;
+  
+  cacheDirs.forEach(dir => {
+    const fullPath = path.join(rootDir, dir);
+    if (fs.existsSync(fullPath)) {
+      console.log(`   删除: ${dir}`);
+      try {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+        console.log(`     ✅ 已删除`);
+        totalDeleted++;
+      } catch (error) {
+        console.log(`     ❌ 删除失败: ${error.message}`);
+      }
+    } else {
+      console.log(`   ✓ ${dir} 不存在`);
+    }
+  });
+  
+  console.log(`\n   总共删除: ${totalDeleted} 个缓存目录\n`);
+}
+
+// 清理调试日志
+function cleanDebugLogs() {
+  console.log('🧹 清理调试日志...\n');
+  console.log('提示: 这将扫描代码中的 console.log 语句');
+  console.log('建议手动审查后再删除\n');
+  
+  try {
+    execSync('node scripts/comprehensive-project-audit.js', {
+      cwd: rootDir,
+      stdio: 'inherit'
+    });
+  } catch (error) {
+    console.error('❌ 审计失败');
+  }
+}
+
 // 主函数
 function main() {
   const command = process.argv[2];
@@ -189,6 +241,12 @@ function main() {
       break;
     case 'clean-temp':
       cleanTemp();
+      break;
+    case 'clean-cache':
+      cleanCache();
+      break;
+    case 'clean-debug':
+      cleanDebugLogs();
       break;
     case 'check-types':
       checkTypes();
