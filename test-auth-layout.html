@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试登录页面布局</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+
+    .auth-container {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    }
+
+    .auth-left {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      position: relative;
+      z-index: 1;
+      min-width: 400px;
+      width: 100%;
+    }
+
+    .auth-branding {
+      text-align: center;
+      color: white;
+      max-width: 500px;
+    }
+
+    .auth-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 30px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .auth-title {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .auth-subtitle {
+      font-size: 18px;
+      opacity: 0.95;
+      line-height: 1.6;
+    }
+
+    .auth-features {
+      margin-top: 50px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .auth-feature {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .auth-feature-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .auth-feature-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .auth-feature-desc {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .auth-right {
+      flex: 0 0 auto;
+      width: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-form-container {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .auth-form-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .auth-form-logo {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+    }
+
+    .auth-form-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .auth-form-subtitle {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      padding: 0 16px;
+      font-size: 14px;
+    }
+
+    .form-button {
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .form-footer {
+      margin-top: 30px;
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    @media (max-width: 1024px) {
+      .auth-left {
+        min-width: 300px;
+        padding: 40px;
+      }
+
+      .auth-right {
+        width: 450px;
+      }
+
+      .auth-features {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .auth-container {
+        flex-direction: column;
+      }
+
+      .auth-left {
+        min-width: unset;
+        width: 100%;
+        min-height: 40vh;
+      }
+
+      .auth-right {
+        width: 100%;
+      }
+
+      .auth-features {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <!-- 左侧品牌区 -->
+    <div class="auth-left">
+      <div class="auth-branding">
+        <div class="auth-logo">🏆</div>
+        <h1 class="auth-title">赏金猎人平台</h1>
+        <p class="auth-subtitle">高效协作，智能管理，让每一份努力都有回报</p>
+        
+        <div class="auth-features">
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🚀</div>
+            <div class="auth-feature-title">高效协作</div>
+            <div class="auth-feature-desc">实时任务分配与进度跟踪</div>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">👥</div>
+            <div class="auth-feature-title">团队管理</div>
+            <div class="auth-feature-desc">灵活的项目组与权限控制</div>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🔒</div>
+            <div class="auth-feature-title">安全可靠</div>
+            <div class="auth-feature-desc">企业级数据安全保障</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧表单区 -->
+    <div class="auth-right">
+      <div class="auth-form-container">
+        <div class="auth-form-header">
+          <div class="auth-form-logo">🏆</div>
+          <h2 class="auth-form-title">欢迎回来</h2>
+          <p class="auth-form-subtitle">登录您的账户以继续</p>
+        </div>
+
+        <form>
+          <div class="form-group">
+            <input type="text" class="form-input" placeholder="邮箱或用户名">
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-input" placeholder="密码">
+          </div>
+          <div class="form-group">
+            <button type="submit" class="form-button">登录</button>
+          </div>
+        </form>
+
+        <div class="form-footer">
+          还没有账号？ <a href="#">立即注册</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 显示当前窗口宽度
+    function showWindowSize() {
+      const width = window.innerWidth;
+      console.log('窗口宽度:', width);
+      
+      if (width > 1440) {
+        console.log('大屏幕模式');
+      } else if (width > 1024) {
+        console.log('桌面模式');
+      } else if (width > 768) {
+        console.log('平板模式');
+      } else {
+        console.log('移动模式');
+      }
+    }
+
+    showWindowSize();
+    window.addEventListener('resize', showWindowSize);
+  </script>
+</body>
+</html>

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Typography, Card } from 'antd';
-import { UserOutlined, LockOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Typography } from 'antd';
+import { UserOutlined, LockOutlined, TrophyOutlined, RocketOutlined, TeamOutlined, SafetyOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSystemConfig } from '../../contexts/SystemConfigContext';
 import { logger } from '../../utils/logger';
 import { message } from '../../utils/message';
+import './AuthPages.css';
 
 const { Title, Text } = Typography;
 
@@ -96,98 +97,158 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}>
-      <Card 
-        style={{ 
-          width: '100%',
-          maxWidth: 400,
-          margin: '16px',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          {systemConfig?.logoUrl ? (
-            <img 
-              src={systemConfig.logoUrl.startsWith('http') 
-                ? systemConfig.logoUrl 
-                : `http://localhost:3001${systemConfig.logoUrl}`
-              } 
-              alt="Logo" 
-              style={{ height: '48px', width: 'auto', marginBottom: '16px' }}
-              onError={(e) => {
-                logger.error('Logo failed to load:', systemConfig.logoUrl);
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          ) : (
-            <TrophyOutlined style={{ fontSize: 48, color: '#1890ff', marginBottom: '16px' }} />
-          )}
-          <Title level={2} style={{ marginBottom: '8px' }}>
+    <div className="auth-container">
+      {/* Left Side - Branding */}
+      <div className="auth-left">
+        <div className="auth-branding">
+          <div className="auth-logo">
+            {systemConfig?.logoUrl ? (
+              <img 
+                src={systemConfig.logoUrl.startsWith('http') 
+                  ? systemConfig.logoUrl 
+                  : `http://localhost:3001${systemConfig.logoUrl}`
+                } 
+                alt="Logo"
+                onError={(e) => {
+                  logger.error('Logo failed to load:', systemConfig.logoUrl);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <TrophyOutlined />
+            )}
+          </div>
+          <h1 className="auth-title">
             {systemConfig?.siteName || '赏金平台'}
-          </Title>
-          <Text type="secondary">登录您的账户</Text>
+          </h1>
+          <p className="auth-subtitle">
+            高效协作，智能管理，让每一份努力都有回报
+          </p>
+
+          <div className="auth-features">
+            <div className="auth-feature">
+              <div className="auth-feature-icon">
+                <RocketOutlined />
+              </div>
+              <div className="auth-feature-title">高效协作</div>
+              <div className="auth-feature-desc">
+                实时任务分配与进度跟踪
+              </div>
+            </div>
+            <div className="auth-feature">
+              <div className="auth-feature-icon">
+                <TeamOutlined />
+              </div>
+              <div className="auth-feature-title">团队管理</div>
+              <div className="auth-feature-desc">
+                灵活的项目组与权限控制
+              </div>
+            </div>
+            <div className="auth-feature">
+              <div className="auth-feature-icon">
+                <SafetyOutlined />
+              </div>
+              <div className="auth-feature-title">安全可靠</div>
+              <div className="auth-feature-desc">
+                企业级数据安全保障
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <Form name="login" onFinish={onFinish} autoComplete="off" size="large">
-          <Form.Item
-            name="username"
-            rules={[
-              { required: true, message: '请输入邮箱或用户名！' },
-            ]}
-            validateStatus={formErrors.email ? 'error' : ''}
-            help={formErrors.email || ''}
-          >
-            <Input
-              prefix={<UserOutlined style={{ color: '#8c8c8c' }} />}
-              placeholder="邮箱或用户名"
-              onChange={() => {
-                if (formErrors.email) {
-                  setFormErrors(prev => ({ ...prev, email: '' }));
-                }
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: '请输入密码！' }]}
-            validateStatus={formErrors.password ? 'error' : ''}
-            help={formErrors.password || ''}
-          >
-            <Input.Password
-              prefix={<LockOutlined style={{ color: '#8c8c8c' }} />}
-              placeholder="密码"
-              onChange={() => {
-                if (formErrors.password) {
-                  setFormErrors(prev => ({ ...prev, password: '' }));
-                }
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item style={{ marginBottom: '16px' }}>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              block
-            >
-              登录
-            </Button>
-          </Form.Item>
-
-          <div style={{ textAlign: 'center' }}>
-            <Text type="secondary">
-              还没有账号？ <Link to="/auth/register">立即注册</Link>
+      {/* Right Side - Login Form */}
+      <div className="auth-right">
+        <div className="auth-form-container">
+          <div className="auth-form-header">
+            <div className="auth-form-logo">
+              {systemConfig?.logoUrl ? (
+                <img 
+                  src={systemConfig.logoUrl.startsWith('http') 
+                    ? systemConfig.logoUrl 
+                    : `http://localhost:3001${systemConfig.logoUrl}`
+                  } 
+                  alt="Logo"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <TrophyOutlined />
+              )}
+            </div>
+            <Title level={2} className="auth-form-title">
+              欢迎回来
+            </Title>
+            <Text className="auth-form-subtitle">
+              登录您的账户以继续
             </Text>
           </div>
-        </Form>
-      </Card>
+
+          <Form 
+            name="login" 
+            onFinish={onFinish} 
+            autoComplete="off" 
+            className="auth-form"
+          >
+            <Form.Item
+              name="username"
+              rules={[
+                { required: true, message: '请输入邮箱或用户名！' },
+              ]}
+              validateStatus={formErrors.email ? 'error' : ''}
+              help={formErrors.email || ''}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="邮箱或用户名"
+                onChange={() => {
+                  if (formErrors.email) {
+                    setFormErrors(prev => ({ ...prev, email: '' }));
+                  }
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: '请输入密码！' }]}
+              validateStatus={formErrors.password ? 'error' : ''}
+              help={formErrors.password || ''}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="密码"
+                onChange={() => {
+                  if (formErrors.password) {
+                    setFormErrors(prev => ({ ...prev, password: '' }));
+                  }
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+              >
+                登录
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <div className="auth-form-footer">
+            <Text className="auth-form-footer-text">
+              还没有账号？{' '}
+              <Link to="/auth/register" className="auth-form-footer-link">
+                立即注册
+              </Link>
+            </Text>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

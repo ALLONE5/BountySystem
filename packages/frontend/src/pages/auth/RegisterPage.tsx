@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Typography } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MailOutlined, TrophyOutlined, RocketOutlined, TeamOutlined, SafetyOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSystemConfig } from '../../contexts/SystemConfigContext';
 import { logger } from '../../utils/logger';
 import { message } from '../../utils/message';
+import './AuthPages.css';
 
 const { Title, Text } = Typography;
 
@@ -17,9 +19,21 @@ interface RegisterFormData {
 
 export const RegisterPage: React.FC = () => {
   const { register } = useAuth();
+  const { config: systemConfig } = useSystemConfig();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
+  const calculatePasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    return Math.min(strength, 4);
+  };
 
   const onFinish = async (values: RegisterFormData) => {
     setLoading(true);
@@ -83,118 +97,225 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <Title level={2} style={{ textAlign: 'center', marginBottom: '32px' }}>
-        注册
-      </Title>
-      <Form name="register" onFinish={onFinish} autoComplete="off">
-        <Form.Item
-          name="username"
-          rules={[
-            { required: true, message: '请输入用户名！' },
-            { min: 3, message: '用户名至少3个字符！' },
-          ]}
-          validateStatus={formErrors.username ? 'error' : ''}
-          help={formErrors.username || ''}
-        >
-          <Input
-            prefix={<UserOutlined />}
-            placeholder="用户名"
-            size="large"
-            onChange={() => {
-              if (formErrors.username) {
-                setFormErrors(prev => ({ ...prev, username: '' }));
-              }
-            }}
-          />
-        </Form.Item>
+    <div className="auth-container">
+      {/* Left Side - Branding */}
+      <div className="auth-left">
+        <div className="auth-branding">
+          <div className="auth-logo">
+            {systemConfig?.logoUrl ? (
+              <img 
+                src={systemConfig.logoUrl.startsWith('http') 
+                  ? systemConfig.logoUrl 
+                  : `http://localhost:3001${systemConfig.logoUrl}`
+                } 
+                alt="Logo"
+                onError={(e) => {
+                  logger.error('Logo failed to load:', systemConfig.logoUrl);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <TrophyOutlined />
+            )}
+          </div>
+          <h1 className="auth-title">
+            {systemConfig?.siteName || '赏金平台'}
+          </h1>
+          <p className="auth-subtitle">
+            加入我们，开启高效协作之旅
+          </p>
 
-        <Form.Item
-          name="email"
-          rules={[
-            { required: true, message: '请输入邮箱！' },
-            { type: 'email', message: '请输入有效的邮箱地址！' },
-          ]}
-          validateStatus={formErrors.email ? 'error' : ''}
-          help={formErrors.email || ''}
-        >
-          <Input
-            prefix={<MailOutlined />}
-            placeholder="邮箱"
-            size="large"
-            onChange={() => {
-              if (formErrors.email) {
-                setFormErrors(prev => ({ ...prev, email: '' }));
-              }
-            }}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="password"
-          rules={[
-            { required: true, message: '请输入密码！' },
-            { min: 8, message: '密码至少8个字符！' },
-            { 
-              pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 
-              message: '密码必须包含至少一个大写字母、一个小写字母和一个数字！' 
-            },
-          ]}
-          validateStatus={formErrors.password ? 'error' : ''}
-          help={formErrors.password || ''}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="密码（至少8位，包含大小写字母和数字）"
-            size="large"
-            onChange={() => {
-              if (formErrors.password) {
-                setFormErrors(prev => ({ ...prev, password: '' }));
-              }
-            }}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="confirmPassword"
-          dependencies={['password']}
-          rules={[
-            { required: true, message: '请确认密码！' },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error('两次输入的密码不一致！'));
-              },
-            }),
-          ]}
-        >
-          <Input.Password
-            prefix={<LockOutlined />}
-            placeholder="确认密码"
-            size="large"
-          />
-        </Form.Item>
-
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            block
-            size="large"
-          >
-            注册
-          </Button>
-        </Form.Item>
-
-        <div style={{ textAlign: 'center' }}>
-          <Text>
-            已有账号？ <Link to="/auth/login">立即登录</Link>
-          </Text>
+          <div className="auth-features">
+            <div className="auth-feature">
+              <div className="auth-feature-icon">
+                <RocketOutlined />
+              </div>
+              <div className="auth-feature-title">快速上手</div>
+              <div className="auth-feature-desc">
+                简单注册，即刻开始使用
+              </div>
+            </div>
+            <div className="auth-feature">
+              <div className="auth-feature-icon">
+                <TeamOutlined />
+              </div>
+              <div className="auth-feature-title">团队协作</div>
+              <div className="auth-feature-desc">
+                与团队成员高效协作
+              </div>
+            </div>
+            <div className="auth-feature">
+              <div className="auth-feature-icon">
+                <SafetyOutlined />
+              </div>
+              <div className="auth-feature-title">数据安全</div>
+              <div className="auth-feature-desc">
+                您的数据安全有保障
+              </div>
+            </div>
+          </div>
         </div>
-      </Form>
+      </div>
+
+      {/* Right Side - Register Form */}
+      <div className="auth-right">
+        <div className="auth-form-container">
+          <div className="auth-form-header">
+            <div className="auth-form-logo">
+              {systemConfig?.logoUrl ? (
+                <img 
+                  src={systemConfig.logoUrl.startsWith('http') 
+                    ? systemConfig.logoUrl 
+                    : `http://localhost:3001${systemConfig.logoUrl}`
+                  } 
+                  alt="Logo"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <TrophyOutlined />
+              )}
+            </div>
+            <Title level={2} className="auth-form-title">
+              创建账户
+            </Title>
+            <Text className="auth-form-subtitle">
+              填写信息以开始使用
+            </Text>
+          </div>
+
+          <Form 
+            name="register" 
+            onFinish={onFinish} 
+            autoComplete="off"
+            className="auth-form"
+          >
+            <Form.Item
+              name="username"
+              rules={[
+                { required: true, message: '请输入用户名！' },
+                { min: 3, message: '用户名至少3个字符！' },
+              ]}
+              validateStatus={formErrors.username ? 'error' : ''}
+              help={formErrors.username || ''}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="用户名"
+                onChange={() => {
+                  if (formErrors.username) {
+                    setFormErrors(prev => ({ ...prev, username: '' }));
+                  }
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="email"
+              rules={[
+                { required: true, message: '请输入邮箱！' },
+                { type: 'email', message: '请输入有效的邮箱地址！' },
+              ]}
+              validateStatus={formErrors.email ? 'error' : ''}
+              help={formErrors.email || ''}
+            >
+              <Input
+                prefix={<MailOutlined />}
+                placeholder="邮箱"
+                onChange={() => {
+                  if (formErrors.email) {
+                    setFormErrors(prev => ({ ...prev, email: '' }));
+                  }
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              rules={[
+                { required: true, message: '请输入密码！' },
+                { min: 8, message: '密码至少8个字符！' },
+                { 
+                  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 
+                  message: '密码必须包含至少一个大写字母、一个小写字母和一个数字！' 
+                },
+              ]}
+              validateStatus={formErrors.password ? 'error' : ''}
+              help={formErrors.password || ''}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="密码（至少8位，包含大小写字母和数字）"
+                onChange={(e) => {
+                  if (formErrors.password) {
+                    setFormErrors(prev => ({ ...prev, password: '' }));
+                  }
+                  setPasswordStrength(calculatePasswordStrength(e.target.value));
+                }}
+              />
+            </Form.Item>
+
+            {passwordStrength > 0 && (
+              <div className="password-strength">
+                {[1, 2, 3, 4].map((level) => (
+                  <div
+                    key={level}
+                    className={`password-strength-bar ${
+                      level <= passwordStrength ? 'active' : ''
+                    } ${
+                      passwordStrength === 1 ? 'weak' :
+                      passwordStrength === 2 ? 'medium' :
+                      passwordStrength >= 3 ? 'strong' : ''
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+            <Form.Item
+              name="confirmPassword"
+              dependencies={['password']}
+              rules={[
+                { required: true, message: '请确认密码！' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('password') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('两次输入的密码不一致！'));
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="确认密码"
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+              >
+                注册
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <div className="auth-form-footer">
+            <Text className="auth-form-footer-text">
+              已有账号？{' '}
+              <Link to="/auth/login" className="auth-form-footer-link">
+                立即登录
+              </Link>
+            </Text>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
