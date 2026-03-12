@@ -253,10 +253,5 @@ export const router = createBrowserRouter(
       path: '*',
       element: <ErrorBoundary />,
     },
-  ],
-  {
-    future: {
-      v7_relativeSplatPath: true,
-    },
-  }
+  ]
 );

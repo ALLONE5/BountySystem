@@ -6,6 +6,7 @@ import { requireRole } from '../middleware/permission.middleware.js';
 import { UserRole } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { resolve } from '../config/container.js';
+import { sendValidationError, sendNotFound, sendUnauthorized, sendForbidden, sendCreated } from '../utils/responseHelpers.js';
 
 const router = Router();
 // Use DI container to get properly configured PositionService
@@ -27,7 +28,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const position = await positionService.getPositionById(req.params.id);
   
   if (!position) {
-    return res.status(404).json({ error: 'Position not found' });
+    return sendNotFound(res, 'Position');
   }
   
   res.json(position);
@@ -45,7 +46,7 @@ router.post(
     const { name, description, requiredSkills } = req.body;
 
     if (!name) {
-      return res.status(400).json({ error: 'Position name is required' });
+      return sendValidationError(res, 'Position name is required');
     }
 
     const position = await positionService.createPosition({
@@ -54,7 +55,7 @@ router.post(
       requiredSkills,
     });
 
-    res.status(201).json(position);
+    sendCreated(res, position);
   })
 );
 
@@ -102,7 +103,7 @@ router.post('/applications', authenticate, asyncHandler(async (req: Request, res
   const userId = req.user!.userId;
 
   if (!positionId) {
-    return res.status(400).json({ error: 'Position ID is required' });
+    return sendValidationError(res, 'Position ID is required');
   }
 
   const application = await positionService.applyForPosition({
@@ -111,7 +112,7 @@ router.post('/applications', authenticate, asyncHandler(async (req: Request, res
     reason,
   });
 
-  res.status(201).json(application);
+  sendCreated(res, application);
 }));
 
 /**
@@ -123,16 +124,12 @@ router.post('/applications/replacement', authenticate, asyncHandler(async (req: 
   const userId = req.user!.userId;
 
   if (!Array.isArray(positionsToRemove) || !Array.isArray(positionsToAdd)) {
-    return res.status(400).json({ 
-      error: 'positionsToRemove and positionsToAdd must be arrays' 
-    });
+    return sendValidationError(res, 'positionsToRemove and positionsToAdd must be arrays');
   }
 
   // Allow removal-only operations (no new positions to add)
   if (positionsToRemove.length === 0 && positionsToAdd.length === 0) {
-    return res.status(400).json({ 
-      error: 'At least one position change is required' 
-    });
+    return sendValidationError(res, 'At least one position change is required');
   }
 
   const applications = await positionService.requestPositionReplacement(
@@ -141,7 +138,7 @@ router.post('/applications/replacement', authenticate, asyncHandler(async (req: 
     positionsToAdd
   );
 
-  res.status(201).json(applications);
+  sendCreated(res, applications);
 }));
 
 /**
@@ -183,7 +180,7 @@ router.post(
     const reviewerId = req.user!.userId;
 
     if (typeof approved !== 'boolean') {
-      return res.status(400).json({ error: 'Approved field is required and must be a boolean' });
+      return sendValidationError(res, 'Approved field is required and must be a boolean');
     }
 
     const application = await positionService.reviewApplication({
@@ -206,7 +203,7 @@ router.get('/users/:userId/positions', authenticate, asyncHandler(async (req: Re
   
   // Users can only view their own positions unless they're admin
   if (req.user!.userId !== userId && req.user!.role === UserRole.USER) {
-    return res.status(403).json({ error: 'Forbidden' });
+    return sendForbidden(res, 'Forbidden');
   }
 
   const positions = await positionService.getUserPositions(userId);
@@ -225,7 +222,7 @@ router.post(
     const { userId, positionId } = req.params;
 
     const userPosition = await positionService.grantPosition(userId, positionId);
-    res.status(201).json(userPosition);
+    sendCreated(res, userPosition);
   })
 );
 

@@ -7,6 +7,9 @@ import { RankingPeriod } from '../models/Ranking.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../utils/errors.js';
+import { queryTransformers } from '../utils/queryValidation.js';
+import { sendSuccess } from '../utils/responseHelpers.js';
+import { logger } from '../config/logger.js';
 
 export function createRankingRouter(pool: Pool): Router {
   const router = Router();
@@ -16,16 +19,25 @@ export function createRankingRouter(pool: Pool): Router {
    * GET /api/rankings
    * Get rankings for a specific period
    * If no period specified, returns current month rankings
+   * Returns both rankings list and current user's ranking
    */
   router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
     const { period, year, month, quarter, limit } = req.query;
+    const user = (req as any).user;
 
     // If no period specified, return current month rankings
     if (!period) {
       const rankings = await rankingService.getCurrentMonthRankings(
-        limit ? parseInt(limit as string) : undefined
+        limit ? queryTransformers.toInt(limit as string, 50) : undefined
       );
-      res.json(rankings);
+      
+      // Find current user's ranking in the list
+      const myRanking = rankings.find(r => r.userId === user.userId) || null;
+      
+      sendSuccess(res, {
+        rankings,
+        myRanking
+      });
       return;
     }
 
@@ -35,13 +47,19 @@ export function createRankingRouter(pool: Pool): Router {
 
     const rankings = await rankingService.getRankings({
       period: period as RankingPeriod,
-      year: year ? parseInt(year as string) : undefined,
-      month: month ? parseInt(month as string) : undefined,
-      quarter: quarter ? parseInt(quarter as string) : undefined,
-      limit: limit ? parseInt(limit as string) : undefined,
+      year: year ? queryTransformers.toInt(year as string, new Date().getFullYear()) : undefined,
+      month: month ? queryTransformers.toInt(month as string, 1) : undefined,
+      quarter: quarter ? queryTransformers.toInt(quarter as string, 1) : undefined,
+      limit: limit ? queryTransformers.toInt(limit as string, 50) : undefined,
     });
 
-    res.json(rankings);
+    // Find current user's ranking in the list
+    const myRanking = rankings.find(r => r.userId === user.userId) || null;
+
+    sendSuccess(res, {
+      rankings,
+      myRanking
+    });
   }));
 
   /**
@@ -51,9 +69,9 @@ export function createRankingRouter(pool: Pool): Router {
   router.get('/current/monthly', authenticate, asyncHandler(async (req: Request, res: Response) => {
     const { limit } = req.query;
     const rankings = await rankingService.getCurrentMonthRankings(
-      limit ? parseInt(limit as string) : undefined
+      limit ? queryTransformers.toInt(limit as string, 50) : undefined
     );
-    res.json(rankings);
+    sendSuccess(res, rankings);
   }));
 
   /**
@@ -63,9 +81,9 @@ export function createRankingRouter(pool: Pool): Router {
   router.get('/current/quarterly', authenticate, asyncHandler(async (req: Request, res: Response) => {
     const { limit } = req.query;
     const rankings = await rankingService.getCurrentQuarterRankings(
-      limit ? parseInt(limit as string) : undefined
+      limit ? queryTransformers.toInt(limit as string, 50) : undefined
     );
-    res.json(rankings);
+    sendSuccess(res, rankings);
   }));
 
   /**
@@ -75,9 +93,9 @@ export function createRankingRouter(pool: Pool): Router {
   router.get('/all-time', authenticate, asyncHandler(async (req: Request, res: Response) => {
     const { limit } = req.query;
     const rankings = await rankingService.getAllTimeRankings(
-      limit ? parseInt(limit as string) : undefined
+      limit ? queryTransformers.toInt(limit as string, 50) : undefined
     );
-    res.json(rankings);
+    sendSuccess(res, rankings);
   }));
 
   /**
@@ -95,9 +113,9 @@ export function createRankingRouter(pool: Pool): Router {
     const ranking = await rankingService.getUserRanking(
       userId,
       period as RankingPeriod,
-      year ? parseInt(year as string) : undefined,
-      month ? parseInt(month as string) : undefined,
-      quarter ? parseInt(quarter as string) : undefined
+      year ? queryTransformers.toInt(year as string, new Date().getFullYear()) : undefined,
+      month ? queryTransformers.toInt(month as string, 1) : undefined,
+      quarter ? queryTransformers.toInt(quarter as string, 1) : undefined
     );
 
     if (!ranking) {
@@ -110,16 +128,16 @@ export function createRankingRouter(pool: Pool): Router {
         completedTasksCount: 0,
         rank: null,
         period: period as RankingPeriod,
-        year: year ? parseInt(year as string) : new Date().getFullYear(),
-        month: month ? parseInt(month as string) : null,
-        quarter: quarter ? parseInt(quarter as string) : null,
+        year: year ? queryTransformers.toInt(year as string, new Date().getFullYear()) : new Date().getFullYear(),
+        month: month ? queryTransformers.toInt(month as string, 1) : null,
+        quarter: quarter ? queryTransformers.toInt(quarter as string, 1) : null,
         user: null
       };
-      res.json(defaultRanking);
+      sendSuccess(res, defaultRanking);
       return;
     }
 
-    res.json(ranking);
+    sendSuccess(res, ranking);
   }));
 
   /**
@@ -174,7 +192,7 @@ export function createRankingRouter(pool: Pool): Router {
     // Force immediate update (bypass debouncing)
     await rankingUpdateQueue.forceUpdate();
 
-    res.json({
+    sendSuccess(res, {
       message: 'All rankings updated successfully',
     });
   }));
@@ -190,7 +208,7 @@ export function createRankingRouter(pool: Pool): Router {
       debounceDelay: rankingUpdateQueue.getDebounceDelay(),
     };
 
-    res.json(status);
+    sendSuccess(res, status);
   }));
 
   return router;

@@ -6,6 +6,7 @@
 
 import { redisClient } from '../config/redis.js';
 import { logger } from '../config/logger.js';
+import { logError } from '../utils/errorLogger.js';
 
 export enum QueueName {
   NOTIFICATIONS = 'queue:notifications',
@@ -88,7 +89,7 @@ export class QueueService {
       logger.info('Job enqueued to queue', { jobId: job.id, queueName, type });
       return job.id;
     } catch (error) {
-      logger.error('Error enqueueing job to queue', error as Error, { queueName, type });
+      logError('Error enqueueing job to queue', error, { queueName, type });
       throw error;
     }
   }
@@ -111,7 +112,7 @@ export class QueueService {
       });
       return job;
     } catch (error) {
-      logger.error('Error dequeuing from queue', error as Error, { queueName });
+      logError('Error dequeuing from queue', error, { queueName });
       return null;
     }
   }
@@ -121,7 +122,7 @@ export class QueueService {
    */
   static async retry(queueName: QueueName, job: QueueJob, error: string): Promise<void> {
     if (job.attempts >= job.maxAttempts) {
-      logger.error('Job failed after maximum attempts', new Error(error), { 
+      logError('Job failed after maximum attempts', error, { 
         jobId: job.id, 
         attempts: job.attempts,
         maxAttempts: job.maxAttempts,
@@ -144,7 +145,7 @@ export class QueueService {
           maxAttempts: job.maxAttempts 
         });
       } catch (err) {
-        logger.error('Error re-queuing job', err as Error, { jobId: job.id, queueName });
+        logError('Error re-queuing job', err, { jobId: job.id, queueName });
       }
     }, this.RETRY_DELAY);
   }
@@ -170,7 +171,7 @@ export class QueueService {
         error 
       });
     } catch (err) {
-      logger.error('Error moving job to DLQ', err as Error, { 
+      logError('Error moving job to DLQ', err, { 
         jobId: job.id, 
         queueName,
         dlqName 
@@ -185,7 +186,7 @@ export class QueueService {
     try {
       return await redisClient.lLen(queueName);
     } catch (error) {
-      logger.error('Error getting queue length', error as Error, { queueName });
+      logError('Error getting queue length', error, { queueName });
       return 0;
     }
   }
@@ -198,7 +199,7 @@ export class QueueService {
       await redisClient.del(queueName);
       logger.info('Queue cleared', { queueName });
     } catch (error) {
-      logger.error('Error clearing queue', error as Error, { queueName });
+      logError('Error clearing queue', error, { queueName });
     }
   }
 

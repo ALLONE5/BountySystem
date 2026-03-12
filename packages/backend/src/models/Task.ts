@@ -4,6 +4,7 @@ export enum TaskStatus {
   PENDING_ACCEPTANCE = 'pending_acceptance',  // 等待被指定用户接受
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
+  ABANDONED = 'abandoned',
 }
 
 export enum InvitationStatus {

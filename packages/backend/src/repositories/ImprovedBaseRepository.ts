@@ -204,7 +204,7 @@ export abstract class ImprovedBaseRepository<T> {
     return this.executeQuery('delete', async () => {
       const query = `DELETE FROM ${this.tableName} WHERE id = $1`;
       const result = await this.pool.query(query, [id]);
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     }, { id });
   }
 

@@ -1,13 +1,13 @@
 import React from 'react';
-import { Card, Statistic, Row, Col, message } from 'antd';
+import { Card, Statistic, Row, Col } from 'antd';
 import {
-  DollarOutlined,
   ProjectOutlined,
   CheckCircleOutlined,
   UserOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import { Task, TaskStatus } from '../../types';
+import { message } from '../../utils/message';
 
 interface PublishedTasksStatsProps {
   tasks: Task[];
@@ -29,47 +29,33 @@ export const PublishedTasksStats: React.FC<PublishedTasksStatsProps> = ({ tasks 
   };
 
   return (
-    <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-      <Col xs={24} sm={12} md={6} lg={4}>
-        <Card 
-          variant="borderless"
-          hoverable 
-          style={{ 
-            borderLeft: '4px solid #cf1322',
-            transition: 'all 0.3s'
-          }}
-        >
+    <Row gutter={16} style={{ marginBottom: 24 }}>
+      <Col xs={24} sm={12} lg={6}>
+        <Card className="stat-card" style={{ borderLeft: '4px solid #f5222d' }}>
           <Statistic
             title="总悬赏金额"
             value={stats.totalBounty}
+            prefix="$"
             precision={2}
-            prefix={<DollarOutlined style={{ fontSize: '20px' }} />}
+            styles={{ content: { fontSize: 24, fontWeight: 600, color: '#f5222d' } }}
           />
         </Card>
       </Col>
-      <Col xs={24} sm={12} md={6} lg={4}>
-        <Card 
-          variant="borderless"
-          hoverable 
-          style={{ 
-            borderLeft: '4px solid #1890ff',
-            transition: 'all 0.3s'
-          }}
-        >
+      <Col xs={24} sm={12} lg={6}>
+        <Card className="stat-card" style={{ borderLeft: '4px solid #1890ff' }}>
           <Statistic
             title="发布的任务"
             value={stats.totalTasks}
-            prefix={<ProjectOutlined style={{ fontSize: '20px', color: '#1890ff' }} />}
+            prefix={<ProjectOutlined style={{ color: '#1890ff', fontSize: 20 }} />}
+            styles={{ content: { fontSize: 24, fontWeight: 600 } }}
           />
         </Card>
       </Col>
-      <Col xs={24} sm={12} md={6} lg={4}>
+      <Col xs={24} sm={12} lg={6}>
         <Card 
-          variant="borderless"
-          hoverable 
+          className="stat-card" 
           style={{ 
             borderLeft: '4px solid #fa8c16',
-            transition: 'all 0.3s',
             cursor: stats.pendingAcceptance > 0 ? 'pointer' : 'default'
           }}
           onClick={handlePendingClick}
@@ -77,39 +63,28 @@ export const PublishedTasksStats: React.FC<PublishedTasksStatsProps> = ({ tasks 
           <Statistic
             title="待接受"
             value={stats.pendingAcceptance}
-            prefix={<UserOutlined style={{ fontSize: '20px' }} />}
+            prefix={<UserOutlined style={{ color: '#fa8c16', fontSize: 20 }} />}
+            styles={{ content: { fontSize: 24, fontWeight: 600 } }}
           />
         </Card>
       </Col>
-      <Col xs={24} sm={12} md={6} lg={4}>
-        <Card 
-          variant="borderless"
-          hoverable 
-          style={{ 
-            borderLeft: '4px solid #faad14',
-            transition: 'all 0.3s'
-          }}
-        >
+      <Col xs={24} sm={12} lg={6}>
+        <Card className="stat-card" style={{ borderLeft: '4px solid #faad14' }}>
           <Statistic
             title="进行中"
             value={stats.inProgress}
-            prefix={<PlayCircleOutlined style={{ fontSize: '20px' }} />}
+            prefix={<PlayCircleOutlined style={{ color: '#faad14', fontSize: 20 }} />}
+            styles={{ content: { fontSize: 24, fontWeight: 600 } }}
           />
         </Card>
       </Col>
-      <Col xs={24} sm={12} md={6} lg={4}>
-        <Card 
-          variant="borderless"
-          hoverable 
-          style={{ 
-            borderLeft: '4px solid #52c41a',
-            transition: 'all 0.3s'
-          }}
-        >
+      <Col xs={24} sm={12} lg={6}>
+        <Card className="stat-card" style={{ borderLeft: '4px solid #52c41a' }}>
           <Statistic
             title="已完成"
             value={stats.completed}
-            prefix={<CheckCircleOutlined style={{ fontSize: '20px' }} />}
+            prefix={<CheckCircleOutlined style={{ color: '#52c41a', fontSize: 20 }} />}
+            styles={{ content: { fontSize: 24, fontWeight: 600 } }}
           />
         </Card>
       </Col>

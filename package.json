@@ -8,10 +8,15 @@
   "scripts": {
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:frontend-bak": "cd packages/frontend-bak && npm run dev",
+    "dev:compare": "node scripts/start-both-frontends.js",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.13.6"
   }
 }

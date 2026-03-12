@@ -17,14 +17,14 @@ export interface UserStats {
 
 /**
  * User Repository Interface
- * Extends base repository with user-specific queries
+ * Defines user-specific repository methods
  */
 export interface IUserRepository {
   findById(id: string): Promise<User | null>;
   findAll(filters?: Record<string, any>): Promise<User[]>;
-  create(data: Partial<User>, client?: PoolClient): Promise<User>;
-  update(id: string, data: Partial<User>, client?: PoolClient): Promise<User>;
-  delete(id: string, client?: PoolClient): Promise<void>;
+  create(data: Partial<User>): Promise<User>;
+  update(id: string, data: Partial<User>): Promise<User | null>;
+  delete(id: string): Promise<boolean>;
   findByEmail(email: string): Promise<User | null>;
   findByUsername(username: string): Promise<User | null>;
   findWithStats(userId: string): Promise<User & { stats: UserStats }>;
@@ -49,6 +49,8 @@ export class UserRepository extends ImprovedBaseRepository<User> implements IUse
       passwordHash: row.password_hash,
       avatarId: row.avatar_id,
       role: row.role as UserRole,
+      balance: row.balance || 0,
+      notificationPreferences: row.notification_preferences || null,
       createdAt: row.created_at,
       lastLogin: row.last_login,
       updatedAt: row.updated_at

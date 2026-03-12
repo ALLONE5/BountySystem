@@ -5,7 +5,7 @@ export class TaskAssistantMapper {
    * Map database row to TaskAssistant model
    */
   static mapRowToTaskAssistant(row: any): TaskAssistant {
-    if (!row) return null;
+    if (!row) return undefined as any;
 
     return {
       id: row.id,

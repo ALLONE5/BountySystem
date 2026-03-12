@@ -218,7 +218,7 @@ export const TaskManagementPage: React.FC = () => {
     }
   };
 
-  const getStatusTag = (status: TaskStatus) => {
+  const getStatusTag = (status: TaskStatus | string) => {
     const statusMap = {
       [TaskStatus.NOT_STARTED]: { color: 'default', text: '未开始' },
       [TaskStatus.AVAILABLE]: { color: 'green', text: '可承接' },
@@ -230,13 +230,14 @@ export const TaskManagementPage: React.FC = () => {
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
-  const getVisibilityTag = (visibility: Visibility) => {
+  const getVisibilityTag = (visibility: Visibility | string | undefined) => {
+    if (!visibility) return <Tag>未知</Tag>;
     const visibilityMap = {
       [Visibility.PUBLIC]: { color: 'blue', text: '公开' },
       [Visibility.POSITION_ONLY]: { color: 'orange', text: '仅岗位' },
       [Visibility.PRIVATE]: { color: 'red', text: '私有' },
     };
-    const config = visibilityMap[visibility];
+    const config = visibilityMap[visibility as Visibility] || { color: 'default', text: visibility };
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
@@ -398,7 +399,7 @@ export const TaskManagementPage: React.FC = () => {
 
       {/* 添加协作者 */}
       <AddAssistantModal
-        open={addAssistantModal.visible}
+        visible={addAssistantModal.visible}
         onCancel={addAssistantModal.close}
         loading={addAssistantSubmitting}
         searchUsers={async (keyword) => {

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { DependencyService } from '../services/DependencyService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { sendCreated } from '../utils/responseHelpers.js';
 
 const router = Router();
 const dependencyService = new DependencyService();
@@ -26,7 +27,7 @@ router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) 
     dependsOnTaskId,
   });
 
-  res.status(201).json(dependency);
+  sendCreated(res, dependency);
 }));
 
 router.delete('/', authenticate, asyncHandler(async (req: Request, res: Response) => {

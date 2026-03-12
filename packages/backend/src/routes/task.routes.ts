@@ -12,6 +12,9 @@ import { UserRole } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { resolve } from '../config/container.js';
 import { Validator } from '../utils/Validator.js';
+import { parsePagination } from '../utils/pagination.js';
+import { queryTransformers } from '../utils/queryValidation.js';
+import { sendValidationError, sendNotFound, sendForbidden, sendSuccess, sendCreated } from '../utils/responseHelpers.js';
 
 const router = Router();
 // Use DI container to get properly configured TaskService
@@ -31,7 +34,7 @@ router.get('/visible', authenticate, asyncHandler(async (req: Request, res: Resp
 
   const tasks = await taskService.getVisibleTasks(userId, userRole);
 
-  res.json(tasks);
+  sendSuccess(res, tasks);
 }));
 
 /**
@@ -46,9 +49,12 @@ router.get('/available', authenticate, asyncHandler(async (req: Request, res: Re
   const userId = req.user!.userId;
   const userRole = req.user!.role;
 
-  // Parse pagination parameters from query string
-  const page = req.query.page ? parseInt(req.query.page as string) : undefined;
-  const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string) : undefined;
+  // Parse pagination parameters using utility
+  const { page, pageSize } = parsePagination({
+    page: queryTransformers.toInt(req.query.page as string, 1),
+    pageSize: queryTransformers.toInt(req.query.pageSize as string, 20),
+    maxPageSize: 100
+  });
 
   // Parse sorting parameters
   const sortBy = req.query.sortBy as string | undefined;
@@ -57,27 +63,17 @@ router.get('/available', authenticate, asyncHandler(async (req: Request, res: Re
   // Parse search parameter
   const search = req.query.search as string | undefined;
 
-  // Validate pagination parameters
-  if (page !== undefined && (isNaN(page) || page < 1)) {
-    return res.status(400).json({ error: 'Page must be a positive integer >= 1' });
-  }
-  if (pageSize !== undefined && (isNaN(pageSize) || pageSize < 1 || pageSize > 100)) {
-    return res.status(400).json({ error: 'Page size must be between 1 and 100' });
-  }
-
   // Validate sorting parameters
   const validSortFields = ['bounty', 'deadline', 'priority', 'createdAt', 'updatedAt'];
   if (sortBy && !validSortFields.includes(sortBy)) {
-    return res.status(400).json({ 
-      error: `Invalid sortBy field. Must be one of: ${validSortFields.join(', ')}` 
-    });
+    return sendValidationError(res, `Invalid sortBy field. Must be one of: ${validSortFields.join(', ')}`);
   }
   if (sortOrder && !['asc', 'desc'].includes(sortOrder)) {
-    return res.status(400).json({ error: 'sortOrder must be either "asc" or "desc"' });
+    return sendValidationError(res, 'sortOrder must be either "asc" or "desc"');
   }
 
-  // Build pagination object if parameters provided
-  const pagination = (page || pageSize) ? { page, pageSize } : undefined;
+  // Build pagination object
+  const pagination = { page, pageSize };
 
   try {
     const result = await taskService.getAvailableTasks(
@@ -88,10 +84,10 @@ router.get('/available', authenticate, asyncHandler(async (req: Request, res: Re
       sortOrder,
       search
     );
-    res.json(result);
+    sendSuccess(res, result);
   } catch (error) {
     if (error instanceof ValidationError) {
-      return res.status(400).json({ error: error.message });
+      return sendValidationError(res, error.message);
     }
     // Let asyncHandler handle other errors
     throw error;
@@ -109,7 +105,7 @@ router.get('/user/published', authenticate, asyncHandler(async (req: Request, re
   // 获取所有任务（包括子任务），以便前端可以计算子任务数量
   const tasks = await taskService.getTasksByUser(userId, 'publisher', false);
 
-  res.json(tasks);
+  sendSuccess(res, tasks);
 }));
 
 /**
@@ -123,7 +119,7 @@ router.get('/user/assigned', authenticate, asyncHandler(async (req: Request, res
   // 获取所有任务（包括子任务），以便前端可以计算子任务数量
   const tasks = await taskService.getTasksByUser(userId, 'assignee', false);
 
-  res.json(tasks);
+  sendSuccess(res, tasks);
 }));
 
 /**
@@ -135,7 +131,7 @@ router.post('/report', authenticate, asyncHandler(async (req: Request, res: Resp
   const { type } = req.body;
 
   if (!type || !['daily', 'weekly', 'monthly', 'total'].includes(type)) {
-    return res.status(400).json({ error: 'Valid report type is required (daily, weekly, monthly, total)' });
+    return sendValidationError(res, 'Valid report type is required (daily, weekly, monthly, total)');
   }
 
   // Get user's tasks for the report
@@ -244,7 +240,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
 
   const stats = await taskService.getTaskStats(userId);
 
-  res.json(stats);
+  sendSuccess(res, stats);
 }));
 
 /**
@@ -257,7 +253,7 @@ router.get('/invitations', authenticate, asyncHandler(async (req: Request, res: 
 
   const invitations = await taskService.getTaskInvitations(userId);
 
-  res.json(invitations);
+  sendSuccess(res, invitations);
 }));
 
 /**
@@ -271,7 +267,7 @@ router.post('/:taskId/publish', authenticate, asyncHandler(async (req: Request, 
   const { acceptBySelf } = req.body;
 
   if (acceptBySelf === undefined) {
-    return res.status(400).json({ error: 'acceptBySelf is required' });
+    return sendValidationError(res, 'acceptBySelf is required');
   }
 
   const task = await taskService.publishTask(taskId, publisherId, acceptBySelf);
@@ -298,7 +294,7 @@ router.post('/:taskId/accept', authenticate, asyncHandler(async (req: Request, r
 
   const task = await taskService.acceptTask(taskId, userId);
 
-  res.json(task);
+  sendSuccess(res, task);
 }));
 
 /**
@@ -314,7 +310,7 @@ router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) 
 
   const task = await taskService.createTask(taskData);
 
-  res.status(201).json(task);
+  sendCreated(res, task);
 }));
 
 /**
@@ -328,10 +324,10 @@ router.get('/:taskId', authenticate, asyncHandler(async (req: Request, res: Resp
   const task = await taskService.getTask(taskId);
 
   if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
+    return sendNotFound(res, 'Task');
   }
 
-  res.json(task);
+  sendSuccess(res, task);
 }));
 
 /**
@@ -344,7 +340,7 @@ router.put('/:taskId', authenticate, asyncHandler(async (req: Request, res: Resp
 
   const task = await taskService.updateTask(taskId, updates);
 
-  res.json(task);
+  sendSuccess(res, task);
 }));
 
 /**
@@ -369,7 +365,7 @@ router.get('/:taskId/subtasks', authenticate, asyncHandler(async (req: Request, 
 
   const subtasks = await taskService.getSubtasks(taskId);
 
-  res.json(subtasks);
+  sendSuccess(res, subtasks);
 }));
 
 /**
@@ -387,27 +383,23 @@ router.post('/:taskId/subtasks', authenticate, asyncHandler(async (req: Request,
   // Get parent task to check if it has an assignee
   const parentTask = await taskService.getTask(taskId);
   if (!parentTask) {
-    return res.status(404).json({ error: 'Parent task not found' });
+    return sendNotFound(res, 'Parent task');
   }
 
   // NEW REQUIREMENT: Parent task must have an assignee before subtasks can be created
   if (!parentTask.assigneeId) {
-    return res.status(400).json({ 
-      error: 'Cannot create subtask: parent task must be accepted first' 
-    });
+    return sendValidationError(res, 'Cannot create subtask: parent task must be accepted first');
   }
 
   // Verify user can create subtask (creator or parent assignee)
   const canCreate = await taskService.canCreateSubtask(taskId, userId);
   if (!canCreate) {
-    return res.status(403).json({ 
-      error: 'Only the task creator or parent task assignee can create subtasks' 
-    });
+    return sendForbidden(res, 'Only the task creator or parent task assignee can create subtasks');
   }
 
   const subtask = await taskService.addSubtask(taskId, subtaskData);
 
-  res.status(201).json(subtask);
+  sendCreated(res, subtask);
 }));
 
 /**
@@ -421,9 +413,7 @@ router.post('/:subtaskId/publish', authenticate, asyncHandler(async (req: Reques
   const { visibility, bountyAmount, positionId } = req.body;
 
   if (!visibility || bountyAmount === undefined) {
-    return res.status(400).json({ 
-      error: 'visibility and bountyAmount are required' 
-    });
+    return sendValidationError(res, 'visibility and bountyAmount are required');
   }
 
   const publishedTask = await taskService.publishSubtask(subtaskId, userId, {
@@ -444,7 +434,7 @@ router.post('/:taskId/complete', authenticate, asyncHandler(async (req: Request,
 
   const resolvedTaskIds = await taskService.completeTask(taskId, userId);
 
-  res.json({
+  sendSuccess(res, {
     message: 'Task completed successfully',
     resolvedTaskIds,
   });
@@ -459,12 +449,12 @@ router.post('/:taskId/bonus', authenticate, asyncHandler(async (req: Request, re
 
   // Verify admin permissions
   if (!Validator.isSuperAdmin(userRole) && userRole !== UserRole.POSITION_ADMIN) {
-    return res.status(403).json({ error: 'Only administrators can add bonus rewards' });
+    return sendForbidden(res, 'Only administrators can add bonus rewards');
   }
 
   // Validate amount
   if (!amount || typeof amount !== 'number' || amount <= 0) {
-    return res.status(400).json({ error: 'Valid bonus amount is required' });
+    return sendValidationError(res, 'Valid bonus amount is required');
   }
 
   const result = await taskService.addBonusReward(taskId, amount, userId, reason);
@@ -482,7 +472,7 @@ router.get('/:taskId/bonus-rewards', authenticate, asyncHandler(async (req: Requ
   
   const bonusRewards = await taskService.getBonusRewards(taskId);
   
-  res.json({
+  sendSuccess(res, {
     bonusRewards,
   });
 }));
@@ -493,7 +483,7 @@ router.post('/:taskId/transfer', authenticate, asyncHandler(async (req: Request,
   const { newUserId } = req.body;
 
   if (!newUserId) {
-    return res.status(400).json({ error: 'newUserId is required' });
+    return sendValidationError(res, 'newUserId is required');
   }
 
   const result = await taskService.transferTask(taskId, userId, newUserId);
@@ -509,7 +499,7 @@ router.put('/:taskId/progress', authenticate, asyncHandler(async (req: Request, 
   const { progress } = req.body;
 
   if (progress === undefined || progress === null) {
-    return res.status(400).json({ error: 'progress is required' });
+    return sendValidationError(res, 'progress is required');
   }
 
   const result = await taskService.updateProgress(taskId, progress);
@@ -526,7 +516,7 @@ router.put('/:taskId/progress', authenticate, asyncHandler(async (req: Request, 
 router.get('/:id/comments', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const comments = await commentService.getCommentsByTask(id);
-  res.json(comments);
+  sendSuccess(res, comments);
 }));
 
 router.post('/:id/comments', authenticate, asyncHandler(async (req: Request, res: Response) => {
@@ -536,13 +526,13 @@ router.post('/:id/comments', authenticate, asyncHandler(async (req: Request, res
   const userRole = req.user!.role;
 
   if (!content) {
-    return res.status(400).json({ error: 'Content is required' });
+    return sendValidationError(res, 'Content is required');
   }
 
   // Permission check: Publisher, Assignee, or Admin
   const task = await taskService.getTask(id);
   if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
+    return sendNotFound(res, 'Task');
   }
 
   const isPublisher = task.publisherId === userId;
@@ -550,7 +540,7 @@ router.post('/:id/comments', authenticate, asyncHandler(async (req: Request, res
   const isAdmin = Validator.isSuperAdmin(userRole);
 
   if (!isPublisher && !isAssignee && !isAdmin) {
-    return res.status(403).json({ error: 'Permission denied' });
+    return sendForbidden(res, 'Permission denied');
   }
 
   const comment = await commentService.createComment({
@@ -559,13 +549,13 @@ router.post('/:id/comments', authenticate, asyncHandler(async (req: Request, res
     content,
   });
 
-  res.status(201).json(comment);
+  sendCreated(res, comment);
 }));
 
 router.get('/:id/attachments', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const attachments = await attachmentService.getAttachmentsByTask(id);
-  res.json(attachments);
+  sendSuccess(res, attachments);
 }));
 
 router.post('/:id/attachments', authenticate, asyncHandler(async (req: Request, res: Response) => {
@@ -574,20 +564,20 @@ router.post('/:id/attachments', authenticate, asyncHandler(async (req: Request, 
   const userId = req.user!.userId;
 
   if (!fileName || !fileUrl) {
-    return res.status(400).json({ error: 'File name and URL are required' });
+    return sendValidationError(res, 'File name and URL are required');
   }
 
   // Permission check: Publisher or Assignee
   const task = await taskService.getTask(id);
   if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
+    return sendNotFound(res, 'Task');
   }
 
   const isPublisher = task.publisherId === userId;
   const isAssignee = task.assigneeId === userId;
 
   if (!isPublisher && !isAssignee) {
-    return res.status(403).json({ error: 'Permission denied. Only Publisher or Assignee can add attachments.' });
+    return sendForbidden(res, 'Permission denied. Only Publisher or Assignee can add attachments.');
   }
 
   const attachment = await attachmentService.createAttachment({
@@ -599,13 +589,13 @@ router.post('/:id/attachments', authenticate, asyncHandler(async (req: Request, 
     fileSize: fileSize,
   });
 
-  res.status(201).json(attachment);
+  sendCreated(res, attachment);
 }));
 
 router.get('/:id/assistants', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const assistants = await taskAssistantService.getAssistantsByTask(id);
-  res.json(assistants);
+  sendSuccess(res, assistants);
 }));
 
 router.post('/:id/assistants', authenticate, asyncHandler(async (req: Request, res: Response) => {
@@ -615,20 +605,20 @@ router.post('/:id/assistants', authenticate, asyncHandler(async (req: Request, r
   const userRole = req.user!.role;
 
   if (!assistantId || bountyAllocation === undefined) {
-    return res.status(400).json({ error: 'Assistant ID and bounty allocation are required' });
+    return sendValidationError(res, 'Assistant ID and bounty allocation are required');
   }
 
   // Permission check: Assignee or Admin
   const task = await taskService.getTask(id);
   if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
+    return sendNotFound(res, 'Task');
   }
 
   const isAssignee = task.assigneeId === userId;
   const isAdmin = Validator.isSuperAdmin(userRole);
 
   if (!isAssignee && !isAdmin) {
-    return res.status(403).json({ error: 'Permission denied. Only Assignee or Admin can add assistants.' });
+    return sendForbidden(res, 'Permission denied. Only Assignee or Admin can add assistants.');
   }
 
   const assistant = await taskAssistantService.addAssistant({
@@ -638,7 +628,7 @@ router.post('/:id/assistants', authenticate, asyncHandler(async (req: Request, r
     allocationValue: bountyAllocation,
   });
 
-  res.status(201).json(assistant);
+  sendCreated(res, assistant);
 }));
 
 router.delete('/:id/assistants/:assistantId', authenticate, asyncHandler(async (req: Request, res: Response) => {
@@ -649,14 +639,14 @@ router.delete('/:id/assistants/:assistantId', authenticate, asyncHandler(async (
   // Permission check: Assignee or Admin
   const task = await taskService.getTask(id);
   if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
+    return sendNotFound(res, 'Task');
   }
 
   const isAssignee = task.assigneeId === userId;
   const isAdmin = Validator.isSuperAdmin(userRole);
 
   if (!isAssignee && !isAdmin) {
-    return res.status(403).json({ error: 'Permission denied. Only Assignee or Admin can remove assistants.' });
+    return sendForbidden(res, 'Permission denied. Only Assignee or Admin can remove assistants.');
   }
 
   await taskAssistantService.removeAssistant(id, assistantId);
@@ -673,12 +663,12 @@ router.post('/:taskId/assign-to-user', authenticate, asyncHandler(async (req: Re
   const { invitedUserId } = req.body;
 
   if (!invitedUserId) {
-    return res.status(400).json({ error: 'invitedUserId is required' });
+    return sendValidationError(res, 'invitedUserId is required');
   }
 
   const task = await taskService.assignTaskToUser(taskId, publisherId, invitedUserId);
 
-  res.json({
+  sendSuccess(res, {
     message: 'Task assigned successfully',
     task,
   });
@@ -694,7 +684,7 @@ router.post('/:taskId/accept-assignment', authenticate, asyncHandler(async (req:
 
   const task = await taskService.acceptTaskAssignment(taskId, userId);
 
-  res.json({
+  sendSuccess(res, {
     message: 'Task assignment accepted successfully',
     task,
   });
@@ -711,7 +701,7 @@ router.post('/:taskId/reject-assignment', authenticate, asyncHandler(async (req:
 
   const task = await taskService.rejectTaskAssignment(taskId, userId, reason);
 
-  res.json({
+  sendSuccess(res, {
     message: 'Task assignment rejected successfully',
     task,
   });

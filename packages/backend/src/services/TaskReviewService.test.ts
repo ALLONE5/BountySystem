@@ -1,3 +1,4 @@
+import { createTestDependencies } from '../test-utils/test-setup.js';
 import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { pool } from '../config/database.js';
 import { TaskReviewService } from './TaskReviewService.js';
@@ -8,6 +9,8 @@ import { TaskStatus } from '../models/Task.js';
 import { cleanupAllTestData } from '../test-utils/cleanup.js';
 
 describe('TaskReviewService', () => {
+  const { userRepository, taskRepository, groupRepository, positionRepository, permissionChecker } = createTestDependencies();
+  
   let service: TaskReviewService;
   let userService: UserService;
   let taskService: TaskService;

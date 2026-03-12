@@ -5,7 +5,7 @@ export class CommentMapper {
    * Map database row to Comment model
    */
   static mapRowToComment(row: any): Comment {
-    if (!row) return null;
+    if (!row) return undefined as any;
 
     return {
       id: row.id,

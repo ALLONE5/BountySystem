@@ -8,6 +8,7 @@ import { BountyService } from './BountyService.js';
 import { UserRole } from '../models/User.js';
 import { TaskStatus } from '../models/Task.js';
 import { cleanupAllTestData } from '../test-utils/cleanup.js';
+import { createTestDependencies } from '../test-utils/test-setup.js';
 
 describe('BountyDistributionService', () => {
   let service: BountyDistributionService;
@@ -19,8 +20,10 @@ describe('BountyDistributionService', () => {
   let testTaskId: string;
 
   beforeEach(async () => {
+    const deps = createTestDependencies();
+    
     service = new BountyDistributionService();
-    userService = new UserService();
+    userService = new UserService(deps.userRepository, deps.permissionChecker);
     taskService = new TaskService();
     bountyService = new BountyService();
 
@@ -373,7 +376,7 @@ describe('BountyDistributionService', () => {
 
       const transactions = await service.getUserTransactions(testUserId);
       expect(transactions.length).toBeGreaterThan(0);
-      expect(transactions[0].userId).toBe(testUserId);
+      expect(transactions[0].toUserId).toBe(testUserId);
     });
   });
 });

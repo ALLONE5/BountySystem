@@ -5,6 +5,7 @@ import { TaskService } from './TaskService.js';
 import { UserService } from './UserService.js';
 import { TaskStatus } from '../models/Task.js';
 import { cleanupAllTestData } from '../test-utils/cleanup.js';
+import { createTestDependencies } from '../test-utils/test-setup.js';
 
 describe('Dependency Blocking and Resolution Logic', () => {
   let dependencyService: DependencyService;
@@ -13,9 +14,10 @@ describe('Dependency Blocking and Resolution Logic', () => {
   let testUserId: string;
 
   beforeEach(async () => {
+    const { taskRepository, userRepository, groupRepository, positionRepository, permissionChecker } = createTestDependencies();
     dependencyService = new DependencyService();
-    taskService = new TaskService();
-    userService = new UserService();
+    taskService = new TaskService(taskRepository, positionRepository, permissionChecker);
+    userService = new UserService(userRepository, permissionChecker);
 
     // Create a test user
     const user = await userService.createUser({
@@ -193,7 +195,7 @@ describe('Dependency Blocking and Resolution Logic', () => {
       expect(task2Status?.status).toBe(TaskStatus.NOT_STARTED);
 
       // Complete Task1 and resolve dependencies
-      const resolvedTasks = await taskService.completeTask(task1.id);
+      const resolvedTasks = await taskService.completeTask(task1.id, testUserId);
 
       // Task2 should be in the resolved list
       expect(resolvedTasks).toContain(task2.id);
@@ -232,7 +234,7 @@ describe('Dependency Blocking and Resolution Logic', () => {
       });
 
       // Complete Task1
-      const resolvedTasks = await taskService.completeTask(task1.id);
+      const resolvedTasks = await taskService.completeTask(task1.id, testUserId);
 
       // Both Task2 and Task3 should be resolved
       expect(resolvedTasks).toHaveLength(2);
@@ -275,7 +277,7 @@ describe('Dependency Blocking and Resolution Logic', () => {
       });
 
       // Complete only Task1
-      const resolvedTasks1 = await taskService.completeTask(task1.id);
+      const resolvedTasks1 = await taskService.completeTask(task1.id, testUserId);
 
       // Task3 should NOT be resolved yet
       expect(resolvedTasks1).not.toContain(task3.id);
@@ -284,7 +286,7 @@ describe('Dependency Blocking and Resolution Logic', () => {
       expect(task3Status?.status).toBe(TaskStatus.NOT_STARTED);
 
       // Complete Task2
-      const resolvedTasks2 = await taskService.completeTask(task2.id);
+      const resolvedTasks2 = await taskService.completeTask(task2.id, testUserId);
 
       // Now Task3 should be resolved
       expect(resolvedTasks2).toContain(task3.id);
@@ -322,7 +324,7 @@ describe('Dependency Blocking and Resolution Logic', () => {
       });
 
       // Complete Task A
-      const resolvedAfterA = await taskService.completeTask(taskA.id);
+      const resolvedAfterA = await taskService.completeTask(taskA.id, testUserId);
 
       // Only Task B should be resolved
       expect(resolvedAfterA).toContain(taskB.id);
@@ -334,7 +336,7 @@ describe('Dependency Blocking and Resolution Logic', () => {
       expect(taskCStatus?.status).toBe(TaskStatus.NOT_STARTED);
 
       // Complete Task B
-      const resolvedAfterB = await taskService.completeTask(taskB.id);
+      const resolvedAfterB = await taskService.completeTask(taskB.id, testUserId);
 
       // Now Task C should be resolved
       expect(resolvedAfterB).toContain(taskC.id);
@@ -367,7 +369,7 @@ describe('Dependency Blocking and Resolution Logic', () => {
       });
 
       // Complete Task1
-      await taskService.completeTask(task1.id);
+      await taskService.completeTask(task1.id, testUserId);
 
       // Task2 should still be IN_PROGRESS, not changed to AVAILABLE
       const task2Status = await taskService.getTask(task2.id);

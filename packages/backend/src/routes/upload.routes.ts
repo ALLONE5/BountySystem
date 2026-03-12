@@ -7,6 +7,9 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { requireDeveloper } from '../middleware/permission.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { auditFileUpload, auditFileDelete } from '../middleware/audit.middleware.js';
+import { sendSuccess } from '../utils/responseHelpers.js';
+import { ValidationError } from '../utils/errors.js';
+import logger from '../config/logger.js';
 
 const router = Router();
 
@@ -137,17 +140,13 @@ router.get('/logos', asyncHandler(async (req: Request, res: Response) => {
       })
     );
     
-    res.status(200).json({
-      success: true,
-      data: logos.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
-    });
+    sendSuccess(res, logos.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+    );
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // Directory doesn't exist, return empty array
-      res.status(200).json({
-        success: true,
-        data: [],
-      });
+      sendSuccess(res, [],
+      );
     } else {
       throw error;
     }

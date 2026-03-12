@@ -1,26 +1,9 @@
-import { PoolClient } from 'pg';
-import { BaseRepository } from './BaseRepository.js';
+import { ImprovedBaseRepository } from './ImprovedBaseRepository.js';
 import { Attachment } from '../models/Attachment.js';
-import { QueryBuilder } from '../utils/QueryBuilder.js';
-import { Validator } from '../utils/Validator.js';
+import { HandleError } from '../utils/decorators/handleError.js';
 
-export class AttachmentRepository extends BaseRepository<Attachment> {
-  constructor() {
-    super('task_attachments');
-  }
-
-  protected getColumns(): string[] {
-    return [
-      'id',
-      'task_id',
-      'uploader_id',
-      'file_name',
-      'file_url',
-      'file_type',
-      'file_size',
-      'created_at'
-    ];
-  }
+export class AttachmentRepository extends ImprovedBaseRepository<Attachment> {
+  protected tableName = 'task_attachments';
 
   protected mapRowToModel(row: any): Attachment {
     return {
@@ -40,140 +23,117 @@ export class AttachmentRepository extends BaseRepository<Attachment> {
     };
   }
 
-  protected validateData(data: Partial<Attachment>, isUpdate?: boolean): void {
-    if (!isUpdate) {
-      Validator.required(data.taskId, 'taskId');
-      Validator.required(data.uploaderId, 'uploaderId');
-      Validator.required(data.fileName, 'fileName');
-      Validator.required(data.fileUrl, 'fileUrl');
-      Validator.required(data.fileType, 'fileType');
-      Validator.required(data.fileSize, 'fileSize');
-    }
-
-    if (data.fileName !== undefined) {
-      Validator.string(data.fileName, 'fileName');
-      Validator.maxLength(data.fileName, 255, 'fileName');
-    }
-
-    if (data.fileUrl !== undefined) {
-      Validator.string(data.fileUrl, 'fileUrl');
-      Validator.maxLength(data.fileUrl, 500, 'fileUrl');
-    }
-
-    if (data.fileType !== undefined) {
-      Validator.string(data.fileType, 'fileType');
-      Validator.maxLength(data.fileType, 100, 'fileType');
-    }
-
-    if (data.fileSize !== undefined) {
-      Validator.positive(data.fileSize, 'fileSize');
-    }
-  }
-
   /**
    * Get attachments by task ID with uploader information
    */
-  async findByTaskId(taskId: string, client?: PoolClient): Promise<Attachment[]> {
-    const query = new QueryBuilder()
-      .select(
-        'ta.id',
-        'ta.task_id',
-        'ta.uploader_id',
-        'ta.file_name',
-        'ta.file_url',
-        'ta.file_type',
-        'ta.file_size',
-        'ta.created_at',
-        'u.username',
-        'a.image_url as avatar_url'
-      )
-      .from('task_attachments ta')
-      .innerJoin('users u', 'ta.uploader_id = u.id')
-      .leftJoin('avatars a', 'u.avatar_id = a.id')
-      .where('ta.task_id = $1')
-      .orderBy('ta.created_at', 'DESC')
-      .build();
+  @HandleError({ context: 'AttachmentRepository.findByTaskId' })
+  async findByTaskId(taskId: string): Promise<Attachment[]> {
+    return this.executeQuery('findByTaskId', async () => {
+      const query = `
+        SELECT 
+          ta.id,
+          ta.task_id,
+          ta.uploader_id,
+          ta.file_name,
+          ta.file_url,
+          ta.file_type,
+          ta.file_size,
+          ta.created_at,
+          u.username,
+          a.image_url as avatar_url
+        FROM task_attachments ta
+        INNER JOIN users u ON ta.uploader_id = u.id
+        LEFT JOIN avatars a ON u.avatar_id = a.id
+        WHERE ta.task_id = $1
+        ORDER BY ta.created_at DESC
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    return rows.map(row => this.mapRowToModel(row));
+      const result = await this.pool.query(query, [taskId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { taskId });
   }
 
   /**
    * Get attachments by uploader ID
    */
-  async findByUploaderId(uploaderId: string, limit?: number, client?: PoolClient): Promise<Attachment[]> {
-    const queryBuilder = new QueryBuilder()
-      .select(
-        'ta.id',
-        'ta.task_id',
-        'ta.uploader_id',
-        'ta.file_name',
-        'ta.file_url',
-        'ta.file_type',
-        'ta.file_size',
-        'ta.created_at',
-        'u.username',
-        'a.image_url as avatar_url'
-      )
-      .from('task_attachments ta')
-      .innerJoin('users u', 'ta.uploader_id = u.id')
-      .leftJoin('avatars a', 'u.avatar_id = a.id')
-      .where('ta.uploader_id = $1')
-      .orderBy('ta.created_at', 'DESC');
+  @HandleError({ context: 'AttachmentRepository.findByUploaderId' })
+  async findByUploaderId(uploaderId: string, limit?: number): Promise<Attachment[]> {
+    return this.executeQuery('findByUploaderId', async () => {
+      const query = `
+        SELECT 
+          ta.id,
+          ta.task_id,
+          ta.uploader_id,
+          ta.file_name,
+          ta.file_url,
+          ta.file_type,
+          ta.file_size,
+          ta.created_at,
+          u.username,
+          a.image_url as avatar_url
+        FROM task_attachments ta
+        INNER JOIN users u ON ta.uploader_id = u.id
+        LEFT JOIN avatars a ON u.avatar_id = a.id
+        WHERE ta.uploader_id = $1
+        ORDER BY ta.created_at DESC
+        ${limit ? `LIMIT ${limit}` : ''}
+      `;
 
-    if (limit) {
-      queryBuilder.limit(limit);
-    }
-
-    const query = queryBuilder.build();
-    const rows = await this.executeQuery(query, [uploaderId], client);
-    return rows.map(row => this.mapRowToModel(row));
+      const result = await this.pool.query(query, [uploaderId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { uploaderId, limit });
   }
 
   /**
    * Get attachments by file type
    */
-  async findByFileType(fileType: string, limit?: number, client?: PoolClient): Promise<Attachment[]> {
-    const queryBuilder = new QueryBuilder()
-      .select(...this.getColumns().map(col => `task_attachments.${col}`))
-      .from('task_attachments')
-      .where('file_type = $1')
-      .orderBy('created_at', 'DESC');
+  @HandleError({ context: 'AttachmentRepository.findByFileType' })
+  async findByFileType(fileType: string, limit?: number): Promise<Attachment[]> {
+    return this.executeQuery('findByFileType', async () => {
+      const query = `
+        SELECT *
+        FROM task_attachments
+        WHERE file_type = $1
+        ORDER BY created_at DESC
+        ${limit ? `LIMIT ${limit}` : ''}
+      `;
 
-    if (limit) {
-      queryBuilder.limit(limit);
-    }
-
-    const query = queryBuilder.build();
-    const rows = await this.executeQuery(query, [fileType], client);
-    return rows.map(row => this.mapRowToModel(row));
+      const result = await this.pool.query(query, [fileType]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { fileType, limit });
   }
 
   /**
    * Count attachments by task ID
    */
-  async countByTaskId(taskId: string, client?: PoolClient): Promise<number> {
-    const query = new QueryBuilder()
-      .select('COUNT(*) as count')
-      .from('task_attachments')
-      .where('task_id = $1')
-      .build();
+  @HandleError({ context: 'AttachmentRepository.countByTaskId' })
+  async countByTaskId(taskId: string): Promise<number> {
+    return this.executeQuery('countByTaskId', async () => {
+      const query = `
+        SELECT COUNT(*) as count
+        FROM task_attachments
+        WHERE task_id = $1
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    return parseInt(rows[0]?.count || '0');
+      const result = await this.pool.query(query, [taskId]);
+      return parseInt(result.rows[0]?.count || '0');
+    }, { taskId });
   }
 
   /**
    * Get total file size by task ID
    */
-  async getTotalFileSizeByTaskId(taskId: string, client?: PoolClient): Promise<number> {
-    const query = new QueryBuilder()
-      .select('COALESCE(SUM(file_size), 0) as total_size')
-      .from('task_attachments')
-      .where('task_id = $1')
-      .build();
+  @HandleError({ context: 'AttachmentRepository.getTotalFileSizeByTaskId' })
+  async getTotalFileSizeByTaskId(taskId: string): Promise<number> {
+    return this.executeQuery('getTotalFileSizeByTaskId', async () => {
+      const query = `
+        SELECT COALESCE(SUM(file_size), 0) as total_size
+        FROM task_attachments
+        WHERE task_id = $1
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    return parseInt(rows[0]?.total_size || '0');
+      const result = await this.pool.query(query, [taskId]);
+      return parseInt(result.rows[0]?.total_size || '0');
+    }, { taskId });
   }
 }

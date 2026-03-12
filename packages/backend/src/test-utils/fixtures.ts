@@ -25,7 +25,7 @@ export function createUserFixture(overrides: Partial<User> = {}): User {
     lastLogin: null,
     updatedAt: new Date('2024-01-01T00:00:00Z'),
     ...overrides,
-  };
+  } as User;
 }
 
 /**
@@ -63,7 +63,7 @@ export function createTaskFixture(overrides: Partial<Task> = {}): Task {
     aggregatedComplexity: null,
     updatedAt: new Date('2024-01-01T00:00:00Z'),
     ...overrides,
-  };
+  } as Task;
 }
 
 /**

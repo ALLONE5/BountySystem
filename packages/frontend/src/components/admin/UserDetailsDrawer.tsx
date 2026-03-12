@@ -7,17 +7,12 @@ import React from 'react';
 import { Drawer, Descriptions, Space, Button, Avatar, Typography, Divider } from 'antd';
 import { EditOutlined, UserOutlined, MailOutlined, CalendarOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { User, UserRole } from '../../types';
+import { User, UserRole, Position } from '../../types';
 import { StatusTag } from '../common/StatusTag';
 import { TagList } from '../common/TagList';
 import { ConfirmDeleteButton } from '../common/ConfirmDeleteButton';
 
 const { Title, Text } = Typography;
-
-interface Position {
-  id: string;
-  name: string;
-}
 
 interface UserWithDetails extends User {
   positions?: Position[];

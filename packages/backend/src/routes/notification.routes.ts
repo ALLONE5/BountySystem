@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { NotificationService } from '../services/NotificationService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { queryTransformers } from '../utils/queryValidation.js';
 
 const router = Router();
 const notificationService = new NotificationService();
@@ -13,7 +14,7 @@ const notificationService = new NotificationService();
  */
 router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const unreadOnly = req.query.unreadOnly === 'true';
+  const unreadOnly = queryTransformers.toBoolean(req.query.unreadOnly as string) ?? false;
 
   const notifications = await notificationService.getUserNotifications(
     userId,

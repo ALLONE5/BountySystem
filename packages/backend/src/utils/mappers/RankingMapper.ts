@@ -5,7 +5,7 @@ export class RankingMapper {
    * Map database row to Ranking model
    */
   static mapRowToRanking(row: any): Ranking {
-    if (!row) return null;
+    if (!row) return undefined as any;
 
     return {
       id: row.id,
@@ -45,7 +45,7 @@ export class RankingMapper {
    * Map database row to UserRankingInfo model
    */
   static mapRowToUserRankingInfo(row: any): UserRankingInfo {
-    if (!row) return null;
+    if (!row) return undefined as any;
 
     return {
       userId: row.user_id,
@@ -68,7 +68,7 @@ export class RankingMapper {
         role: row['user.role'],
         createdAt: row['user.createdAt'],
         lastLogin: row['user.lastLogin']
-      } : undefined
+      } as any : undefined
     };
   }
 

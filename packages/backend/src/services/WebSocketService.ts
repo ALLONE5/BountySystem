@@ -3,6 +3,7 @@ import { Server as HTTPServer } from 'http';
 import { NotificationPushService } from './NotificationPushService.js';
 import { JWTService } from '../utils/jwt.js';
 import { logger } from '../config/logger.js';
+import { logError } from '../utils/errorLogger.js';
 
 export class WebSocketService {
   private io: SocketIOServer;
@@ -61,7 +62,7 @@ export class WebSocketService {
           socket.emit('authenticated', { success: true, userId });
           logger.info('User authenticated on socket', { userId, socketId: socket.id });
         } catch (error) {
-          logger.error('Authentication error', error as Error, { socketId: socket.id });
+          logError('Authentication error', error, { socketId: socket.id });
           socket.emit('authenticated', { success: false, error: 'Invalid token' });
           socket.disconnect();
         }

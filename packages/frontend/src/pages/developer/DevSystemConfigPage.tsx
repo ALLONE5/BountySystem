@@ -7,7 +7,6 @@ import {
   Button,
   Switch,
   Space,
-  message,
   InputNumber,
   Upload,
   Alert,
@@ -19,6 +18,7 @@ import {
 import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined, BgColorsOutlined } from '@ant-design/icons';
 import { systemConfigApi, SystemConfig, SystemConfigUpdate, UploadedLogo } from '../../api/systemConfig';
 import { useSystemConfig } from '../../contexts/SystemConfigContext';
+import { message } from '../../utils/message';
 import './DevSystemConfigPage.css';
 
 const { Text } = Typography;
@@ -188,7 +188,7 @@ export const DevSystemConfigPage: React.FC = () => {
                           cover={
                             <img
                               alt={logo.filename}
-                              src={logo.url.startsWith('http') ? logo.url : `http://localhost:3000${logo.url}`}
+                              src={logo.url.startsWith('http') ? logo.url : `http://localhost:3001${logo.url}`}
                               style={{ height: 80, objectFit: 'contain', padding: 8 }}
                               onError={(e) => {
                                 e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMiAyMCAyNCAyMiAyNCAyNEMyNCAyNiAyMiAyOCAyMCAyOEMxOCAyOCAxNiAyNiAxNiAyNEMxNiAyMiAxOCAyMCAyMCAyMFoiIGZpbGw9IiNEOUQ5RDkiLz4KPC9zdmc+';

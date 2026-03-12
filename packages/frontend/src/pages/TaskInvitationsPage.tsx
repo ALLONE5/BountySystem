@@ -14,7 +14,6 @@ export const TaskInvitationsPage: React.FC = () => {
   const { handleAsyncError } = useErrorHandler();
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
   const [detailDrawerVisible, setDetailDrawerVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -46,24 +45,22 @@ export const TaskInvitationsPage: React.FC = () => {
 
   const handleRejectClick = (task: Task) => {
     setSelectedTask(task);
-    setRejectReason('');
     setRejectModalVisible(true);
   };
 
-  const handleRejectConfirm = async () => {
+  const handleRejectConfirm = async (reason: string = '') => {
     if (!selectedTask) return;
 
     setActionLoading(selectedTask.id);
     try {
       await handleAsyncError(
-        () => taskApi.rejectTaskAssignment(selectedTask.id, rejectReason),
+        () => taskApi.rejectTaskAssignment(selectedTask.id, reason),
         'TaskInvitationsPage.rejectTask',
         '已拒绝任务',
         '拒绝任务失败'
       );
       setRejectModalVisible(false);
       setSelectedTask(null);
-      setRejectReason('');
       refetch();
     } finally {
       setActionLoading(null);
@@ -78,7 +75,6 @@ export const TaskInvitationsPage: React.FC = () => {
   const handleRejectModalCancel = () => {
     setRejectModalVisible(false);
     setSelectedTask(null);
-    setRejectReason('');
   };
 
   if (loading) {
@@ -113,10 +109,8 @@ export const TaskInvitationsPage: React.FC = () => {
       <RejectTaskModal
         visible={rejectModalVisible}
         task={selectedTask}
-        rejectReason={rejectReason}
         loading={actionLoading === selectedTask?.id}
-        onReasonChange={setRejectReason}
-        onConfirm={handleRejectConfirm}
+        onSubmit={(values) => handleRejectConfirm(values.reason)}
         onCancel={handleRejectModalCancel}
       />
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, message } from 'antd';
+import { Card, Button, Typography } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Notification } from '../types';
@@ -13,6 +13,7 @@ import { taskApi } from '../api/task';
 import { useNotificationContext } from '../contexts/NotificationContext';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { NotificationTabs } from '../components/Notifications/NotificationTabs';
+import { message } from '../utils/message';
 import { NotificationList } from '../components/Notifications/NotificationList';
 import { RejectTaskModal } from '../components/Notifications/RejectTaskModal';
 import { logger } from '../utils/logger';
@@ -217,7 +218,6 @@ export const NotificationPage: React.FC = () => {
 
       <RejectTaskModal
         visible={rejectModalVisible}
-        task={selectedNotification?.relatedTask || null}
         rejectReason={rejectReason}
         loading={actionLoading === selectedNotification?.id}
         onReasonChange={setRejectReason}

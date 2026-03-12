@@ -266,7 +266,7 @@ export const GroupsPage: React.FC = () => {
       />
 
       <InviteMemberModal
-        open={inviteModalVisible}
+        visible={inviteModalVisible}
         onCancel={() => setInviteModalVisible(false)}
         onSubmit={handleInviteMember}
         loading={inviteLoading}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, Progress, List, Avatar, Badge, Spin, message } from 'antd';
+import { Card, Row, Col, Statistic, Progress, List, Avatar, Badge, Spin } from 'antd';
 import {
   UserOutlined,
   TeamOutlined,
@@ -12,13 +12,14 @@ import {
 } from '@ant-design/icons';
 import { 
   systemMonitorApi, 
-  SystemStats, 
+  SystemStats,
   OnlineUser, 
   SystemPerformance, 
   ActivityLog 
 } from '../../api/systemMonitor';
 import './AdminDashboardPage.css';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 
 export const AdminDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);

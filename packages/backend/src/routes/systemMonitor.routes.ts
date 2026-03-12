@@ -4,6 +4,8 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { UserRole } from '../models/User.js';
 import { SystemMonitorService } from '../services/SystemMonitorService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { queryTransformers } from '../utils/queryValidation.js';
+import { sendValidationError, sendNotFound, sendUnauthorized, sendForbidden, sendSuccess } from '../utils/responseHelpers.js';
 
 const router = Router();
 const systemMonitorService = new SystemMonitorService();
@@ -15,12 +17,12 @@ const requireAdmin = asyncHandler(async (req: Request, res: Response, next) => {
   const userRole = (req as any).user?.role;
 
   if (!userRole) {
-    return res.status(401).json({ error: 'Not authenticated' });
+    return sendUnauthorized(res, 'Not authenticated');
   }
 
   // Check if user has admin role
   if (userRole !== UserRole.POSITION_ADMIN && userRole !== UserRole.SUPER_ADMIN && userRole !== UserRole.DEVELOPER) {
-    return res.status(403).json({ error: 'Admin access required' });
+    return sendForbidden(res, 'Admin access required');
   }
 
   next();
@@ -36,7 +38,7 @@ router.use(requireAdmin);
  */
 router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
   const stats = await systemMonitorService.getSystemStats();
-  res.json(stats);
+  sendSuccess(res, stats);
 }));
 
 /**
@@ -44,7 +46,7 @@ router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
  * GET /api/system-monitor/online-users
  */
 router.get('/online-users', asyncHandler(async (req: Request, res: Response) => {
-  const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+  const limit = queryTransformers.toInt(req.query.limit as string, 10);
   const onlineUsers = await systemMonitorService.getOnlineUsers(limit);
   res.json({ users: onlineUsers, count: onlineUsers.length });
 }));
@@ -55,7 +57,7 @@ router.get('/online-users', asyncHandler(async (req: Request, res: Response) => 
  */
 router.get('/performance', asyncHandler(async (req: Request, res: Response) => {
   const performance = await systemMonitorService.getSystemPerformance();
-  res.json(performance);
+  sendSuccess(res, performance);
 }));
 
 /**
@@ -63,9 +65,9 @@ router.get('/performance', asyncHandler(async (req: Request, res: Response) => {
  * GET /api/system-monitor/activity
  */
 router.get('/activity', asyncHandler(async (req: Request, res: Response) => {
-  const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+  const limit = queryTransformers.toInt(req.query.limit as string, 10);
   const activities = await systemMonitorService.getActivityLogs(limit);
-  res.json({ activities, count: activities.length });
+  sendSuccess(res, { activities, count: activities.length });
 }));
 
 /**
@@ -76,7 +78,7 @@ router.get('/database', asyncHandler(async (req: Request, res: Response) => {
   const connections = await systemMonitorService.getDatabaseConnections();
   const responseTime = await systemMonitorService.getApiResponseTime();
   
-  res.json({
+  sendSuccess(res, {
     connections,
     responseTime,
     status: 'healthy'
@@ -95,7 +97,7 @@ router.get('/dashboard', asyncHandler(async (req: Request, res: Response) => {
     systemMonitorService.getActivityLogs(5)
   ]);
 
-  res.json({
+  sendSuccess(res, {
     stats,
     onlineUsers,
     performance,

@@ -8,6 +8,7 @@ import {
   AuditResource
 } from '../models/AuditLog.js';
 import { NotFoundError } from '../utils/errors.js';
+import logger from '../config/logger.js';
 
 export class AuditLogService {
   /**

@@ -334,11 +334,12 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                   <img
                     src={systemConfig.logoUrl.startsWith('http')
                       ? systemConfig.logoUrl
-                      : `http://localhost:3000${systemConfig.logoUrl}`
+                      : `http://localhost:3001${systemConfig.logoUrl}`
                     }
                     alt="Logo"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => {
+                      console.warn('Logo failed to load:', systemConfig.logoUrl);
                       e.currentTarget.style.display = 'none';
                     }}
                   />

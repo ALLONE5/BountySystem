@@ -1,26 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Typography,
-  Card,
-  Table,
-  Tag,
-  Space,
-  Input,
-  Select,
-  DatePicker,
-  Button,
-  Tooltip,
-  Drawer,
-  Descriptions,
-  message,
-  Popconfirm,
-} from 'antd';
+import { Typography, Card, Table, Tag, Space, Input, Select, DatePicker, Button, Tooltip, Drawer, Descriptions, Popconfirm } from 'antd';
 import { SearchOutlined, EyeOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { auditLogApi, AuditLog, AuditLogFilters } from '../../api/auditLog';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;

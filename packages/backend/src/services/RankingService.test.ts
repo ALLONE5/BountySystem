@@ -1,3 +1,4 @@
+import { createTestDependencies } from '../test-utils/test-setup.js';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { Pool } from 'pg';
 import { RankingService } from './RankingService';
@@ -16,6 +17,8 @@ describe('RankingService', () => {
   let testTaskIds: string[] = [];
 
   beforeEach(async () => {
+    const { userRepository, permissionChecker } = createTestDependencies();
+
     pool = new Pool({
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '5432'),

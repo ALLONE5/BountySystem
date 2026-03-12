@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Statistic, message } from 'antd';
+import { Card, Row, Col, Statistic } from 'antd';
 import {
   DesktopOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons';
 import { systemMonitorApi } from '../../api/systemMonitor';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 
 interface SystemMetrics {
   serverStatus: 'healthy' | 'warning' | 'error';

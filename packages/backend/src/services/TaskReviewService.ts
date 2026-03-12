@@ -5,6 +5,7 @@ import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors.
 import { UserRole } from '../models/User.js';
 import { TaskStatus } from '../models/Task.js';
 import { logger } from '../config/logger.js';
+import { logError } from '../utils/errorLogger.js';
 import { Validator } from '../utils/Validator.js';
 
 /**
@@ -322,7 +323,7 @@ export class TaskReviewService {
         });
         count++;
       } catch (error) {
-        logger.error('Failed to initialize budget for admin', error as Error, { adminId: admin.id });
+        logError('Failed to initialize budget for admin', error, { adminId: admin.id });
       }
     }
 

@@ -416,7 +416,7 @@ router.delete('/tasks/:taskId', async (req: Request, res: Response, next: NextFu
     }
 
     // Delete task
-    await taskService.deleteTask(taskId);
+    await taskService.deleteTask(taskId, userId);
 
     res.status(200).json({
       message: 'Task deleted successfully',

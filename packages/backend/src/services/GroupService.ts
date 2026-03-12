@@ -1,17 +1,14 @@
 import { pool } from '../config/database.js';
-import { TaskGroup, TaskGroupCreateDTO, TaskGroupWithMembers, GroupMember, GroupMemberDetail } from '../models/TaskGroup.js';
+import { TaskGroupCreateDTO } from '../models/TaskGroup.js';
 import { ValidationError, NotFoundError, AuthorizationError } from '../utils/errors.js';
 import { NotificationService } from './NotificationService.js';
 import { BountyService } from './BountyService.js';
-import { NotificationType } from '../models/Notification.js';
-import { GroupRepository, IGroupRepository } from '../repositories/GroupRepository.js';
+import { IGroupRepository } from '../repositories/GroupRepository.js';
 import { PermissionChecker } from '../utils/PermissionChecker.js';
 import { GroupMapper } from '../utils/mappers/GroupMapper.js';
 import { Validator } from '../utils/Validator.js';
 import { OwnershipValidator } from '../utils/OwnershipValidator.js';
-import { Cache, CacheEvict } from '../utils/decorators/cache.js';
-import { logger } from '../config/logger.js';
-import { UserResponse } from '../models/User.js';
+import { Cache } from '../utils/decorators/cache.js';
 import { Task } from '../models/Task.js';
 
 export interface GroupBountyDistribution {
@@ -79,6 +76,7 @@ export class GroupService {
   /**
    * Get all task groups (Admin only)
    */
+  @Cache({ ttl: 600, prefix: 'all_groups' })
   async getAllGroups(): Promise<any[]> {
     const query = `
       SELECT 
@@ -175,9 +173,11 @@ export class GroupService {
 
   /**
    * Get all groups a user is a member of
+   * Optimized to avoid N+1 query by fetching members in a single query
    */
+  @Cache({ ttl: 300, prefix: 'user_groups', keyGenerator: (userId: string) => `user_groups:${userId}` })
   async getUserGroups(userId: string): Promise<any[]> {
-    // Query groups with creator information
+    // Single optimized query that fetches groups with all members
     const query = `
       SELECT 
         g.id, 
@@ -186,29 +186,32 @@ export class GroupService {
         g.created_at as "createdAt",
         g.updated_at as "updatedAt",
         u.username as "creatorName",
-        a.image_url as "creatorAvatarUrl"
+        a.image_url as "creatorAvatarUrl",
+        json_agg(
+          json_build_object(
+            'userId', gm_all.user_id,
+            'username', u_member.username,
+            'joinedAt', gm_all.joined_at
+          ) ORDER BY gm_all.joined_at
+        ) FILTER (WHERE gm_all.user_id IS NOT NULL) as members
       FROM task_groups g
       INNER JOIN group_members gm ON g.id = gm.group_id
       LEFT JOIN users u ON g.creator_id = u.id
       LEFT JOIN avatars a ON u.avatar_id = a.id
+      LEFT JOIN group_members gm_all ON g.id = gm_all.group_id
+      LEFT JOIN users u_member ON gm_all.user_id = u_member.id
       WHERE gm.user_id = $1
+      GROUP BY g.id, g.name, g.creator_id, g.created_at, g.updated_at, u.username, a.image_url
       ORDER BY g.created_at DESC
     `;
 
     const result = await pool.query(query, [userId]);
-    const groups = result.rows;
-
-    // Fetch members for each group
-    const groupsWithMembers = await Promise.all(
-      groups.map(async (group) => {
-        const members = await this.groupRepository.getGroupMembers(group.id);
-        return {
-          ...group,
-          memberIds: members.map(m => m.userId),
-          members,
-        };
-      })
-    );
+    
+    // Transform the result to include memberIds array
+    const groupsWithMembers = result.rows.map(row => ({
+      ...row,
+      memberIds: row.members ? row.members.map((m: any) => m.userId) : [],
+    }));
 
     return GroupMapper.toWithMembersDTOList(groupsWithMembers);
   }

@@ -5,6 +5,7 @@ import { TaskService } from './TaskService.js';
 import { UserService } from './UserService.js';
 import { BountyCalculationInput } from '../models/BountyAlgorithm.js';
 import { TaskStatus } from '../models/Task.js';
+import { createTestDependencies } from '../test-utils/test-setup.js';
 
 describe('BountyService', () => {
   let bountyService: BountyService;
@@ -14,9 +15,11 @@ describe('BountyService', () => {
   let testAlgorithmVersion: string;
 
   beforeEach(async () => {
+    const deps = createTestDependencies();
+    
     bountyService = new BountyService();
     taskService = new TaskService();
-    userService = new UserService();
+    userService = new UserService(deps.userRepository, deps.permissionChecker);
 
     // Create a test user
     const user = await userService.createUser({
@@ -33,6 +36,7 @@ describe('BountyService', () => {
       urgencyWeight: 10,
       importanceWeight: 20,
       durationWeight: 5,
+      remainingDaysWeight: 3,
       formula: 'baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight)',
       createdBy: testUserId,
     });
@@ -158,6 +162,7 @@ describe('BountyService', () => {
         urgencyWeight: 15,
         importanceWeight: 25,
         durationWeight: 10,
+        remainingDaysWeight: 3,
         formula: 'test formula',
         createdBy: testUserId,
       });
@@ -179,6 +184,7 @@ describe('BountyService', () => {
         urgencyWeight: 10,
         importanceWeight: 20,
         durationWeight: 5,
+        remainingDaysWeight: 3,
         formula: 'test',
         createdBy: testUserId,
       });
@@ -190,6 +196,7 @@ describe('BountyService', () => {
           urgencyWeight: 10,
           importanceWeight: 20,
           durationWeight: 5,
+          remainingDaysWeight: 3,
           formula: 'test',
           createdBy: testUserId,
         })
@@ -204,6 +211,7 @@ describe('BountyService', () => {
           urgencyWeight: -10,
           importanceWeight: 20,
           durationWeight: 5,
+          remainingDaysWeight: 3,
           formula: 'test',
           createdBy: testUserId,
         })
@@ -218,6 +226,7 @@ describe('BountyService', () => {
           urgencyWeight: 10,
           importanceWeight: 20,
           durationWeight: 5,
+          remainingDaysWeight: 3,
           formula: 'test',
           createdBy: testUserId,
         })
@@ -321,6 +330,7 @@ describe('BountyService', () => {
         urgencyWeight: 50,
         importanceWeight: 100,
         durationWeight: 25,
+        remainingDaysWeight: 3,
         formula: 'new formula',
         effectiveFrom: new Date(),
         createdBy: testUserId,

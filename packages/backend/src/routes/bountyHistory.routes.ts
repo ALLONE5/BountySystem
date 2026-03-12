@@ -6,6 +6,8 @@ import { TransactionType } from '../models/BountyTransaction.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../utils/errors.js';
+import { parsePagination } from '../utils/pagination.js';
+import { queryTransformers, validateUuid } from '../utils/queryValidation.js';
 
 /**
  * Create bounty history router
@@ -29,10 +31,7 @@ export function createBountyHistoryRouter(pool: Pool): Router {
       const user = (req as any).user;
 
       // Validate userId format (UUID)
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(userId)) {
-        throw new AppError('VALIDATION_ERROR', 'Invalid user ID format', 400);
-      }
+      validateUuid(userId, 'User ID');
 
       // Authorization: Users can only view their own history, super admins can view any
       if (user.id !== userId && user.role !== 'super_admin') {
@@ -43,17 +42,12 @@ export function createBountyHistoryRouter(pool: Pool): Router {
         );
       }
 
-      // Parse and validate query parameters
-      const pageNum = page ? parseInt(page as string) : 1;
-      const limitNum = limit ? parseInt(limit as string) : 20;
-
-      if (isNaN(pageNum) || pageNum < 1) {
-        throw new AppError('VALIDATION_ERROR', 'Invalid page parameter', 400);
-      }
-
-      if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
-        throw new AppError('VALIDATION_ERROR', 'Invalid limit parameter (must be 1-100)', 400);
-      }
+      // Parse and validate pagination parameters
+      const { page: pageNum, pageSize: limitNum } = parsePagination({
+        page: page as string,
+        pageSize: limit as string,
+        maxPageSize: 100
+      });
 
       // Validate transaction type if provided
       let transactionType: TransactionType | undefined;
@@ -93,10 +87,7 @@ export function createBountyHistoryRouter(pool: Pool): Router {
       const user = (req as any).user;
 
       // Validate userId format (UUID)
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(userId)) {
-        throw new AppError('VALIDATION_ERROR', 'Invalid user ID format', 400);
-      }
+      validateUuid(userId, 'User ID');
 
       // Authorization: Users can only view their own summary, super admins can view any
       if (user.id !== userId && user.role !== 'super_admin') {

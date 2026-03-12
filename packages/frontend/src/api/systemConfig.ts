@@ -75,7 +75,7 @@ export const systemConfigApi = {
     reducedMotion: boolean;
   }> {
     const response = await apiClient.get('/public/config');
-    return response.data.data;
+    return response.data; // API client interceptor already extracts the data field
   },
 
   // Update system configuration

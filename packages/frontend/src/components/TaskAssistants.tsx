@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { List, Avatar, Button, message, Modal, InputNumber, Select, Form, Tag, Spin } from 'antd';
+import { List, Avatar, Button, Modal, InputNumber, Select, Form, Tag, Spin } from 'antd';
 import { UserOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { taskApi } from '../api/task';
 import { userApi } from '../api/user';
 import { useAuthStore } from '../store/authStore';
 import { Task, UserRole, User } from '../types';
 import { logger } from '../utils/logger';
+import { message } from '../utils/message';
 
 export interface Assistant {
   id: string;

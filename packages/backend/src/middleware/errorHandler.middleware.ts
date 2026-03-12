@@ -37,7 +37,7 @@ export const errorHandler = (
     stack: error.stack,
     path,
     method,
-    userId: req.user?.id,
+    userId: req.user?.userId,
     body: req.body,
     query: req.query,
     params: req.params

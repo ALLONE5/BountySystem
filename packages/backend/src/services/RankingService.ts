@@ -354,7 +354,7 @@ export class RankingService {
           role: row['user.role'],
           createdAt: row['user.createdAt'],
           lastLogin: row['user.lastLogin'],
-        }
+        } as any
       : undefined;
 
     return {

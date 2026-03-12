@@ -1,0 +1,436 @@
+/* Modern Ranking Page - Discord & Midjourney Inspired */
+
+.ranking-page {
+  padding: 0;
+  min-height: calc(100vh - 100px);
+}
+
+/* Page Header */
+.page-header {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-primary);
+  opacity: 0.03;
+  z-index: -1;
+}
+
+.header-content {
+  text-align: center;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-icon {
+  font-size: 32px;
+  color: var(--primary-500);
+}
+
+.header-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* My Ranking Section */
+.my-ranking-section {
+  margin-bottom: var(--space-xl);
+}
+
+.ranking-card {
+  background: var(--bg-glass) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+  position: relative;
+}
+
+.ranking-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-xl) !important;
+  border-color: var(--primary-300) !important;
+}
+
+.no-ranking-card {
+  text-align: center;
+  padding: var(--space-xl) !important;
+}
+
+.no-ranking-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.no-ranking-icon {
+  font-size: 40px;
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+.no-ranking-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.no-ranking-description {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.my-ranking-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.my-ranking-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+}
+
+.my-ranking-card.top-three::before {
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+}
+
+.ranking-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.my-ranking-content {
+  position: relative;
+  z-index: 1;
+  padding: var(--space-lg) !important;
+}
+
+.my-ranking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.my-ranking-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.my-ranking-badge {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 6px 12px;
+  border-radius: var(--radius-xl);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+}
+
+.my-ranking-stats {
+  margin: 0;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Ranking List */
+.ranking-list-card {
+  background: var(--bg-glass) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-md) !important;
+  overflow: hidden !important;
+}
+
+.ranking-tabs .ant-tabs-tab {
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  padding: 12px 24px !important;
+}
+
+.ranking-tabs .ant-tabs-tab-active {
+  background: var(--primary-50) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+[data-theme="dark"] .ranking-tabs .ant-tabs-tab-active {
+  background: var(--bg-tertiary) !important;
+}
+
+.tab-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.year-select,
+.month-select,
+.quarter-select {
+  min-width: 100px;
+}
+
+/* Ranking Table */
+.ranking-table .ant-table-thead > tr > th {
+  background: var(--bg-secondary) !important;
+  border-bottom: 2px solid var(--border-primary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  padding: 16px !important;
+}
+
+.ranking-table .ant-table-tbody > tr > td {
+  padding: 16px !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  background: transparent !important;
+}
+
+.ranking-table .ant-table-tbody > tr:hover > td {
+  background: var(--primary-50) !important;
+}
+
+[data-theme="dark"] .ranking-table .ant-table-tbody > tr:hover > td {
+  background: var(--bg-tertiary) !important;
+}
+
+.highlight-row {
+  background: var(--primary-50) !important;
+  border: 2px solid var(--primary-300) !important;
+}
+
+[data-theme="dark"] .highlight-row {
+  background: var(--bg-tertiary) !important;
+  border: 2px solid var(--primary-500) !important;
+}
+
+/* Table Cells */
+.rank-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.user-info {
+  flex: 1;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.user-id {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.bounty-amount {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--success);
+}
+
+.stats-display {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-badge {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Loading States */
+.loading-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: var(--bg-glass) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-xl) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .page-header {
+    padding: var(--space-xl);
+  }
+  
+  .header-title h1 {
+    font-size: 28px;
+  }
+  
+  .header-subtitle {
+    font-size: 16px;
+  }
+  
+  .my-ranking-header {
+    flex-direction: column;
+    gap: var(--space-md);
+    text-align: center;
+  }
+  
+  .tab-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .ranking-table .ant-table-thead > tr > th,
+  .ranking-table .ant-table-tbody > tr > td {
+    padding: 12px 8px !important;
+  }
+  
+  .user-cell {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    padding: var(--space-lg);
+  }
+  
+  .header-title {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .header-title h1 {
+    font-size: 24px;
+  }
+  
+  .my-ranking-stats .ant-col {
+    margin-bottom: var(--space-md);
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .ranking-tabs .ant-tabs-tab {
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Crown Icons for Top 3 */
+.rank-cell .anticon {
+  animation: crownGlow 2s ease-in-out infinite;
+}
+
+@keyframes crownGlow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Hover Effects */
+.ranking-card:hover .my-ranking-badge {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-glow);
+}
+
+.ranking-table .ant-table-tbody > tr {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ranking-table .ant-table-tbody > tr:hover {
+  transform: translateX(4px);
+}

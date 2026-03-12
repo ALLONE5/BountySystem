@@ -54,15 +54,7 @@ export const PublishedTasksPage: React.FC = () => {
     refetchTasks();
   };
 
-  React.useEffect(() => {
-    if (selectedTask && detailDrawerVisible && tasks) {
-      const updatedTask = tasks.find(t => t.id === selectedTask.id);
-      if (updatedTask) {
-        setSelectedTask(updatedTask);
-      }
-    }
-  }, [tasks, selectedTask, detailDrawerVisible]);
-
+  // 定义所有处理函数（在 JSX 使用之前）
   const handleCreate = () => {
     setSelectedTask(null);
     setEditModalVisible(true);
@@ -93,6 +85,15 @@ export const PublishedTasksPage: React.FC = () => {
       selectedTask ? '更新任务失败' : '创建任务失败'
     );
   };
+
+  React.useEffect(() => {
+    if (selectedTask && detailDrawerVisible && tasks) {
+      const updatedTask = tasks.find(t => t.id === selectedTask.id);
+      if (updatedTask) {
+        setSelectedTask(updatedTask);
+      }
+    }
+  }, [tasks, selectedTask, detailDrawerVisible]);
 
   return (
     <div className="page-container fade-in">

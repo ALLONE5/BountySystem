@@ -1,3 +1,4 @@
+import { createTestDependencies } from '../test-utils/test-setup.js';
 import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import { pool } from '../config/database.js';
 import { NotificationService } from './NotificationService.js';
@@ -5,6 +6,7 @@ import { UserService } from './UserService.js';
 import { TaskService } from './TaskService.js';
 import { NotificationType } from '../models/Notification.js';
 import { UserRole } from '../models/User.js';
+import { Visibility } from '../models/Task.js';
 import { cleanupAllTestData } from '../test-utils/cleanup.js';
 
 describe('NotificationService', () => {
@@ -16,6 +18,8 @@ describe('NotificationService', () => {
   let testTaskId: string;
 
   beforeEach(async () => {
+    const { userRepository, permissionChecker } = createTestDependencies();
+
     notificationService = new NotificationService();
     userService = new UserService(userRepository, permissionChecker);
     taskService = new TaskService();
@@ -47,7 +51,7 @@ describe('NotificationService', () => {
       name: `Test Task ${timestamp}`,
       description: 'Test task for notifications',
       publisherId: testUserId,
-      visibility: 'public',
+      visibility: 'PUBLIC' as Visibility,
     });
     testTaskId = task.id;
   });

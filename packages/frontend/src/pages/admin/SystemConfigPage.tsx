@@ -1,26 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Typography,
-  Card,
-  Form,
-  Input,
-  Button,
-  Switch,
-  Space,
-  message,
-  InputNumber,
-  Upload,
-  Alert,
-  List,
-  Popconfirm,
-  Select,
-  Divider,
-} from 'antd';
+import { Typography, Card, Form, Input, Button, Switch, Space, InputNumber, Upload, Alert, List, Popconfirm, Select, Divider } from 'antd';
 import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined, BgColorsOutlined } from '@ant-design/icons';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { systemConfigApi, SystemConfig, SystemConfigUpdate, UploadedLogo } from '../../api/systemConfig';
 import { useSystemConfig } from '../../contexts/SystemConfigContext';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -185,7 +170,7 @@ export const SystemConfigPage: React.FC = () => {
                           cover={
                             <img
                               alt={logo.filename}
-                              src={logo.url.startsWith('http') ? logo.url : `http://localhost:3000${logo.url}`}
+                              src={logo.url.startsWith('http') ? logo.url : `http://localhost:3001${logo.url}`}
                               style={{ height: 80, objectFit: 'contain', padding: 8 }}
                               onError={(e) => {
                                 logger.error('Logo failed to load:', logo.url);

@@ -14,6 +14,58 @@ export interface CacheOptions {
 }
 
 /**
+ * L1 内存缓存（快速访问层）
+ */
+class MemoryCache {
+  private cache: Map<string, { value: any; expiry: number }> = new Map();
+  private readonly maxSize = 1000; // 最多缓存1000个键
+  private readonly defaultTTL = 60000; // 默认60秒
+
+  set(key: string, value: any, ttlMs: number = this.defaultTTL): void {
+    // 如果缓存已满，删除最旧的条目
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
+    }
+
+    this.cache.set(key, {
+      value,
+      expiry: Date.now() + ttlMs
+    });
+  }
+
+  get(key: string): any | null {
+    const item = this.cache.get(key);
+    
+    if (!item) {
+      return null;
+    }
+
+    // 检查是否过期
+    if (Date.now() > item.expiry) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return item.value;
+  }
+
+  delete(key: string): void {
+    this.cache.delete(key);
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  size(): number {
+    return this.cache.size;
+  }
+}
+
+/**
  * Circuit Breaker for Redis operations
  * Prevents cascading failures by temporarily bypassing Redis when it's unavailable
  */
@@ -68,6 +120,8 @@ export class CacheService {
   private static readonly USER_PROFILE_TTL = 1800; // 30 minutes
   
   private circuitBreaker: CircuitBreaker;
+  private static memoryCache = new MemoryCache(); // L1 缓存
+  private static enableL1Cache = true; // 是否启用L1缓存
 
   constructor() {
     this.circuitBreaker = new CircuitBreaker();
@@ -82,19 +136,50 @@ export class CacheService {
 
   /**
    * Get value from cache with circuit breaker
+   * 支持分层缓存：先查L1（内存），再查L2（Redis）
    */
   async get<T>(key: string): Promise<T | null> {
-    return this.circuitBreaker.execute(async () => {
-      const value = await redisClient.get(key);
-      if (!value) return null;
-      return JSON.parse(value) as T;
+    const startTime = Date.now();
+
+    // L1: 尝试从内存缓存获取
+    if (CacheService.enableL1Cache) {
+      const l1Value = CacheService.memoryCache.get(key);
+      if (l1Value !== null) {
+        const responseTime = Date.now() - startTime;
+        logger.debug(`L1 cache hit: ${key}, ${responseTime}ms`);
+        return l1Value as T;
+      }
+    }
+
+    // L2: 从 Redis 获取
+    const value = await this.circuitBreaker.execute(async () => {
+      const redisValue = await redisClient.get(key);
+      if (!redisValue) return null;
+      return JSON.parse(redisValue) as T;
     });
+
+    // 如果从 Redis 获取到数据，写入 L1 缓存
+    if (value !== null && CacheService.enableL1Cache) {
+      CacheService.memoryCache.set(key, value, 60000); // L1缓存60秒
+    }
+
+    const responseTime = Date.now() - startTime;
+    logger.debug(`L2 cache ${value ? 'hit' : 'miss'}: ${key}, ${responseTime}ms`);
+
+    return value;
   }
 
   /**
    * Set value in cache with TTL and circuit breaker
+   * 同时写入L1和L2缓存
    */
   async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+    // L1: 写入内存缓存
+    if (CacheService.enableL1Cache) {
+      CacheService.memoryCache.set(key, value, Math.min(ttlSeconds * 1000, 60000));
+    }
+
+    // L2: 写入 Redis
     await this.circuitBreaker.execute(async () => {
       await redisClient.setEx(key, ttlSeconds, JSON.stringify(value));
       return true;
@@ -103,8 +188,15 @@ export class CacheService {
 
   /**
    * Delete value from cache with circuit breaker
+   * 同时删除L1和L2缓存
    */
   async delete(key: string): Promise<void> {
+    // L1: 删除内存缓存
+    if (CacheService.enableL1Cache) {
+      CacheService.memoryCache.delete(key);
+    }
+
+    // L2: 删除 Redis
     await this.circuitBreaker.execute(async () => {
       await redisClient.del(key);
       return true;
@@ -515,9 +607,53 @@ export class CacheService {
   static async clearAll(): Promise<void> {
     try {
       await redisClient.flushDb();
+      this.memoryCache.clear();
       logger.info('All cache cleared');
     } catch (error) {
       logger.error('Error clearing cache:', error);
     }
+  }
+
+  /**
+   * 获取缓存信息（用于监控）
+   */
+  async getInfo(): Promise<{ memoryUsage: number; keyCount: number } | null> {
+    try {
+      const dbSize = await redisClient.dbSize();
+      const info = await redisClient.info('memory');
+      
+      // 解析内存使用情况
+      const memoryMatch = info.match(/used_memory:(\d+)/);
+      const memoryUsage = memoryMatch ? parseInt(memoryMatch[1]) : 0;
+
+      return {
+        memoryUsage,
+        keyCount: dbSize
+      };
+    } catch (error) {
+      logger.error('获取缓存信息失败:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 获取L1缓存统计
+   */
+  static getL1Stats(): { size: number; enabled: boolean } {
+    return {
+      size: this.memoryCache.size(),
+      enabled: this.enableL1Cache
+    };
+  }
+
+  /**
+   * 启用/禁用L1缓存
+   */
+  static setL1CacheEnabled(enabled: boolean): void {
+    this.enableL1Cache = enabled;
+    if (!enabled) {
+      this.memoryCache.clear();
+    }
+    logger.info(`L1缓存已${enabled ? '启用' : '禁用'}`);
   }
 }

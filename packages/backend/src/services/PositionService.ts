@@ -107,7 +107,7 @@ export class PositionService {
    */
   async updatePosition(positionId: string, updates: PositionUpdateDTO): Promise<any> {
     // Use repository if available, otherwise fall back to direct query
-    let updatedPosition: Position;
+    let updatedPosition: Position | null;
     
     if (this.positionRepository) {
       const position = await this.positionRepository.findById(positionId);
@@ -796,7 +796,7 @@ export class PositionService {
           role: row['user.role'],
           createdAt: row['user.createdAt'],
           lastLogin: row['user.lastLogin'],
-        }
+        } as any
       : undefined;
 
     const position = row['position.id']

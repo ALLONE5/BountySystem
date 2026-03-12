@@ -5,6 +5,8 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/permission.middleware.js';
 import { UserRole } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { queryTransformers } from '../utils/queryValidation.js';
+import { sendValidationError, sendNotFound, sendUnauthorized, sendForbidden, sendSuccess } from '../utils/responseHelpers.js';
 
 const router = Router();
 const schedulerService = new SchedulerService();
@@ -19,11 +21,11 @@ router.get('/workload/:userId', authenticate, asyncHandler(async (req: Request, 
 
   // Users can only check their own workload unless they're admin
   if (req.user?.userId !== userId && req.user?.role !== UserRole.SUPER_ADMIN) {
-    return res.status(403).json({ error: 'Forbidden: Can only check your own workload' });
+    return sendForbidden(res, 'Forbidden: Can only check your own workload');
   }
 
   const workload = await schedulerService.evaluateWorkload(userId);
-  res.json(workload);
+  sendSuccess(res, workload);
 }));
 
 /**
@@ -33,10 +35,10 @@ router.get('/workload/:userId', authenticate, asyncHandler(async (req: Request, 
  */
 router.get('/recommendations', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+  const limit = queryTransformers.toInt(req.query.limit as string, 10);
 
   const recommendations = await schedulerService.recommendTasks(userId, limit);
-  res.json(recommendations);
+  sendSuccess(res, recommendations);
 }));
 
 /**
@@ -92,7 +94,7 @@ router.post(
     const { taskId } = req.params;
 
     const resolvedTaskIds = await schedulerService.processCompletedTask(taskId);
-    res.json({
+    sendSuccess(res, {
       message: 'Completed task processed successfully',
       resolvedTaskIds,
     });

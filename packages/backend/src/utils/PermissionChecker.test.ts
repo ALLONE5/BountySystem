@@ -242,7 +242,7 @@ describe('PermissionChecker - Property-Based Tests', () => {
             // Arrange: Mock admin user and group
             const adminUser = { ...user, role: UserRole.SUPER_ADMIN };
             vi.mocked(userRepository.findById).mockResolvedValue(adminUser);
-            vi.mocked(groupRepository.findById).mockResolvedValue(group);
+            vi.mocked(groupRepository.findById).mockResolvedValue(group as any);
 
             // Act: Check if admin can access group
             const canAccess = await permissionChecker.canAccessGroup(
@@ -310,8 +310,8 @@ describe('PermissionChecker - Property-Based Tests', () => {
 
             // Arrange: Mock user and group (user is not owner due to schema limitations)
             vi.mocked(userRepository.findById).mockResolvedValue(user);
-            vi.mocked(groupRepository.findById).mockResolvedValue(group);
-            vi.mocked(groupRepository.findByOwner).mockResolvedValue([]);
+            vi.mocked(groupRepository.findById).mockResolvedValue(group as any);
+            // vi.mocked(groupRepository.findByOwner).mockResolvedValue([]);
 
             // Act & Assert: Should throw AuthorizationError with descriptive message
             await expect(

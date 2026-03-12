@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Space,
-  Modal,
-  Form,
-  Input,
-  message,
-  Tabs,
-  Descriptions,
-} from 'antd';
+import { Button, Space, Modal, Form, Input, Tabs, Descriptions } from 'antd';
 import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -18,6 +9,7 @@ import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { TableCard } from '../../components/common/TableCard';
 import { StatusTag } from '../../components/common/StatusTag';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 const { TextArea } = Input;
 
 export const ApplicationReviewPage: React.FC = () => {

@@ -126,14 +126,14 @@ describe('DIContainer', () => {
             const serviceC = testContainer.resolve(serviceCName);
 
             // Verify the entire dependency chain is resolved
-            expect(serviceC.name).toBe(serviceCName);
-            expect(serviceC.value).toBe('C');
-            expect(serviceC.dependency).toBeDefined();
-            expect(serviceC.dependency.name).toBe(serviceBName);
-            expect(serviceC.dependency.value).toBe('B');
-            expect(serviceC.dependency.dependency).toBeDefined();
-            expect(serviceC.dependency.dependency.name).toBe(serviceAName);
-            expect(serviceC.dependency.dependency.value).toBe('A');
+            expect((serviceC as any).name).toBe(serviceCName);
+            expect((serviceC as any).value).toBe('C');
+            expect((serviceC as any).dependency).toBeDefined();
+            expect((serviceC as any).dependency.name).toBe(serviceBName);
+            expect((serviceC as any).dependency.value).toBe('B');
+            expect((serviceC as any).dependency.dependency).toBeDefined();
+            expect((serviceC as any).dependency.dependency.name).toBe(serviceAName);
+            expect((serviceC as any).dependency.dependency.value).toBe('A');
           }
         ),
         { numRuns: 100 }
@@ -179,12 +179,12 @@ describe('DIContainer', () => {
             const lastService = testContainer.resolve(lastServiceName);
 
             // Verify all dependencies are resolved
-            expect(lastService.name).toBe(lastServiceName);
-            expect(lastService.dependencies).toHaveLength(uniqueNames.length - 1);
+            expect((lastService as any).name).toBe(lastServiceName);
+            expect((lastService as any).dependencies).toHaveLength(uniqueNames.length - 1);
             
             for (let i = 0; i < uniqueNames.length - 1; i++) {
-              expect(lastService.dependencies[i].name).toBe(uniqueNames[i]);
-              expect(lastService.dependencies[i].id).toBe(i);
+              expect((lastService as any).dependencies[i].name).toBe(uniqueNames[i]);
+              expect((lastService as any).dependencies[i].id).toBe(i);
             }
           }
         ),

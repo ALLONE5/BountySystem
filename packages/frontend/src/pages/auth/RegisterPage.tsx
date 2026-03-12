@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Typography, message } from 'antd';
+import { Form, Input, Button, Typography } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 
 const { Title, Text } = Typography;
 
@@ -15,8 +16,8 @@ interface RegisterFormData {
 }
 
 export const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
   const { register } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
@@ -31,7 +32,8 @@ export const RegisterPage: React.FC = () => {
         password: values.password,
       };
       await register(registerData);
-      navigate('/dashboard');
+      // 使用 React Router 导航而不是硬刷新
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
       logger.error('Registration error:', error);
       
@@ -76,7 +78,6 @@ export const RegisterPage: React.FC = () => {
         // Generic error message - show at top
         message.error(error.response?.data?.message || '注册失败，请稍后重试');
       }
-    } finally {
       setLoading(false);
     }
   };

@@ -4,10 +4,11 @@
  */
 
 import React from 'react';
-import { Modal, Button, Typography, Space, Tag, Divider, Row, Col, Avatar } from 'antd';
+import { Button, Typography, Space, Tag, Divider, Row, Col, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Task } from '../../types';
+import { BaseModal } from '../common/BaseModal';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -38,9 +39,9 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   if (!task) return null;
 
   return (
-    <Modal
+    <BaseModal
+      visible={visible}
       title="任务详情"
-      open={visible}
       onCancel={onClose}
       width={700}
       footer={[
@@ -135,6 +136,6 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </Col>
         </Row>
       </div>
-    </Modal>
+    </BaseModal>
   );
 };

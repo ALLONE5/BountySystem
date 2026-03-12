@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Modal, Tabs, message, Form } from 'antd';
+import { Modal, Tabs, Form } from 'antd';
 import { Task } from '../types';
 import { taskApi } from '../api/task';
 import { userApi } from '../api/user';
@@ -13,6 +13,7 @@ import { TaskBasicInfo } from './TaskDetail/TaskBasicInfo';
 import { TaskProgressSection } from './TaskDetail/TaskProgressSection';
 import { TaskActions } from './TaskDetail/TaskActions';
 import { SubtaskManager } from './TaskDetail/SubtaskManager';
+import { message } from '../utils/message';
 import { TaskModals } from './TaskDetail/TaskModals';
 import type { Assistant } from './TaskAssistants';
 import { useErrorHandler } from '../hooks/useErrorHandler';
@@ -110,7 +111,7 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
 
   // Load initial data
   useEffect(() => {
-    positionApi.getAllPositions().then(setPositions).catch(console.error);
+    positionApi.getAllPositions().then(setPositions).catch((err: any) => logger.error("Failed to load data", { error: err }));
     loadProjectGroups();
     loadUserGroups();
   }, []);
@@ -150,8 +151,8 @@ export const TaskDetailDrawer: React.FC<TaskDetailDrawerProps> = ({
 
   useEffect(() => {
     if (task) {
-      taskApi.getAssistants(task.id).then(setAssistants).catch(console.error);
-      taskApi.getSubtasks(task.id).then(setSubtasks).catch(console.error);
+      taskApi.getAssistants(task.id).then(setAssistants).catch(err => logger.error("Failed to load data", { error: err }));
+      taskApi.getSubtasks(task.id).then(setSubtasks).catch(err => logger.error("Failed to load data", { error: err }));
       
       if (!isUpdatingProgressRef.current) {
         setProgressValue(task.progress || 0);

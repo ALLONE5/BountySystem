@@ -7,6 +7,8 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { requireRole } from '../middleware/permission.middleware.js';
 import { UserRole } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { queryTransformers } from '../utils/queryValidation.js';
+import { sendValidationError, sendNotFound, sendUnauthorized, sendForbidden } from '../utils/responseHelpers.js';
 
 const router = Router();
 const bountyDistributionService = new BountyDistributionService();
@@ -30,7 +32,7 @@ router.get('/algorithms/current', authenticate, requireRole([UserRole.SUPER_ADMI
   const algorithm = await bountyAlgorithmService.getCurrentAlgorithm();
   
   if (!algorithm) {
-    return res.status(404).json({ error: 'No active algorithm found' });
+    return sendNotFound(res);
   }
   
   res.json(algorithm);
@@ -45,7 +47,7 @@ router.get('/algorithms/:version', authenticate, requireRole([UserRole.SUPER_ADM
   const algorithm = await bountyAlgorithmService.getAlgorithmByVersion(version);
   
   if (!algorithm) {
-    return res.status(404).json({ error: 'Algorithm not found' });
+    return sendNotFound(res, 'Algorithm');
   }
   
   res.json(algorithm);
@@ -194,7 +196,7 @@ router.get('/admin/budget', authenticate, asyncHandler(async (req: Request, res:
   const budget = await reviewService.getAdminCurrentBudget(userId);
 
   if (!budget) {
-    return res.status(404).json({ error: 'Budget not found for current month' });
+    return sendNotFound(res);
   }
 
   res.json(budget);
@@ -213,13 +215,13 @@ router.get('/admin/budget/report', authenticate, asyncHandler(async (req: Reques
   const { year, month } = req.query;
 
   if (!year || !month) {
-    return res.status(400).json({ error: 'Year and month are required' });
+    return sendValidationError(res, 'Year and month are required');
   }
 
   const report = await reviewService.getAdminBudgetReport(
     userId,
-    parseInt(year as string),
-    parseInt(month as string)
+    queryTransformers.toInt(year as string, new Date().getFullYear()),
+    queryTransformers.toInt(month as string, new Date().getMonth() + 1)
   );
 
   res.json(report);

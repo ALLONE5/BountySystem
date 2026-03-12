@@ -1,53 +1,58 @@
 import React from 'react';
-import { Modal, Space, Typography, Input } from 'antd';
+import { Form, Typography, Input } from 'antd';
 import { Task } from '../../types';
+import { BaseFormModal } from '../common/BaseFormModal';
 
 const { TextArea } = Input;
 
 interface RejectTaskModalProps {
   visible: boolean;
   task: Task | null;
-  rejectReason: string;
   loading: boolean;
-  onReasonChange: (reason: string) => void;
-  onConfirm: () => void;
+  onSubmit: (values: { reason: string }) => void;
   onCancel: () => void;
 }
 
 export const RejectTaskModal: React.FC<RejectTaskModalProps> = ({
   visible,
   task,
-  rejectReason,
   loading,
-  onReasonChange,
-  onConfirm,
+  onSubmit,
   onCancel,
 }) => {
+  const [form] = Form.useForm();
+
+  const handleSubmit = (values: { reason: string }) => {
+    onSubmit(values);
+  };
+
   return (
-    <Modal
+    <BaseFormModal
+      visible={visible}
       title="拒绝任务指派"
-      open={visible}
-      onOk={onConfirm}
+      form={form}
+      onSubmit={handleSubmit}
       onCancel={onCancel}
       okText="确认拒绝"
       cancelText="取消"
-      okButtonProps={{ danger: true, loading }}
+      loading={loading}
     >
-      <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+      <div style={{ marginBottom: 16 }}>
         <Typography.Text>您确定要拒绝任务 "{task?.name}" 吗？</Typography.Text>
-        
-        <div>
-          <Typography.Text>拒绝原因（可选）：</Typography.Text>
-          <TextArea
-            rows={4}
-            placeholder="请输入拒绝原因，这将发送给任务发布者"
-            value={rejectReason}
-            onChange={(e) => onReasonChange(e.target.value)}
-            maxLength={500}
-            showCount
-          />
-        </div>
-      </Space>
-    </Modal>
+      </div>
+      
+      <Form.Item
+        name="reason"
+        label="拒绝原因（可选）"
+        help="这将发送给任务发布者"
+      >
+        <TextArea
+          rows={4}
+          placeholder="请输入拒绝原因"
+          maxLength={500}
+          showCount
+        />
+      </Form.Item>
+    </BaseFormModal>
   );
 };

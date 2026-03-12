@@ -3,7 +3,6 @@ import {
   Button,
   Space,
   Input,
-  message,
   Modal,
   List,
   Avatar,
@@ -22,6 +21,7 @@ import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { TableCard } from '../../components/common/TableCard';
 import { UserChip } from '../../components/common/UserChip';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 
 const { Search } = Input;
 

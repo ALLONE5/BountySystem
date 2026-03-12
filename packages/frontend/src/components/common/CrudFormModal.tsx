@@ -57,7 +57,7 @@ export function CrudFormModal<T = any>({
       {...modalProps}
     >
       <Form
-  form={form}
+        form={form}
         layout="vertical"
         onFinish={handleFinish}
         initialValues={initialValues}

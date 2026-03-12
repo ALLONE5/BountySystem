@@ -4,15 +4,16 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { message, Modal } from 'antd';
+import { Modal } from 'antd';
 import { taskApi } from '../../api/task';
 import { Task, TaskStatus } from '../../types';
 import { TaskListFilters } from './TaskListFilters';
 import { TaskListTable } from './TaskListTable';
 import { TaskListGrouped } from './TaskListGrouped';
 import { TaskDetailDrawer } from '../TaskDetailDrawer';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../contexts/AuthContext';
 import { log } from '../../utils/logger';
+import { message } from '../../utils/message';
 import { logger } from '../../utils/logger';
 import type { TablePaginationConfig } from 'antd/es/table';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
@@ -50,7 +51,30 @@ export const TaskListContainer: React.FC<TaskListContainerProps> = ({
   onTaskUpdated,
   ...actionProps
 }) => {
-  const { user } = useAuthStore();
+  const { user } = useAuth();
+  
+  // Debug: Log user
+  React.useEffect(() => {
+    console.log('[TaskListContainer] User from authStore:', {
+      user,
+      userId: user?.id,
+      hasUser: !!user
+    });
+  }, [user]);
+  
+  // Debug: Log received actionProps
+  React.useEffect(() => {
+    console.log('[TaskListContainer] Received actionProps:', {
+      showAssignButton: actionProps.showAssignButton,
+      onAssignTask: !!actionProps.onAssignTask,
+      onPublishTask: !!actionProps.onPublishTask,
+      onCompleteTask: !!actionProps.onCompleteTask,
+      onEditTask: !!actionProps.onEditTask,
+      onDeleteTask: !!actionProps.onDeleteTask,
+      isPublishedTasksPage: actionProps.isPublishedTasksPage
+    });
+  }, [actionProps]);
+  
   const [internalTasks, setInternalTasks] = useState<Task[]>([]);
   const [internalLoading, setInternalLoading] = useState(true);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
@@ -248,8 +272,8 @@ export const TaskListContainer: React.FC<TaskListContainerProps> = ({
           onTaskClick={handleViewTask}
           getSubtaskCount={getSubtaskCount}
           user={user}
-          onCompleteTask={handleCompleteTask}
           {...actionProps}
+          onCompleteTask={actionProps.onCompleteTask || handleCompleteTask}
         />
       ) : (
         <TaskListGrouped
@@ -260,8 +284,8 @@ export const TaskListContainer: React.FC<TaskListContainerProps> = ({
           onTaskClick={handleViewTask}
           getSubtaskCount={getSubtaskCount}
           user={user}
-          onCompleteTask={handleCompleteTask}
           {...actionProps}
+          onCompleteTask={actionProps.onCompleteTask || handleCompleteTask}
         />
       )}
 

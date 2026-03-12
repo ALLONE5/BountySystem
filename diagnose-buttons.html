@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial_scale=1.0">
+    <title>按钮问题诊断工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1890ff;
+            margin-bottom: 24px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #1890ff;
+            padding-bottom: 8px;
+        }
+        .step {
+            background: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .code-block {
+            background: #f5f5f5;
+            padding: 16px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .warning {
+            background: #fff7e6;
+            border-left: 4px solid #faad14;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .error {
+            background: #fff1f0;
+            border-left: 4px solid #ff4d4f;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        .success {
+            background: #f6ffed;
+            border-left: 4px solid #52c41a;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 8px 8px 8px 0;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        .btn-secondary {
+            background: #52c41a;
+        }
+        .btn-secondary:hover {
+            background: #73d13d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        th, td {
+            border: 1px solid #d9d9d9;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #fafafa;
+            font-weight: 600;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .check-box {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d9d9d9;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 按钮问题诊断工具</h1>
+        
+        <div class="step">
+            <strong>第一步：清除缓存</strong>
+            <p>运行以下命令清除前端缓存：</p>
+            <div class="code-block">clear-cache-5173.bat</div>
+            <p>或者手动执行：</p>
+            <div class="code-block">
+cd packages/frontend
+rmdir /s /q node_modules\.vite
+rmdir /s /q dist
+npm run dev
+            </div>
+        </div>
+
+        <div class="step">
+            <strong>第二步：强制刷新浏览器</strong>
+            <p>在浏览器中按 <code>Ctrl + Shift + R</code> (Windows) 或 <code>Cmd + Shift + R</code> (Mac) 强制刷新页面</p>
+        </div>
+
+        <div class="step">
+            <strong>第三步：检查控制台日志</strong>
+            <p>打开浏览器开发者工具 (F12)，切换到 Console 标签页，查找以下日志：</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📋 诊断检查清单</h2>
+        
+        <h3>1. Props 传递检查</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>层级</th>
+                    <th>日志标识</th>
+                    <th>检查项</th>
+                    <th>预期值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PublishedTasksPage</td>
+                    <td>[PublishedTasksPage] Action handlers</td>
+                    <td>所有 handler 函数</td>
+                    <td>都应该是 function，不是 undefined</td>
+                </tr>
+                <tr>
+                    <td>PublishedTasksPage</td>
+                    <td>[PublishedTasksPage] Rendering with props</td>
+                    <td>onPublishTask, onEditTask, onDeleteTask</td>
+                    <td>都应该是 true</td>
+                </tr>
+                <tr>
+                    <td>TaskListContainer</td>
+                    <td>[TaskListContainer] Received actionProps</td>
+                    <td>onPublishTask, onEditTask, onDeleteTask</td>
+                    <td>都应该是 true</td>
+                </tr>
+                <tr>
+                    <td>TaskListTable</td>
+                    <td>[TaskListTable] Received props</td>
+                    <td>hasOnPublishTask, hasOnEditTask, hasOnDeleteTask</td>
+                    <td>都应该是 true</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>2. 任务级别检查</h3>
+        <p>对于每个任务，检查以下日志：<code>[TaskListTable] Task XXX (...)</code></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>字段</th>
+                    <th>说明</th>
+                    <th>预期值（你的任务）</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>userId</td>
+                    <td>当前登录用户ID</td>
+                    <td>应该是你的用户ID（如 "1"）</td>
+                </tr>
+                <tr>
+                    <td>publisherId</td>
+                    <td>任务发布者ID</td>
+                    <td>应该等于 userId</td>
+                </tr>
+                <tr>
+                    <td>isPublisher</td>
+                    <td>是否是发布者</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>isPublishedTasksPage</td>
+                    <td>是否在我的悬赏页面</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>hasOnPublishTask</td>
+                    <td>是否有发布函数</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>hasOnEditTask</td>
+                    <td>是否有编辑函数</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>hasOnDeleteTask</td>
+                    <td>是否有删除函数</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>willShowEditButton</td>
+                    <td>是否显示编辑按钮</td>
+                    <td>true</td>
+                </tr>
+                <tr>
+                    <td>canPublish</td>
+                    <td>是否可以发布</td>
+                    <td>true (如果状态是 NOT_STARTED)</td>
+                </tr>
+                <tr>
+                    <td>canDelete</td>
+                    <td>是否可以删除</td>
+                    <td>true (如果状态是 NOT_STARTED 或 AVAILABLE)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>🔍 常见问题排查</h2>
+        
+        <div class="error">
+            <strong>问题1：userId 和 publisherId 不匹配</strong>
+            <p><strong>症状：</strong> isPublisher 显示为 false</p>
+            <p><strong>原因：</strong> 用户ID类型不一致（字符串 vs 数字）</p>
+            <p><strong>解决：</strong> 检查 JWT token 中的 userId 字段类型</p>
+            <div class="code-block">
+// 在控制台运行：
+const token = localStorage.getItem('token');
+const payload = JSON.parse(atob(token.split('.')[1]));
+console.log('Token payload:', payload);
+console.log('userId type:', typeof payload.userId);
+            </div>
+        </div>
+
+        <div class="error">
+            <strong>问题2：Props 在某一层丢失</strong>
+            <p><strong>症状：</strong> 某个层级的日志显示 props 为 false 或 undefined</p>
+            <p><strong>原因：</strong> Props 传递链中断</p>
+            <p><strong>解决：</strong> 检查该层级的代码，确保正确传递 props</p>
+        </div>
+
+        <div class="error">
+            <strong>问题3：浏览器缓存旧代码</strong>
+            <p><strong>症状：</strong> 修改代码后没有效果</p>
+            <p><strong>原因：</strong> Vite 缓存或浏览器缓存</p>
+            <p><strong>解决：</strong> 运行 clear-cache-5173.bat 并强制刷新浏览器</p>
+        </div>
+
+        <div class="warning">
+            <strong>问题4：任务状态不符合显示条件</strong>
+            <p><strong>症状：</strong> 某些按钮不显示</p>
+            <p><strong>原因：</strong> 任务状态不满足按钮显示条件</p>
+            <p><strong>按钮显示条件：</strong></p>
+            <ul>
+                <li>发布按钮：status === 'NOT_STARTED' && isPublisher</li>
+                <li>编辑按钮：isPublisher && isPublishedTasksPage</li>
+                <li>指派按钮：!assigneeId && (status === 'NOT_STARTED' || 'AVAILABLE')</li>
+                <li>删除按钮：isPublisher && (status === 'NOT_STARTED' || 'AVAILABLE')</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 快速诊断脚本</h2>
+        <p>在浏览器控制台运行以下脚本：</p>
+        <div class="code-block">
+// 检查 token
+const token = localStorage.getItem('token');
+if (token) {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    console.log('✅ Token payload:', payload);
+    console.log('   userId:', payload.userId, '(type:', typeof payload.userId, ')');
+} else {
+    console.log('❌ No token found');
+}
+
+// 检查当前页面
+console.log('📍 Current URL:', window.location.href);
+
+// 等待页面加载后检查 props
+setTimeout(() => {
+    console.log('🔍 请查看上面的日志，搜索：');
+    console.log('   - [PublishedTasksPage]');
+    console.log('   - [TaskListContainer]');
+    console.log('   - [TaskListTable]');
+}, 2000);
+        </div>
+        <button onclick="navigator.clipboard.writeText(document.querySelector('.code-block:last-of-type').textContent)">
+            复制脚本
+        </button>
+    </div>
+
+    <div class="container">
+        <h2>📞 需要提供的信息</h2>
+        <p>如果问题仍然存在，请提供以下信息：</p>
+        <ol>
+            <li>控制台中所有 [PublishedTasksPage] 开头的日志</li>
+            <li>控制台中所有 [TaskListContainer] 开头的日志</li>
+            <li>控制台中所有 [TaskListTable] 开头的日志</li>
+            <li>至少一个任务的完整日志（[TaskListTable] Task XXX）</li>
+            <li>Token payload（运行上面的快速诊断脚本）</li>
+            <li>当前显示的按钮截图</li>
+        </ol>
+    </div>
+</body>
+</html>

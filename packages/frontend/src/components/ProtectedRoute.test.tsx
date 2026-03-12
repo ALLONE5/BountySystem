@@ -18,9 +18,8 @@ describe('ProtectedRoute Authentication', () => {
     positions: [],
     balance: 100,
     bounty: 0,
-    createdAt: new Date(),
-    lastLogin: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
     const mockToken = 'test-jwt-token';
@@ -45,8 +44,9 @@ describe('ProtectedRoute Authentication', () => {
       role: UserRole.USER,
       positions: [],
       balance: 0,
-      createdAt: new Date(),
-      lastLogin: new Date(),
+      bounty: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     // 设置认证
@@ -72,8 +72,9 @@ describe('ProtectedRoute Authentication', () => {
       role: UserRole.USER,
       positions: [],
       balance: 0,
-      createdAt: new Date(),
-      lastLogin: new Date(),
+      bounty: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const mockToken = 'persistent-token';
@@ -104,8 +105,9 @@ describe('ProtectedRoute Authentication', () => {
         role,
         positions: [],
         balance: 0,
-        createdAt: new Date(),
-        lastLogin: new Date(),
+        bounty: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       useAuthStore.getState().setAuth('token', mockUser);

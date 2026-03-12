@@ -79,3 +79,5 @@ export {
   enableForeignKeyChecks,
   truncateAllTables,
 } from './cleanup.js';
+
+export { createTestDependencies, type TestDependencies } from './test-setup.js';

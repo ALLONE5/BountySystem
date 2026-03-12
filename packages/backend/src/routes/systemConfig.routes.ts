@@ -7,6 +7,7 @@ import { requireDeveloper } from '../middleware/permission.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ValidationError } from '../utils/errors.js';
 import { auditSystemConfigUpdate } from '../middleware/audit.middleware.js';
+import { sendSuccess, sendSuccessWithMessage } from '../utils/responseHelpers.js';
 
 const router = Router();
 const systemConfigService = new SystemConfigService();
@@ -46,10 +47,8 @@ router.use(requireDeveloper);
 router.get('/config', asyncHandler(async (req: Request, res: Response) => {
   const config = await systemConfigService.getConfig();
   
-  res.status(200).json({
-    success: true,
-    data: config,
-  });
+  sendSuccess(res, config,
+  );
 }));
 
 /**
@@ -61,11 +60,8 @@ router.put('/config', auditSystemConfigUpdate, asyncHandler(async (req: Request,
     const validatedData = updateSystemConfigSchema.parse(req.body);
     const updatedConfig = await systemConfigService.updateConfig(validatedData);
     
-    res.status(200).json({
-      success: true,
-      message: 'System configuration updated successfully',
-      data: updatedConfig,
-    });
+    sendSuccessWithMessage(res, 'System configuration updated successfully', updatedConfig,
+    );
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError('Invalid system configuration data', error.errors);

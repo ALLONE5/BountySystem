@@ -6,6 +6,7 @@ import { ValidationError, AuthenticationError } from '../utils/errors.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { resolve } from '../config/container.js';
+import { sendValidationError, sendNotFound, sendUnauthorized, sendForbidden, sendSuccess } from '../utils/responseHelpers.js';
 
 const router = Router();
 // Use DI container to get properly configured UserService
@@ -35,26 +36,26 @@ const batchUsersSchema = z.object({
 router.get('/search', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { q } = req.query;
   if (!q || typeof q !== 'string') {
-    return res.status(400).json({ error: 'Query parameter q is required' });
+    return sendValidationError(res, 'Query parameter q is required');
   }
   const users = await userService.searchUsers(q);
-  res.json(users.map(u => userService.toUserResponse(u)));
+  sendSuccess(res, users.map(u => userService.toUserResponse(u)));
 }));
 
 router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const user = await userService.findById(id);
   if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    return sendNotFound(res, 'User');
   }
-  res.json(userService.toUserResponse(user));
+  sendSuccess(res, userService.toUserResponse(user));
 }));
 
 router.post('/batch', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { ids } = batchUsersSchema.parse(req.body);
   const users = await userService.findByIds(ids);
   const map = Object.fromEntries(users.map((u) => [u.id, userService.toUserResponse(u)]));
-  res.json(map);
+  sendSuccess(res, map);
 }));
 
 router.put('/me', asyncHandler(async (req: Request, res: Response) => {
@@ -72,7 +73,7 @@ router.put('/me', asyncHandler(async (req: Request, res: Response) => {
     // Update profile
     const updatedUser = await userService.updateUser(userId, userId, validatedData);
 
-    res.status(200).json({
+    sendSuccess(res, {
       message: 'Profile updated successfully',
       user: updatedUser,
     });
@@ -103,7 +104,7 @@ router.put('/me/password', asyncHandler(async (req: Request, res: Response) => {
       validatedData.newPassword
     );
 
-    res.status(200).json({ message: 'Password changed successfully' });
+    sendSuccess(res, { message: 'Password changed successfully' });
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ValidationError('Invalid password data', error.errors);
@@ -126,7 +127,7 @@ router.put('/me/email', asyncHandler(async (req: Request, res: Response) => {
   // Update email
   const updatedUser = await userService.updateEmail(userId, validatedData.newEmail);
 
-  res.status(200).json({
+  sendSuccess(res, {
     message: 'Email updated successfully',
     user: userService.toUserResponse(updatedUser),
   });
@@ -146,7 +147,7 @@ router.post('/me/email/request', asyncHandler(async (req: Request, res: Response
   // Request email change
   await userService.requestEmailChange(userId, validatedData.newEmail);
 
-  res.status(200).json({
+  sendSuccess(res, {
     message: 'Email change requested. Please check your email for verification.',
   });
 }));
@@ -171,7 +172,7 @@ router.get('/me/notifications', asyncHandler(async (req: Request, res: Response)
   }
 
   const preferences = await userService.getNotificationPreferences(userId);
-  res.status(200).json({ preferences });
+  sendSuccess(res, { preferences });
 }));
 
 /**
@@ -188,7 +189,7 @@ router.put('/me/notifications', asyncHandler(async (req: Request, res: Response)
     const validatedData = notificationPreferencesSchema.parse(req.body);
     const updatedUser = await userService.updateNotificationPreferences(userId, validatedData);
     
-    res.status(200).json({
+    sendSuccess(res, {
       message: 'Notification preferences updated successfully',
       user: updatedUser,
     });

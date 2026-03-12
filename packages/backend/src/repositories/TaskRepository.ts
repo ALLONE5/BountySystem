@@ -1,5 +1,4 @@
 import { PoolClient } from 'pg';
-import { BaseRepository, IRepository } from './BaseRepository.js';
 import { ImprovedBaseRepository } from './ImprovedBaseRepository.js';
 import { Task, TaskStatus, Visibility } from '../models/Task.js';
 import { Position } from '../models/Position.js';
@@ -23,9 +22,14 @@ export interface TaskFilters {
 
 /**
  * Task Repository Interface
- * Extends base repository with task-specific queries
+ * Defines task-specific repository methods
  */
-export interface ITaskRepository extends IRepository<Task> {
+export interface ITaskRepository {
+  findById(id: string): Promise<Task | null>;
+  findAll(filters?: Record<string, any>): Promise<Task[]>;
+  create(data: Partial<Task>): Promise<Task>;
+  update(id: string, data: Partial<Task>): Promise<Task | null>;
+  delete(id: string): Promise<boolean>;
   findByCreator(creatorId: string): Promise<Task[]>;
   findByGroup(groupId: string): Promise<Task[]>;
   findWithPositions(taskId: string): Promise<Task & { positions: Position[] }>;
@@ -112,6 +116,8 @@ export class TaskRepository extends ImprovedBaseRepository<Task> implements ITas
       isPublished: row.is_published !== undefined ? row.is_published : true,
       publishedAt: row.published_at,
       publishedBy: row.published_by,
+      invitedUserId: row.invited_user_id,
+      invitationStatus: row.invitation_status,
       publisherId: row.publisher_id,
       assigneeId: row.assignee_id,
       groupId: row.group_id,

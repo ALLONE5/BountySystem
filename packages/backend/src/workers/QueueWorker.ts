@@ -5,6 +5,7 @@
 
 import type { Pool } from 'pg';
 import { logger } from '../config/logger.js';
+import { logError } from '../utils/errorLogger.js';
 import { QueueName, QueueJob } from '../services/QueueService';
 import { QueueService } from '../services/QueueService';
 import { NotificationService } from '../services/NotificationService';
@@ -105,11 +106,11 @@ export class QueueWorker {
           logger.info('Job processed successfully', { jobId: job.id, queueName });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
-          logger.error('Error processing job', error as Error, { jobId: job.id, queueName });
+          logError('Error processing job', error, { jobId: job.id, queueName });
           await QueueService.retry(queueName, job, errorMessage);
         }
       } catch (error) {
-        logger.error('Worker error', error as Error, { queueName });
+        logError('Worker error', error, { queueName });
         // Wait before retrying to avoid tight loop on persistent errors
         await new Promise((resolve) => setTimeout(resolve, 5000));
       }

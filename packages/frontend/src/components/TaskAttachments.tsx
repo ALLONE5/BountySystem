@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { List, Button, message, Modal, Input, Form } from 'antd';
+import { List, Button, Modal, Input, Form } from 'antd';
 import { UploadOutlined, FileOutlined } from '@ant-design/icons';
 import { taskApi } from '../api/task';
 import { useAuthStore } from '../store/authStore';
 import { Task } from '../types';
+import { message } from '../utils/message';
 
 interface Attachment {
   id: string;

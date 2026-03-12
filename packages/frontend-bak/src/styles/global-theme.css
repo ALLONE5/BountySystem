@@ -1,0 +1,619 @@
+/**
+ * 全局主题样式
+ * 优化暗色和赛博朋克主题的可读性和设计感
+ */
+
+/* ============================================
+   暗色主题 - 夜行猎人 (优化版)
+   ============================================ */
+[data-theme='dark'] {
+  --color-bg-primary: #0d0d12;
+  --color-bg-secondary: #1a1a24;
+  --color-bg-tertiary: #252533;
+  --color-bg-glass: rgba(26, 26, 36, 0.85);
+  
+  --color-primary: #00d9ff;
+  --color-secondary: #ff006e;
+  --color-accent: #39ff14;
+  
+  --color-success: #39ff14;
+  --color-warning: #ffa500;
+  --color-danger: #ff0040;
+  --color-info: #00d9ff;
+  
+  --color-text-primary: #e8e8f0;
+  --color-text-secondary: #00d9ff;
+  --color-text-tertiary: #ff006e;
+  --color-text-inverse: #0d0d12;
+  
+  --color-border-primary: rgba(0, 217, 255, 0.4);
+  --color-border-secondary: rgba(255, 0, 110, 0.2);
+  --color-divider: rgba(0, 217, 255, 0.15);
+}
+
+/* ============================================
+   亮色主题 - 日光战士
+   ============================================ */
+[data-theme='light'] {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-glass: rgba(248, 250, 252, 0.9);
+  
+  --color-primary: #0ea5e9;
+  --color-secondary: #f59e0b;
+  --color-accent: #8b5cf6;
+  
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+  
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-inverse: #ffffff;
+  
+  --color-border-primary: rgba(14, 165, 233, 0.2);
+  --color-border-secondary: rgba(71, 85, 105, 0.2);
+  --color-divider: rgba(71, 85, 105, 0.1);
+}
+
+/* ============================================
+   全局样式优化
+   ============================================ */
+
+/* 表格样式优化 */
+.ant-table {
+  background: var(--color-bg-secondary);
+}
+
+.ant-table-thead > tr > th {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-secondary) !important;
+  font-weight: 600;
+}
+
+.ant-table-tbody > tr {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-table-tbody > tr > td {
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: var(--color-bg-tertiary) !important;
+}
+
+/* 表格分页器 */
+.ant-pagination-item {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-pagination-item a {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-pagination-item-active {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.ant-pagination-item-active a {
+  color: var(--color-text-inverse) !important;
+}
+
+/* 输入框样式 */
+.ant-input,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.ant-input::placeholder,
+.ant-input-number::placeholder {
+  color: var(--color-text-tertiary) !important;
+}
+
+.ant-input:hover,
+.ant-input-number:hover,
+.ant-select-selector:hover,
+.ant-picker:hover {
+  border-color: var(--color-primary) !important;
+}
+
+.ant-input:focus,
+.ant-input-number:focus,
+.ant-select-selector:focus,
+.ant-picker:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1) !important;
+}
+
+/* 搜索框特殊样式 */
+.ant-input-search {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.ant-input-search .ant-input {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-input-search .ant-input::placeholder {
+  color: var(--color-text-tertiary) !important;
+}
+
+.ant-input-search .ant-input:hover {
+  border-color: var(--color-primary) !important;
+}
+
+.ant-input-search .ant-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1) !important;
+}
+
+/* 下拉菜单 */
+.ant-select-dropdown,
+.ant-dropdown {
+  background: var(--color-bg-secondary) !important;
+}
+
+.ant-select-item {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-select-item:hover {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.ant-select-item-option-selected {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-primary) !important;
+}
+
+/* 按钮样式 */
+.ant-btn-default {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.ant-btn-default:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+/* 卡片样式 */
+.ant-card {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-card-head {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* 模态框 */
+.ant-modal-content {
+  background: var(--color-bg-secondary) !important;
+}
+
+.ant-modal-header {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-modal-title {
+  color: var(--color-text-primary) !important;
+}
+
+/* 菜单 */
+.ant-menu {
+  background: var(--color-bg-secondary) !important;
+}
+
+.ant-menu-item {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-menu-item:hover {
+  color: var(--color-primary) !important;
+}
+
+.ant-menu-item-selected {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-primary) !important;
+}
+
+/* 标签页 */
+.ant-tabs {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-tabs-tab {
+  color: var(--color-text-secondary) !important;
+}
+
+.ant-tabs-tab:hover {
+  color: var(--color-primary) !important;
+}
+
+.ant-tabs-tab-active {
+  color: var(--color-primary) !important;
+}
+
+.ant-tabs-ink-bar {
+  background: var(--color-primary) !important;
+}
+
+/* 表单标签 */
+.ant-form-item-label > label {
+  color: var(--color-text-primary) !important;
+}
+
+/* 提示文本 */
+.ant-form-item-explain {
+  color: var(--color-text-tertiary) !important;
+}
+
+/* 分割线 */
+.ant-divider {
+  border-color: var(--color-divider) !important;
+}
+
+/* 加载中 */
+.ant-spin-dot-item {
+  background: var(--color-primary) !important;
+}
+
+/* 警告框 */
+.ant-alert {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* 面包屑 */
+.ant-breadcrumb-link {
+  color: var(--color-text-secondary) !important;
+}
+
+.ant-breadcrumb-link:hover {
+  color: var(--color-primary) !important;
+}
+
+/* 标签 */
+.ant-tag {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* 徽章 */
+.ant-badge-count {
+  background: var(--color-danger) !important;
+}
+
+/* 抽屉 */
+.ant-drawer-content-wrapper {
+  background: var(--color-bg-secondary) !important;
+}
+
+.ant-drawer-header {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-drawer-title {
+  color: var(--color-text-primary) !important;
+}
+
+/* 弹出框 */
+.ant-popover-inner {
+  background: var(--color-bg-secondary) !important;
+}
+
+.ant-popover-inner-content {
+  color: var(--color-text-primary) !important;
+}
+
+/* 提示框 */
+.ant-tooltip-inner {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* 进度条 */
+.ant-progress-bg {
+  background: var(--color-primary) !important;
+}
+
+/* 骨架屏 */
+.ant-skeleton-avatar,
+.ant-skeleton-button,
+.ant-skeleton-input {
+  background: var(--color-bg-tertiary) !important;
+}
+
+/* ============================================
+   亮色主题特殊效果
+   ============================================ */
+[data-theme='light'] .ant-input-wrapper,
+[data-theme='light'] .ant-input-group {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid rgba(14, 165, 233, 0.2) !important;
+  border-radius: 4px;
+}
+
+[data-theme='light'] .ant-input {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid rgba(14, 165, 233, 0.2) !important;
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme='light'] .ant-input:hover {
+  border-color: rgba(14, 165, 233, 0.4) !important;
+}
+
+[data-theme='light'] .ant-input:focus {
+  border-color: rgba(14, 165, 233, 0.6) !important;
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.2), inset 0 0 5px rgba(14, 165, 233, 0.05) !important;
+}
+
+[data-theme='light'] .ant-input-prefix {
+  color: rgba(14, 165, 233, 0.4) !important;
+}
+
+[data-theme='light'] .ant-input-suffix {
+  color: rgba(14, 165, 233, 0.4) !important;
+}
+
+/* 搜索框和输入框容器 */
+.ant-input-wrapper,
+.ant-input-group {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.ant-input-group-wrapper {
+  background: var(--color-bg-tertiary) !important;
+}
+
+/* 搜索框前缀/后缀 */
+.ant-input-prefix,
+.ant-input-suffix {
+  color: var(--color-text-secondary) !important;
+}
+
+/* 搜索框占位符 */
+.ant-input::placeholder {
+  color: var(--color-text-tertiary) !important;
+}
+
+/* 搜索按钮 */
+.ant-btn-primary {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+.ant-btn-primary:hover {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  opacity: 0.8;
+}
+
+/* 搜索框容器 */
+.ant-space {
+  background: transparent !important;
+}
+
+/* 搜索栏整体容器 */
+.ant-row {
+  background: transparent !important;
+}
+
+/* ============================================
+   暗色主题特殊效果
+   ============================================ */
+[data-theme='dark'] .ant-btn-primary {
+  box-shadow: 0 0 8px rgba(0, 242, 255, 0.3) !important;
+}
+
+[data-theme='dark'] .ant-btn-primary:hover {
+  box-shadow: 0 0 12px rgba(0, 242, 255, 0.5) !important;
+}
+
+/* 暗色搜索栏 */
+[data-theme='dark'] .ant-input-wrapper,
+[data-theme='dark'] .ant-input-group {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid rgba(0, 242, 255, 0.2) !important;
+  border-radius: 4px;
+}
+
+[data-theme='dark'] .ant-input {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid rgba(0, 242, 255, 0.2) !important;
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme='dark'] .ant-input:hover {
+  border-color: rgba(0, 242, 255, 0.4) !important;
+}
+
+[data-theme='dark'] .ant-input:focus {
+  border-color: rgba(0, 242, 255, 0.6) !important;
+  box-shadow: 0 0 8px rgba(0, 242, 255, 0.3), inset 0 0 5px rgba(0, 242, 255, 0.05) !important;
+}
+
+[data-theme='dark'] .ant-input-prefix {
+  color: rgba(0, 242, 255, 0.4) !important;
+}
+
+[data-theme='dark'] .ant-input-suffix {
+  color: rgba(0, 242, 255, 0.4) !important;
+}
+
+[data-theme='dark'] .ant-table-thead > tr > th {
+  background: rgba(31, 41, 55, 0.8) !important;
+  border-left: 2px solid rgba(0, 242, 255, 0.2) !important;
+}
+
+[data-theme='dark'] .ant-table-tbody > tr:hover > td {
+  background: rgba(31, 41, 55, 0.5) !important;
+}
+
+/* ============================================
+   文本可读性优化
+   ============================================ */
+
+/* 确保所有文本都有足够的对比度 */
+[data-theme='dark'] body {
+  color: var(--color-text-primary);
+}
+
+[data-theme='dark'] h1,
+[data-theme='dark'] h2,
+[data-theme='dark'] h3,
+[data-theme='dark'] h4,
+[data-theme='dark'] h5,
+[data-theme='dark'] h6 {
+  color: var(--color-text-primary);
+}
+
+/* 链接颜色 */
+[data-theme='dark'] a {
+  color: var(--color-primary);
+}
+
+[data-theme='dark'] a:hover {
+  color: var(--color-secondary);
+}
+
+/* 禁用状态 */
+.ant-btn-disabled,
+.ant-input-disabled,
+.ant-select-disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* ============================================
+   响应式优化
+   ============================================ */
+
+@media (max-width: 768px) {
+  .ant-table {
+    font-size: 12px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 8px 4px !important;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 8px 4px !important;
+  }
+}
+
+
+/* ============================================
+   搜索栏样式优化
+   ============================================ */
+
+/* 搜索输入框 */
+.ant-input-search {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.ant-input-search .ant-input {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-input-search .ant-input::placeholder {
+  color: var(--color-text-tertiary) !important;
+}
+
+.ant-input-search .ant-input:hover {
+  border-color: var(--color-primary) !important;
+}
+
+.ant-input-search .ant-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1) !important;
+}
+
+/* 搜索按钮 */
+.ant-input-search .ant-input-group-addon {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+}
+
+.ant-input-search .ant-btn {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.ant-input-search .ant-btn:hover {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+/* 搜索结果下拉框 */
+.ant-select-dropdown,
+.ant-dropdown {
+  background: var(--color-bg-secondary) !important;
+}
+
+.ant-select-item-option {
+  color: var(--color-text-primary) !important;
+}
+
+.ant-select-item-option:hover {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.ant-select-item-option-selected {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-primary) !important;
+}
+
+/* 搜索框容器 */
+.ant-input-group {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.ant-input-group-addon {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* 搜索图标 */
+.ant-input-search-button {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+.ant-input-search-button:hover {
+  background: var(--color-secondary) !important;
+  border-color: var(--color-secondary) !important;
+}

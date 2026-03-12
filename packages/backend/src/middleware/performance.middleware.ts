@@ -6,18 +6,31 @@
 import type { Request, Response, NextFunction } from 'express';
 import { performanceMonitor } from '../utils/PerformanceMonitor.js';
 import { logger } from '../config/logger.js';
+import type { RealTimeMetricsService } from '../services/RealTimeMetrics.js';
+import type { PerformanceAlertService } from '../services/PerformanceAlert.js';
 
 /**
  * Middleware to track API response times
+ * Integrates with RealTimeMetricsService for live monitoring
  */
 export const trackPerformance = (req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
   const operation = `${req.method} ${req.route?.path || req.path}`;
 
+  // 获取实时指标服务（如果可用）
+  const metricsService = req.app.locals.metricsService as RealTimeMetricsService;
+  const alertService = req.app.locals.alertService as PerformanceAlertService;
+  
+  // 记录活跃请求数增加
+  if (metricsService) {
+    metricsService.recordActiveRequests(1);
+  }
+
   // Override res.end to capture response time
   const originalEnd = res.end;
-  res.end = function(chunk?: any, encoding?: any) {
+  res.end = function(this: Response, chunk?: any, encoding?: any): any {
     const duration = Date.now() - startTime;
+    const isError = res.statusCode >= 400;
     
     // Log performance metrics
     performanceMonitor.logMetrics({
@@ -26,8 +39,23 @@ export const trackPerformance = (req: Request, res: Response, next: NextFunction
       timestamp: new Date()
     });
 
+    // Record metrics in RealTimeMetricsService
+    if (metricsService) {
+      metricsService.recordApiRequest(duration, isError);
+      metricsService.recordActiveRequests(-1);
+      
+      // Get current metrics and check for alerts
+      metricsService.getCurrentMetrics().then(metrics => {
+        if (alertService) {
+          alertService.checkMetrics(metrics);
+        }
+      }).catch(error => {
+        logger.warn('Failed to check metrics for alerts:', error);
+      });
+    }
+
     // Log slow requests
-    if (duration > 1000) { // > 1 second
+    if (duration > 1000) {
       logger.warn('Slow API request detected', {
         method: req.method,
         path: req.path,
@@ -39,8 +67,8 @@ export const trackPerformance = (req: Request, res: Response, next: NextFunction
     }
 
     // Call original end method
-    originalEnd.call(this, chunk, encoding);
-  };
+    return originalEnd.call(this, chunk, encoding);
+  } as any;
 
   next();
 };

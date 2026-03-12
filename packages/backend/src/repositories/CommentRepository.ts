@@ -1,24 +1,9 @@
-import { PoolClient } from 'pg';
-import { BaseRepository } from './BaseRepository.js';
+import { ImprovedBaseRepository } from './ImprovedBaseRepository.js';
 import { Comment } from '../models/Comment.js';
-import { QueryBuilder } from '../utils/QueryBuilder.js';
-import { Validator } from '../utils/Validator.js';
+import { HandleError } from '../utils/decorators/handleError.js';
 
-export class CommentRepository extends BaseRepository<Comment> {
-  constructor() {
-    super('task_comments');
-  }
-
-  protected getColumns(): string[] {
-    return [
-      'id',
-      'task_id',
-      'user_id', 
-      'content',
-      'created_at',
-      'updated_at'
-    ];
-  }
+export class CommentRepository extends ImprovedBaseRepository<Comment> {
+  protected tableName = 'task_comments';
 
   protected mapRowToModel(row: any): Comment {
     return {
@@ -36,86 +21,77 @@ export class CommentRepository extends BaseRepository<Comment> {
     };
   }
 
-  protected validateData(data: Partial<Comment>, isUpdate?: boolean): void {
-    if (!isUpdate) {
-      Validator.required(data.taskId, 'taskId');
-      Validator.required(data.userId, 'userId');
-      Validator.required(data.content, 'content');
-    }
-
-    if (data.content !== undefined) {
-      Validator.string(data.content, 'content');
-      Validator.maxLength(data.content, 2000, 'content');
-    }
-  }
-
   /**
    * Get comments by task ID with user information
    */
-  async findByTaskId(taskId: string, client?: PoolClient): Promise<Comment[]> {
-    const query = new QueryBuilder()
-      .select(
-        'c.id',
-        'c.task_id', 
-        'c.user_id',
-        'c.content',
-        'c.created_at',
-        'c.updated_at',
-        'u.username',
-        'a.image_url as avatar_url'
-      )
-      .from('task_comments c')
-      .innerJoin('users u', 'c.user_id = u.id')
-      .leftJoin('avatars a', 'u.avatar_id = a.id')
-      .where('c.task_id = $1')
-      .orderBy('c.created_at', 'ASC')
-      .build();
+  @HandleError({ context: 'CommentRepository.findByTaskId' })
+  async findByTaskId(taskId: string): Promise<Comment[]> {
+    return this.executeQuery('findByTaskId', async () => {
+      const query = `
+        SELECT 
+          c.id,
+          c.task_id, 
+          c.user_id,
+          c.content,
+          c.created_at,
+          c.updated_at,
+          u.username,
+          a.image_url as avatar_url
+        FROM task_comments c
+        INNER JOIN users u ON c.user_id = u.id
+        LEFT JOIN avatars a ON u.avatar_id = a.id
+        WHERE c.task_id = $1
+        ORDER BY c.created_at ASC
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    return rows.map(row => this.mapRowToModel(row));
+      const result = await this.pool.query(query, [taskId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { taskId });
   }
 
   /**
    * Get comments by user ID
    */
-  async findByUserId(userId: string, limit?: number, client?: PoolClient): Promise<Comment[]> {
-    const queryBuilder = new QueryBuilder()
-      .select(
-        'c.id',
-        'c.task_id',
-        'c.user_id', 
-        'c.content',
-        'c.created_at',
-        'c.updated_at',
-        'u.username',
-        'a.image_url as avatar_url'
-      )
-      .from('task_comments c')
-      .innerJoin('users u', 'c.user_id = u.id')
-      .leftJoin('avatars a', 'u.avatar_id = a.id')
-      .where('c.user_id = $1')
-      .orderBy('c.created_at', 'DESC');
+  @HandleError({ context: 'CommentRepository.findByUserId' })
+  async findByUserId(userId: string, limit?: number): Promise<Comment[]> {
+    return this.executeQuery('findByUserId', async () => {
+      const query = `
+        SELECT 
+          c.id,
+          c.task_id,
+          c.user_id, 
+          c.content,
+          c.created_at,
+          c.updated_at,
+          u.username,
+          a.image_url as avatar_url
+        FROM task_comments c
+        INNER JOIN users u ON c.user_id = u.id
+        LEFT JOIN avatars a ON u.avatar_id = a.id
+        WHERE c.user_id = $1
+        ORDER BY c.created_at DESC
+        ${limit ? `LIMIT ${limit}` : ''}
+      `;
 
-    if (limit) {
-      queryBuilder.limit(limit);
-    }
-
-    const query = queryBuilder.build();
-    const rows = await this.executeQuery(query, [userId], client);
-    return rows.map(row => this.mapRowToModel(row));
+      const result = await this.pool.query(query, [userId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { userId, limit });
   }
 
   /**
    * Count comments by task ID
    */
-  async countByTaskId(taskId: string, client?: PoolClient): Promise<number> {
-    const query = new QueryBuilder()
-      .select('COUNT(*) as count')
-      .from('task_comments')
-      .where('task_id = $1')
-      .build();
+  @HandleError({ context: 'CommentRepository.countByTaskId' })
+  async countByTaskId(taskId: string): Promise<number> {
+    return this.executeQuery('countByTaskId', async () => {
+      const query = `
+        SELECT COUNT(*) as count
+        FROM task_comments
+        WHERE task_id = $1
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    return parseInt(rows[0]?.count || '0');
+      const result = await this.pool.query(query, [taskId]);
+      return parseInt(result.rows[0]?.count || '0');
+    }, { taskId });
   }
 }

@@ -58,8 +58,8 @@ export const DashboardPage: React.FC = () => {
         }).catch(() => null) : Promise.resolve(null),
       ]);
 
-      // 设置任务列表和赏金数据
-      setAssignedTasksList(assignedTasks);
+      // 设置任务列表和赏金数据 - 确保 assignedTasks 是数组
+      setAssignedTasksList(Array.isArray(assignedTasks) ? assignedTasks : []);
       setMonthlyBounty(monthlyRanking?.totalBounty || 0);
       setQuarterlyBounty(quarterlyRanking?.totalBounty || 0);
       setAllTimeBounty(allTimeRanking?.totalBounty || 0);
@@ -93,7 +93,7 @@ export const DashboardPage: React.FC = () => {
       <DashboardHero user={user} />
       
       <DashboardStats
-        stats={stats}
+        stats={stats || null}
         monthlyBounty={monthlyBounty}
         quarterlyBounty={quarterlyBounty}
         allTimeBounty={allTimeBounty}
@@ -105,12 +105,12 @@ export const DashboardPage: React.FC = () => {
       />
 
       <DashboardQuickActions
-        stats={stats}
+        stats={stats || null}
         assignedTasksList={assignedTasksList}
       />
 
       <DashboardCharts
-        stats={stats}
+        stats={stats || null}
         monthlyBounty={monthlyBounty}
         monthlyHasData={monthlyHasData}
       />

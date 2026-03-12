@@ -4,6 +4,8 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { UserRole } from '../models/User.js';
 import { performanceMonitor } from '../utils/PerformanceMonitor.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { queryTransformers } from '../utils/queryValidation.js';
+import { sendValidationError, sendNotFound, sendUnauthorized, sendForbidden } from '../utils/responseHelpers.js';
 
 const router = Router();
 
@@ -15,13 +17,11 @@ const router = Router();
 router.get('/performance', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is admin
   if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.POSITION_ADMIN) {
-    return res.status(403).json({ error: 'Admin access required' });
+    return sendForbidden(res, 'Admin access required');
   }
 
   // Get time window from query parameter (default: 1 hour)
-  const timeWindowMs = req.query.timeWindow 
-    ? parseInt(req.query.timeWindow as string) 
-    : 3600000; // 1 hour
+  const timeWindowMs = queryTransformers.toInt(req.query.timeWindow as string, 3600000);
 
   // Get all tracked operations
   const operations = performanceMonitor.getTrackedOperations();
@@ -49,20 +49,18 @@ router.get('/performance', authenticate, asyncHandler(async (req: Request, res: 
 router.get('/performance/:operation', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is admin
   if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.POSITION_ADMIN) {
-    return res.status(403).json({ error: 'Admin access required' });
+    return sendForbidden(res, 'Admin access required');
   }
 
   const { operation } = req.params;
   
   // Get time window from query parameter (default: 1 hour)
-  const timeWindowMs = req.query.timeWindow 
-    ? parseInt(req.query.timeWindow as string) 
-    : 3600000; // 1 hour
+  const timeWindowMs = queryTransformers.toInt(req.query.timeWindow as string, 3600000);
 
   const metrics = performanceMonitor.getMetrics(operation, timeWindowMs);
   
   if (!metrics) {
-    return res.status(404).json({ error: 'No metrics found for this operation' });
+    return sendNotFound(res);
   }
 
   res.json(metrics);
@@ -76,7 +74,7 @@ router.get('/performance/:operation', authenticate, asyncHandler(async (req: Req
 router.delete('/performance/:operation', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is super admin
   if (req.user!.role !== UserRole.SUPER_ADMIN) {
-    return res.status(403).json({ error: 'Super admin access required' });
+    return sendForbidden(res, 'Super admin access required');
   }
 
   const { operation } = req.params;
@@ -93,7 +91,7 @@ router.delete('/performance/:operation', authenticate, asyncHandler(async (req: 
 router.delete('/performance', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is super admin
   if (req.user!.role !== UserRole.SUPER_ADMIN) {
-    return res.status(403).json({ error: 'Super admin access required' });
+    return sendForbidden(res, 'Super admin access required');
   }
 
   performanceMonitor.clearAllMetrics();

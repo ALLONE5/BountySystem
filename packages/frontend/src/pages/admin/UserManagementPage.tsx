@@ -100,7 +100,7 @@ export const UserManagementPage: React.FC = () => {
     detailsDrawer.open(data.user);
   };
 
-  const handleEdit = async (user: User) => {
+  const handleEdit = async (user: User | { id: string }) => {
     const data = await adminApi.getUserDetails(user.id);
     const fullUser = data.user;
     

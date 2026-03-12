@@ -1,24 +1,9 @@
-import { PoolClient } from 'pg';
-import { BaseRepository } from './BaseRepository.js';
+import { ImprovedBaseRepository } from './ImprovedBaseRepository.js';
 import { TaskAssistant } from '../models/TaskAssistant.js';
-import { QueryBuilder } from '../utils/QueryBuilder.js';
-import { Validator } from '../utils/Validator.js';
+import { HandleError } from '../utils/decorators/handleError.js';
 
-export class TaskAssistantRepository extends BaseRepository<TaskAssistant> {
-  constructor() {
-    super('task_assistants');
-  }
-
-  protected getColumns(): string[] {
-    return [
-      'id',
-      'task_id',
-      'user_id',
-      'allocation_type',
-      'allocation_value',
-      'added_at'
-    ];
-  }
+export class TaskAssistantRepository extends ImprovedBaseRepository<TaskAssistant> {
+  protected tableName = 'task_assistants';
 
   protected mapRowToModel(row: any): TaskAssistant {
     return {
@@ -37,150 +22,137 @@ export class TaskAssistantRepository extends BaseRepository<TaskAssistant> {
     };
   }
 
-  protected validateData(data: Partial<TaskAssistant>, isUpdate?: boolean): void {
-    if (!isUpdate) {
-      Validator.required(data.taskId, 'taskId');
-      Validator.required(data.userId, 'userId');
-      Validator.required(data.allocationType, 'allocationType');
-      Validator.required(data.allocationValue, 'allocationValue');
-    }
-
-    if (data.allocationType !== undefined) {
-      const validTypes = ['percentage', 'fixed'];
-      if (!validTypes.includes(data.allocationType)) {
-        throw new Error(`Invalid allocation type. Must be one of: ${validTypes.join(', ')}`);
-      }
-    }
-
-    if (data.allocationValue !== undefined) {
-      Validator.positive(data.allocationValue, 'allocationValue');
-      
-      if (data.allocationType === 'percentage' && data.allocationValue > 100) {
-        throw new Error('Percentage allocation cannot exceed 100%');
-      }
-    }
-  }
-
   /**
    * Get assistants by task ID with user information
    */
-  async findByTaskId(taskId: string, client?: PoolClient): Promise<TaskAssistant[]> {
-    const query = new QueryBuilder()
-      .select(
-        'ta.id',
-        'ta.task_id',
-        'ta.user_id',
-        'ta.allocation_type',
-        'ta.allocation_value',
-        'ta.added_at',
-        'u.username',
-        'u.email',
-        'a.image_url as avatar_url'
-      )
-      .from('task_assistants ta')
-      .innerJoin('users u', 'ta.user_id = u.id')
-      .leftJoin('avatars a', 'u.avatar_id = a.id')
-      .where('ta.task_id = $1')
-      .orderBy('ta.added_at', 'ASC')
-      .build();
+  @HandleError({ context: 'TaskAssistantRepository.findByTaskId' })
+  async findByTaskId(taskId: string): Promise<TaskAssistant[]> {
+    return this.executeQuery('findByTaskId', async () => {
+      const query = `
+        SELECT 
+          ta.id,
+          ta.task_id,
+          ta.user_id,
+          ta.allocation_type,
+          ta.allocation_value,
+          ta.added_at,
+          u.username,
+          u.email,
+          a.image_url as avatar_url
+        FROM task_assistants ta
+        INNER JOIN users u ON ta.user_id = u.id
+        LEFT JOIN avatars a ON u.avatar_id = a.id
+        WHERE ta.task_id = $1
+        ORDER BY ta.added_at ASC
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    return rows.map(row => this.mapRowToModel(row));
+      const result = await this.pool.query(query, [taskId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { taskId });
   }
 
   /**
    * Get assistants by user ID
    */
-  async findByUserId(userId: string, limit?: number, client?: PoolClient): Promise<TaskAssistant[]> {
-    const queryBuilder = new QueryBuilder()
-      .select(
-        'ta.id',
-        'ta.task_id',
-        'ta.user_id',
-        'ta.allocation_type',
-        'ta.allocation_value',
-        'ta.added_at',
-        'u.username',
-        'u.email',
-        'a.image_url as avatar_url'
-      )
-      .from('task_assistants ta')
-      .innerJoin('users u', 'ta.user_id = u.id')
-      .leftJoin('avatars a', 'u.avatar_id = a.id')
-      .where('ta.user_id = $1')
-      .orderBy('ta.added_at', 'DESC');
+  @HandleError({ context: 'TaskAssistantRepository.findByUserId' })
+  async findByUserId(userId: string, limit?: number): Promise<TaskAssistant[]> {
+    return this.executeQuery('findByUserId', async () => {
+      const query = `
+        SELECT 
+          ta.id,
+          ta.task_id,
+          ta.user_id,
+          ta.allocation_type,
+          ta.allocation_value,
+          ta.added_at,
+          u.username,
+          u.email,
+          a.image_url as avatar_url
+        FROM task_assistants ta
+        INNER JOIN users u ON ta.user_id = u.id
+        LEFT JOIN avatars a ON u.avatar_id = a.id
+        WHERE ta.user_id = $1
+        ORDER BY ta.added_at DESC
+        ${limit ? `LIMIT ${limit}` : ''}
+      `;
 
-    if (limit) {
-      queryBuilder.limit(limit);
-    }
-
-    const query = queryBuilder.build();
-    const rows = await this.executeQuery(query, [userId], client);
-    return rows.map(row => this.mapRowToModel(row));
+      const result = await this.pool.query(query, [userId]);
+      return result.rows.map(row => this.mapRowToModel(row));
+    }, { userId, limit });
   }
 
   /**
    * Check if user is already an assistant for a task
    */
-  async existsByTaskAndUser(taskId: string, userId: string, client?: PoolClient): Promise<boolean> {
-    const query = new QueryBuilder()
-      .select('COUNT(*) as count')
-      .from('task_assistants')
-      .where('task_id = $1')
-      .andWhere('user_id = $2')
-      .build();
+  @HandleError({ context: 'TaskAssistantRepository.existsByTaskAndUser' })
+  async existsByTaskAndUser(taskId: string, userId: string): Promise<boolean> {
+    return this.executeQuery('existsByTaskAndUser', async () => {
+      const query = `
+        SELECT COUNT(*) as count
+        FROM task_assistants
+        WHERE task_id = $1 AND user_id = $2
+      `;
 
-    const rows = await this.executeQuery(query, [taskId, userId], client);
-    return parseInt(rows[0]?.count || '0') > 0;
+      const result = await this.pool.query(query, [taskId, userId]);
+      return parseInt(result.rows[0]?.count || '0') > 0;
+    }, { taskId, userId });
   }
 
   /**
    * Remove assistant by task and user
    */
-  async removeByTaskAndUser(taskId: string, userId: string, client?: PoolClient): Promise<void> {
-    const query = `DELETE FROM task_assistants WHERE task_id = $1 AND user_id = $2`;
-    await this.executeQuery(query, [taskId, userId], client);
+  @HandleError({ context: 'TaskAssistantRepository.removeByTaskAndUser' })
+  async removeByTaskAndUser(taskId: string, userId: string): Promise<void> {
+    return this.executeQuery('removeByTaskAndUser', async () => {
+      const query = `DELETE FROM task_assistants WHERE task_id = $1 AND user_id = $2`;
+      await this.pool.query(query, [taskId, userId]);
+    }, { taskId, userId });
   }
 
   /**
    * Get total allocation for a task
    */
-  async getTotalAllocationByTask(taskId: string, client?: PoolClient): Promise<{ percentage: number; fixed: number }> {
-    const query = new QueryBuilder()
-      .select(
-        'allocation_type',
-        'SUM(allocation_value) as total'
-      )
-      .from('task_assistants')
-      .where('task_id = $1')
-      .groupBy('allocation_type')
-      .build();
+  @HandleError({ context: 'TaskAssistantRepository.getTotalAllocationByTask' })
+  async getTotalAllocationByTask(taskId: string): Promise<{ percentage: number; fixed: number }> {
+    return this.executeQuery('getTotalAllocationByTask', async () => {
+      const query = `
+        SELECT 
+          allocation_type,
+          SUM(allocation_value) as total
+        FROM task_assistants
+        WHERE task_id = $1
+        GROUP BY allocation_type
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    
-    const result = { percentage: 0, fixed: 0 };
-    rows.forEach(row => {
-      if (row.allocation_type === 'percentage') {
-        result.percentage = parseFloat(row.total || '0');
-      } else if (row.allocation_type === 'fixed') {
-        result.fixed = parseFloat(row.total || '0');
-      }
-    });
+      const result = await this.pool.query(query, [taskId]);
+      
+      const allocation = { percentage: 0, fixed: 0 };
+      result.rows.forEach(row => {
+        if (row.allocation_type === 'percentage') {
+          allocation.percentage = parseFloat(row.total || '0');
+        } else if (row.allocation_type === 'fixed') {
+          allocation.fixed = parseFloat(row.total || '0');
+        }
+      });
 
-    return result;
+      return allocation;
+    }, { taskId });
   }
 
   /**
    * Count assistants by task ID
    */
-  async countByTaskId(taskId: string, client?: PoolClient): Promise<number> {
-    const query = new QueryBuilder()
-      .select('COUNT(*) as count')
-      .from('task_assistants')
-      .where('task_id = $1')
-      .build();
+  @HandleError({ context: 'TaskAssistantRepository.countByTaskId' })
+  async countByTaskId(taskId: string): Promise<number> {
+    return this.executeQuery('countByTaskId', async () => {
+      const query = `
+        SELECT COUNT(*) as count
+        FROM task_assistants
+        WHERE task_id = $1
+      `;
 
-    const rows = await this.executeQuery(query, [taskId], client);
-    return parseInt(rows[0]?.count || '0');
+      const result = await this.pool.query(query, [taskId]);
+      return parseInt(result.rows[0]?.count || '0');
+    }, { taskId });
   }
 }

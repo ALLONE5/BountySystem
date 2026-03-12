@@ -21,13 +21,18 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const data = await systemConfigApi.getPublicConfig();
       log.info('System config loaded successfully', data);
       
+      // Check if data is valid
+      if (!data) {
+        throw new Error('API returned null or undefined data');
+      }
+      
       // Convert public config to full config format
       const fullConfig: SystemConfig = {
         id: 'public',
-        siteName: data.siteName,
-        siteDescription: data.siteDescription,
-        logoUrl: data.logoUrl,
-        debugMode: data.debugMode,
+        siteName: data.siteName || '赏金平台',
+        siteDescription: data.siteDescription || '基于任务的协作平台',
+        logoUrl: data.logoUrl || '',
+        debugMode: data.debugMode || false,
         allowRegistration: true,
         maintenanceMode: false,
         maxFileSize: 10,
@@ -38,11 +43,11 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         smtpUser: '',
         smtpSecure: false,
         // UI Theme settings from API
-        defaultTheme: data.defaultTheme,
-        allowThemeSwitch: data.allowThemeSwitch,
-        animationStyle: data.animationStyle,
-        enableAnimations: data.enableAnimations,
-        reducedMotion: data.reducedMotion,
+        defaultTheme: data.defaultTheme || 'dark',
+        allowThemeSwitch: data.allowThemeSwitch !== false,
+        animationStyle: data.animationStyle || 'scanline',
+        enableAnimations: data.enableAnimations !== false,
+        reducedMotion: data.reducedMotion || false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -50,15 +55,15 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setConfig(fullConfig);
       
       // 动态更新页面标题
-      if (data.siteName) {
-        document.title = data.siteName;
-        log.debug('Updated page title', { siteName: data.siteName });
+      if (fullConfig.siteName) {
+        document.title = fullConfig.siteName;
+        log.debug('Updated page title', { siteName: fullConfig.siteName });
       }
       
       // 动态更新favicon（如果有Logo）
-      if (data.logoUrl) {
-        updateFavicon(data.logoUrl);
-        log.debug('Updated favicon', { logoUrl: data.logoUrl });
+      if (fullConfig.logoUrl) {
+        updateFavicon(fullConfig.logoUrl);
+        log.debug('Updated favicon', { logoUrl: fullConfig.logoUrl });
       }
     } catch (error) {
       log.error('Failed to load system config', error);
@@ -111,7 +116,7 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
     let faviconUrl = logoUrl;
     if (!logoUrl.startsWith('http')) {
       // 如果是相对路径，添加后端服务器地址
-      const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000';
+      const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
       faviconUrl = `${baseUrl}${logoUrl.startsWith('/') ? logoUrl : '/' + logoUrl}`;
     }
     

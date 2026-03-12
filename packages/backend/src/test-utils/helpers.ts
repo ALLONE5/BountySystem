@@ -50,13 +50,13 @@ export function testProperty<T>(
  */
 export function testPropertyMulti<T extends any[]>(
   description: string,
-  arbitraries: { [K in keyof T]: fc.Arbitrary<T[K]> },
+  arbitraries: fc.Arbitrary<any>[],
   predicate: (...values: T) => void | boolean,
   config: Partial<typeof PBT_CONFIG> = {}
 ): void {
   it(description, () => {
     fc.assert(
-      fc.property(...arbitraries, predicate),
+      (fc.property as any)(...arbitraries, predicate),
       { ...PBT_CONFIG, ...config }
     );
   });
@@ -70,7 +70,7 @@ export function assertHasProperties<T extends object>(
   properties: (keyof T)[]
 ): void {
   for (const prop of properties) {
-    expect(obj).toHaveProperty(prop);
+    expect(obj).toHaveProperty(prop as string);
   }
 }
 

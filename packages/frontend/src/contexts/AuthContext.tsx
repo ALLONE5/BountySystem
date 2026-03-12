@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { message } from 'antd';
+import { App } from 'antd';
 import { authApi } from '../api/auth';
-import { useAuthStore } from '../store/authStore';
 import { log } from '../utils/logger';
 import { User } from '../types';
+import { useAuthStore } from '../store/authStore';
 
 interface AuthContextType {
   user: User | null;
@@ -36,7 +36,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const authStore = useAuthStore();
+  const { message } = App.useApp();
+  const { setAuth, clearAuth } = useAuthStore();
 
   const isAuthenticated = !!user;
 
@@ -44,72 +45,81 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // First check zustand store for persisted auth state
-        const persistedToken = authStore.token;
-        const persistedUser = authStore.user;
+        log.info('开始检查认证状态');
         
-        if (persistedToken && persistedUser) {
-          // Use persisted user data first
-          setUser(persistedUser);
-          
-          // Then verify token is still valid by calling /auth/me
+        // Check localStorage for token
+        const token = localStorage.getItem('token');
+        log.info('检查 localStorage token', { hasToken: !!token });
+        
+        if (token) {
           try {
+            log.info('验证 token 有效性');
             const userData = await authApi.getCurrentUser();
+            // Response interceptor already extracted data from { success: true, data: user }
+            log.info('Token 验证成功', { userId: userData.id });
             setUser(userData);
-            // Update store with fresh user data
-            authStore.setAuth(persistedToken, userData);
+            // 同步到 authStore
+            setAuth(token, userData);
           } catch (error) {
             // Token is invalid, clear everything
-            log.warn('Persisted token is invalid, clearing auth state');
+            log.warn('Token 无效，清除认证状态', error);
             localStorage.removeItem('token');
-            authStore.clearAuth();
             setUser(null);
+            clearAuth();
           }
         } else {
-          // Fallback to localStorage check
-          const token = localStorage.getItem('token');
-          if (token) {
-            try {
-              const userData = await authApi.getCurrentUser();
-              setUser(userData);
-              authStore.setAuth(token, userData);
-            } catch (error) {
-              log.error('Auth check failed', error);
-              localStorage.removeItem('token');
-              authStore.clearAuth();
-            }
-          }
+          log.info('未找到 token，用户未登录');
         }
       } catch (error) {
-        log.error('Auth initialization failed', error);
+        log.error('认证初始化失败', error);
         localStorage.removeItem('token');
-        authStore.clearAuth();
         setUser(null);
+        clearAuth();
       } finally {
+        log.info('认证检查完成，设置 isLoading = false');
         setIsLoading(false);
       }
     };
 
     checkAuth();
-  }, []); // 移除 authStore 依赖，只在组件挂载时执行一次
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
+      log.info('AuthContext: 开始登录', { email });
       // Backend expects 'username' field which can be email or username
-      const response = await authApi.login({ username: email, password });
+      const authResponse = await authApi.login({ username: email, password });
       
-      // Store in both localStorage and zustand store
-      localStorage.setItem('token', response.token);
-      authStore.setAuth(response.token, response.user);
-      setUser(response.user);
+      // Response interceptor already extracted data from { success: true, data: { user, token } }
+      const { token, user } = authResponse;
       
+      log.info('AuthContext: 登录 API 成功', { 
+        hasToken: !!token, 
+        hasUser: !!user,
+        userId: user?.id,
+        tokenPreview: token ? token.substring(0, 30) + '...' : 'undefined'
+      });
+      
+      if (!token) {
+        throw new Error('登录响应中缺少 token');
+      }
+      
+      if (!user) {
+        throw new Error('登录响应中缺少 user');
+      }
+      
+      // Store token in localStorage
+      localStorage.setItem('token', token);
+      setUser(user);
+      // 同步到 authStore
+      setAuth(token, user);
+      
+      log.info('AuthContext: Token 和用户信息已保存');
       message.success('登录成功');
     } catch (error: any) {
-      message.error(error.message || '登录失败');
+      log.error('AuthContext: 登录失败', error);
+      // Don't show error message here, let the calling component handle it
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -119,28 +129,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string;
   }) => {
     try {
-      setIsLoading(true);
-      const response = await authApi.register(userData);
+      const authResponse = await authApi.register(userData);
       
-      // Store in both localStorage and zustand store
-      localStorage.setItem('token', response.token);
-      authStore.setAuth(response.token, response.user);
-      setUser(response.user);
+      // Response interceptor already extracted data from { success: true, data: { user, token } }
+      const { token, user } = authResponse;
+      
+      // Store token in localStorage
+      localStorage.setItem('token', token);
+      setUser(user);
+      // 同步到 authStore
+      setAuth(token, user);
       
       message.success('注册成功');
     } catch (error: any) {
-      message.error(error.message || '注册失败');
+      // Don't show error message here, let the calling component handle it
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    authStore.clearAuth();
     setUser(null);
+    clearAuth();
     message.success('已退出登录');
+    // 使用 React Router 导航而不是硬刷新
     window.location.href = '/auth/login';
   };
 

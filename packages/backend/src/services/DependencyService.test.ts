@@ -1,3 +1,4 @@
+import { createTestDependencies } from '../test-utils/test-setup.js';
 import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { pool } from '../config/database.js';
 import { DependencyService } from './DependencyService.js';
@@ -15,6 +16,8 @@ describe('DependencyService', () => {
   let testTask3Id: string;
 
   beforeEach(async () => {
+    const { userRepository, permissionChecker } = createTestDependencies();
+    
     dependencyService = new DependencyService();
     taskService = new TaskService();
     userService = new UserService(userRepository, permissionChecker);

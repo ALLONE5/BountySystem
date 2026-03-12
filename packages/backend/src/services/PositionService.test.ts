@@ -1,3 +1,4 @@
+import { createTestDependencies } from '../test-utils/test-setup.js';
 import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { pool } from '../config/database.js';
 import { PositionService } from './PositionService.js';
@@ -5,7 +6,9 @@ import { UserService } from './UserService.js';
 import { ApplicationStatus } from '../models/Position.js';
 
 describe('PositionService', () => {
-  let positionService: PositionService;
+    const { userRepository, taskRepository, groupRepository, positionRepository, permissionChecker } = createTestDependencies();
+
+let positionService: PositionService;
   let userService: UserService;
   let testUserId: string;
   let testPositionId: string;

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Modal, Form, Select, Spin, InputNumber, Button, Avatar } from 'antd';
+import { Form, Select, Spin, InputNumber, Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+import { BaseFormModal } from './BaseFormModal';
 
 export interface AssistantOption {
   id: string;
@@ -10,7 +11,7 @@ export interface AssistantOption {
 }
 
 interface AddAssistantModalProps {
-  open: boolean;
+  visible: boolean;
   onCancel: () => void;
   onSubmit: (values: { assistantId: string; bountyAllocation: number }) => Promise<void> | void;
   searchUsers: (keyword: string) => Promise<AssistantOption[]>;
@@ -19,7 +20,7 @@ interface AddAssistantModalProps {
 }
 
 export const AddAssistantModal: React.FC<AddAssistantModalProps> = ({
-  open,
+  visible,
   onCancel,
   onSubmit,
   searchUsers,
@@ -48,51 +49,57 @@ export const AddAssistantModal: React.FC<AddAssistantModalProps> = ({
     }, 400);
   };
 
-  const handleFinish = async (values: { assistantId: string; bountyAllocation: number }) => {
+  const handleSubmit = async (values: { assistantId: string; bountyAllocation: number }) => {
     await onSubmit(values);
   };
 
+  React.useEffect(() => {
+    if (visible) {
+      form.setFieldsValue({ bountyAllocation: initialAllocation });
+    }
+  }, [visible, initialAllocation, form]);
+
   return (
-    <Modal
+    <BaseFormModal
+      visible={visible}
       title="添加协作者"
-      open={open}
+      form={form}
+      onSubmit={handleSubmit}
       onCancel={onCancel}
-      footer={null}
-      destroyOnClose
+      okText="确认添加"
+      cancelText="取消"
+      loading={loading}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{ bountyAllocation: initialAllocation }}
-        onFinish={handleFinish}
+      <Form.Item 
+        name="assistantId" 
+        label="用户" 
+        rules={[{ required: true, message: '请选择用户' }]}
       >
-        <Form.Item name="assistantId" label="用户" rules={[{ required: true, message: '请选择用户' }]}>
-          <Select
-            showSearch
-            placeholder="搜索用户"
-            filterOption={false}
-            onSearch={handleSearch}
-            notFoundContent={searching ? <Spin size="small" /> : null}
-            options={options.map(u => ({
-              label: (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar size="small" src={u.avatarUrl} icon={<UserOutlined />} style={{ marginRight: 8 }} />
-                  {u.username}{u.email ? ` (${u.email})` : ''}
-                </div>
-              ),
-              value: u.id,
-            }))}
-          />
-        </Form.Item>
-        <Form.Item name="bountyAllocation" label="赏金分配 (%)" rules={[{ required: true, message: '请输入分配比例' }]}>
-          <InputNumber min={1} max={100} style={{ width: '100%' }} />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" block loading={loading}>
-            确认添加
-          </Button>
-        </Form.Item>
-      </Form>
-    </Modal>
+        <Select
+          showSearch
+          placeholder="搜索用户"
+          filterOption={false}
+          onSearch={handleSearch}
+          notFoundContent={searching ? <Spin size="small" /> : null}
+          options={options.map(u => ({
+            label: (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar size="small" src={u.avatarUrl} icon={<UserOutlined />} style={{ marginRight: 8 }} />
+                {u.username}{u.email ? ` (${u.email})` : ''}
+              </div>
+            ),
+            value: u.id,
+          }))}
+        />
+      </Form.Item>
+      
+      <Form.Item 
+        name="bountyAllocation" 
+        label="赏金分配 (%)" 
+        rules={[{ required: true, message: '请输入分配比例' }]}
+      >
+        <InputNumber min={1} max={100} style={{ width: '100%' }} />
+      </Form.Item>
+    </BaseFormModal>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Select, Space, Typography, Avatar, Spin } from 'antd';
+import { Select, Space, Typography, Avatar, Spin, Form } from 'antd';
 import { SearchOutlined, UserOutlined } from '@ant-design/icons';
+import { BaseFormModal } from '../common/BaseFormModal';
 import { Task, User } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { userApi } from '../../api/user';
@@ -32,10 +33,10 @@ export const TaskAssignModal: React.FC<TaskAssignModalProps> = ({
   onClose,
   onAssign,
 }) => {
+  const [form] = Form.useForm();
   const [searchingUsers, setSearchingUsers] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string | undefined>();
-  const [assignLoading, setAssignLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { handleError } = useErrorHandler();
 
   const handleSearchUsers = debounce(async (query: string) => {
@@ -54,74 +55,74 @@ export const TaskAssignModal: React.FC<TaskAssignModalProps> = ({
     }
   }, 300);
 
-  const handleAssignConfirm = async () => {
-    if (!task || !selectedUserId) {
+  const handleSubmit = async (values: { userId: string }) => {
+    if (!task || !values.userId) {
       return;
     }
     
-    setAssignLoading(true);
+    setLoading(true);
     try {
-      await onAssign(task.id, selectedUserId);
-      handleClose();
+      await onAssign(task.id, values.userId);
+      onClose();
     } catch (error) {
       // 错误处理由父组件处理
     } finally {
-      setAssignLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setSelectedUserId(undefined);
+  const handleCancel = () => {
     setUsers([]);
     onClose();
   };
 
   return (
-    <Modal
+    <BaseFormModal
+      visible={visible}
       title="指派任务"
-      open={visible}
-      onOk={handleAssignConfirm}
-      onCancel={handleClose}
+      form={form}
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
       okText="确认指派"
       cancelText="取消"
-      confirmLoading={assignLoading}
+      loading={loading}
     >
-      <Space style={{ width: '100%', flexDirection: 'column' }}>
-        <div>
-          <Text strong>任务名称：</Text>
-          <Text>{task?.name}</Text>
-        </div>
-        <div style={{ width: '100%' }}>
-          <Text strong>选择用户：</Text>
-          <Select
-            showSearch
-            placeholder="搜索用户（输入用户名或邮箱）"
-            style={{ width: '100%', marginTop: 8 }}
-            value={selectedUserId}
-            onChange={setSelectedUserId}
-            onSearch={handleSearchUsers}
-            loading={searchingUsers}
-            notFoundContent={searchingUsers ? <Spin size="small" /> : null}
-            suffixIcon={<SearchOutlined />}
-            filterOption={false}
-          >
-            {users.map(user => (
-              <Option key={user.id} value={user.id}>
-                <Space>
-                  <Avatar src={user.avatarUrl} size="small" icon={<UserOutlined />} />
-                  <span>{user.username}</span>
-                  <Text type="secondary">({user.email})</Text>
-                </Space>
-              </Option>
-            ))}
-          </Select>
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            提示：指派后任务将自动设置为私有，被指派用户会收到通知
-          </Text>
-        </div>
-      </Space>
-    </Modal>
+      <div style={{ marginBottom: 16 }}>
+        <Text strong>任务名称：</Text>
+        <Text>{task?.name}</Text>
+      </div>
+      
+      <Form.Item
+        name="userId"
+        label="选择用户"
+        rules={[{ required: true, message: '请选择要指派的用户' }]}
+      >
+        <Select
+          showSearch
+          placeholder="搜索用户（输入用户名或邮箱）"
+          onSearch={handleSearchUsers}
+          loading={searchingUsers}
+          notFoundContent={searchingUsers ? <Spin size="small" /> : null}
+          suffixIcon={<SearchOutlined />}
+          filterOption={false}
+        >
+          {users.map(user => (
+            <Option key={user.id} value={user.id}>
+              <Space>
+                <Avatar src={user.avatarUrl} size="small" icon={<UserOutlined />} />
+                <span>{user.username}</span>
+                <Text type="secondary">({user.email})</Text>
+              </Space>
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+      
+      <div style={{ marginTop: 16 }}>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          提示：指派后任务将自动设置为私有，被指派用户会收到通知
+        </Text>
+      </div>
+    </BaseFormModal>
   );
 };

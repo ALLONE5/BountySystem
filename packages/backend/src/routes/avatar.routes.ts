@@ -20,22 +20,6 @@ export function createAvatarRouter(pool: Pool): Router {
   }));
 
   /**
-   * GET /api/avatars/:id
-   * Get avatar by ID
-   */
-  router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const avatar = await avatarService.getAvatarById(id);
-
-    if (!avatar) {
-      res.status(404).json({ error: 'Avatar not found' });
-      return;
-    }
-
-    res.json(avatar);
-  }));
-
-  /**
    * GET /api/avatars/available/me
    * Get available avatars for current user
    */
@@ -63,8 +47,20 @@ export function createAvatarRouter(pool: Pool): Router {
     const user = req.user!;
     const avatar = await avatarService.getUserAvatar(user.userId);
 
+    // 返回 null 而不是 404，避免控制台错误
+    res.json(avatar || null);
+  }));
+
+  /**
+   * GET /api/avatars/:id
+   * Get avatar by ID
+   */
+  router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const avatar = await avatarService.getAvatarById(id);
+
     if (!avatar) {
-      res.status(404).json({ error: 'User has no avatar' });
+      res.status(404).json({ error: 'Avatar not found' });
       return;
     }
 

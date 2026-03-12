@@ -5,7 +5,7 @@ export class AttachmentMapper {
    * Map database row to Attachment model
    */
   static mapRowToAttachment(row: any): Attachment {
-    if (!row) return null;
+    if (!row) return undefined as any;
 
     return {
       id: row.id,

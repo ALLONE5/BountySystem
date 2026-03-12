@@ -120,7 +120,7 @@ export const TaskModals: React.FC<TaskModalsProps> = ({
     <>
       {/* 添加协作者 */}
       <AddAssistantModal
-        open={addAssistantModalVisible}
+        visible={addAssistantModalVisible}
         onCancel={onAddAssistantCancel}
         onSubmit={onAddAssistant}
         loading={addAssistantSubmitting}

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Modal, Form, Select, Typography, Tag } from 'antd';
+import { Form, Select, Typography, Tag } from 'antd';
 import { Position } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { BaseFormModal } from '../common/BaseFormModal';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -21,74 +22,66 @@ export const PositionChangeModal: React.FC<PositionChangeModalProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
-  const [positionError, setPositionError] = useState<string>('');
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
   const { handleAsyncError } = useErrorHandler();
 
   React.useEffect(() => {
-    if (visible) {
+    if (visible && userPositions) {
       // Pre-populate with current positions
-      setSelectedPositions(userPositions ? userPositions.map(pos => pos.id) : []);
-      setPositionError('');
+      form.setFieldsValue({
+        positions: userPositions.map(pos => pos.id)
+      });
     }
-  }, [visible, userPositions]);
+  }, [visible, userPositions, form]);
 
-  const handleSubmit = async () => {
-    setPositionError('');
+  const handleSubmit = async (values: { positions: string[] }) => {
+    const { positions } = values;
     
-    if (!selectedPositions || selectedPositions.length === 0) {
-      setPositionError('请至少选择一个岗位');
+    if (!positions || positions.length === 0) {
+      form.setFields([{
+        name: 'positions',
+        errors: ['请至少选择一个岗位']
+      }]);
       return;
     }
     
-    if (selectedPositions.length > 3) {
-      setPositionError('最多只能选择3个岗位');
+    if (positions.length > 3) {
+      form.setFields([{
+        name: 'positions',
+        errors: ['最多只能选择3个岗位']
+      }]);
       return;
     }
     
     const currentPositionIds = userPositions ? userPositions.map(pos => pos.id) : [];
     const hasChanged = 
-      selectedPositions.length !== currentPositionIds.length ||
-      selectedPositions.some(posId => !currentPositionIds.includes(posId));
+      positions.length !== currentPositionIds.length ||
+      positions.some(posId => !currentPositionIds.includes(posId));
 
     if (!hasChanged) {
-      setPositionError('岗位未发生变化');
+      form.setFields([{
+        name: 'positions',
+        errors: ['岗位未发生变化']
+      }]);
       return;
     }
 
-    await handleAsyncError(
-      async () => {
-        await onSubmit(selectedPositions);
-        handleClose();
-      },
-      'PositionChangeModal.submit',
-      undefined,
-      undefined
-    );
-  };
-
-  const handleClose = () => {
-    setSelectedPositions([]);
-    setPositionError('');
-    onClose();
-  };
-
-  const handlePositionChange = (value: string[]) => {
-    setSelectedPositions(value);
-    if (positionError) {
-      setPositionError('');
+    setLoading(true);
+    try {
+      await handleAsyncError(
+        async () => {
+          await onSubmit(positions);
+        },
+        'PositionChangeModal.submit'
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Modal
-      title="申请岗位变更"
-      open={visible}
-      onOk={handleSubmit}
-      onCancel={handleClose}
-      okText="提交申请"
-      cancelText="取消"
-    >
+    <>
       <div style={{ marginBottom: 16 }}>
         <Text>当前岗位: </Text>
         {userPositions && userPositions.length > 0 ? (
@@ -101,18 +94,36 @@ export const PositionChangeModal: React.FC<PositionChangeModalProps> = ({
           <Text type="secondary">暂无岗位</Text>
         )}
       </div>
-      <Form layout="vertical">
+      
+      <BaseFormModal
+        visible={visible}
+        title="申请岗位变更"
+        form={form}
+        onSubmit={handleSubmit}
+        onCancel={onClose}
+        okText="提交申请"
+        cancelText="取消"
+        loading={loading}
+      >
         <Form.Item 
+          name="positions"
           label="选择岗位" 
-          required 
-          help={positionError || "最多可选择3个岗位"}
-          validateStatus={positionError ? 'error' : ''}
+          rules={[
+            { required: true, message: '请至少选择一个岗位' },
+            { 
+              validator: (_, value) => {
+                if (value && value.length > 3) {
+                  return Promise.reject('最多只能选择3个岗位');
+                }
+                return Promise.resolve();
+              }
+            }
+          ]}
+          help="最多可选择3个岗位"
         >
           <Select
             mode="multiple"
             placeholder="请选择岗位（可多选、可删减）"
-            value={selectedPositions}
-            onChange={handlePositionChange}
             showSearch
           >
             {allPositions && allPositions.map((pos) => (
@@ -122,7 +133,7 @@ export const PositionChangeModal: React.FC<PositionChangeModalProps> = ({
             ))}
           </Select>
         </Form.Item>
-      </Form>
-    </Modal>
+      </BaseFormModal>
+    </>
   );
 };

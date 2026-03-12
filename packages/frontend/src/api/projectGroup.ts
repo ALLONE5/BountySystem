@@ -1,4 +1,5 @@
 import { createExtendedApi } from './createApiClient';
+import apiClient from './client';
 
 export interface ProjectGroup {
   id: string;
@@ -45,24 +46,24 @@ const baseCrudApi = createExtendedApi<ProjectGroup>({
 export const projectGroupApi = {
   // 基础CRUD
   getAllProjectGroups: baseCrudApi.getAll,
-  getProjectGroupById: baseCrudApi.getById,
+  getProjectGroupById: baseCrudApi.getOne,
   createProjectGroup: baseCrudApi.create,
   updateProjectGroup: baseCrudApi.update,
   deleteProjectGroup: baseCrudApi.delete,
 
   // 扩展方法
   getProjectGroupWithTasks: async (id: string): Promise<ProjectGroupWithTasks> => {
-    const response = await baseCrudApi.customRequest('get', `/project-groups/${id}/details`);
+    const response = await apiClient.get(`/project-groups/${id}/details`);
     return response.data;
   },
 
   getProjectGroupStats: async (id: string): Promise<ProjectGroupStats> => {
-    const response = await baseCrudApi.customRequest('get', `/project-groups/${id}/stats`);
+    const response = await apiClient.get(`/project-groups/${id}/stats`);
     return response.data;
   },
 
   getTasksByProjectGroup: async (id: string): Promise<any[]> => {
-    const response = await baseCrudApi.customRequest('get', `/project-groups/${id}/tasks`);
+    const response = await apiClient.get(`/project-groups/${id}/tasks`);
     return response.data;
   },
 };

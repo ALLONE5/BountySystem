@@ -1,6 +1,5 @@
-import type { Task }
-import { Visibility }
-import { TaskStatus } from '../../models/Task.js';
+import type { Task } from '../../models/Task.js';
+import { Visibility, TaskStatus } from '../../models/Task.js';
 import { UserMapper } from './UserMapper.js';
 
 /**

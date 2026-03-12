@@ -288,6 +288,7 @@ export interface PositionApplication {
   positionId: string;
   status: 'pending' | 'approved' | 'rejected';
   applicationReason?: string;
+  reason?: string;
   reviewComment?: string;
   reviewedBy?: string;
   reviewedAt?: string;
@@ -309,6 +310,7 @@ export interface Position {
   description: string;
   requirements?: string;
   responsibilities?: string;
+  requiredSkills?: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

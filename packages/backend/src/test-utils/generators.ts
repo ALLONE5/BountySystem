@@ -46,8 +46,7 @@ export const taskStatusArbitrary = fc.constantFrom(
   TaskStatus.AVAILABLE,
   TaskStatus.IN_PROGRESS,
   TaskStatus.COMPLETED,
-  TaskStatus.ABANDONED
-);
+  );
 
 /**
  * Generator for Visibility enum values
@@ -122,7 +121,7 @@ export const userArbitrary: fc.Arbitrary<User> = fc.record({
   createdAt: dateArbitrary,
   lastLogin: optionalDateArbitrary,
   updatedAt: dateArbitrary,
-});
+}) as fc.Arbitrary<User>;
 
 /**
  * Generator for Task objects
@@ -157,7 +156,7 @@ export const taskArbitrary: fc.Arbitrary<Task> = fc.record({
   aggregatedEstimatedHours: fc.option(estimatedHoursArbitrary, { nil: null }),
   aggregatedComplexity: fc.option(complexityArbitrary, { nil: null }),
   updatedAt: dateArbitrary,
-});
+}) as fc.Arbitrary<Task>;
 
 /**
  * Generator for ProjectGroup objects

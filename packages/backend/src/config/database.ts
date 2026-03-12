@@ -11,10 +11,23 @@ export const pool = new Pool({
   user: config.database.user,
   password: config.database.password,
   ssl: config.database.ssl ? { rejectUnauthorized: false } : false,
-  min: config.database.poolMin,
-  max: config.database.poolMax,
-  idleTimeoutMillis: config.database.idleTimeout,
-  connectionTimeoutMillis: config.database.connectionTimeout,
+  
+  // 优化的连接池配置
+  min: config.database.poolMin || 5,        // 最小连接数增加到5
+  max: config.database.poolMax || 30,       // 最大连接数增加到30
+  idleTimeoutMillis: config.database.idleTimeout || 30000,
+  connectionTimeoutMillis: config.database.connectionTimeout || 5000,
+  
+  // 性能优化配置
+  allowExitOnIdle: true,                    // 允许在空闲时退出
+  maxUses: 7500,                           // 每个连接最大使用次数
+  
+  // 查询优化配置
+  query_timeout: 30000,                    // 查询超时30秒
+  statement_timeout: 30000,                // 语句超时30秒
+  
+  // 应用名称，便于监控
+  application_name: 'bounty_hunter_backend'
 });
 
 pool.on('error', (err) => {

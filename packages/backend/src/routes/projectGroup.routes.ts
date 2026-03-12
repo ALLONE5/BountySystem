@@ -5,6 +5,7 @@ import { ProjectGroupService } from '../services/ProjectGroupService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../utils/errors.js';
+import { sendCreated, sendSuccess } from '../utils/responseHelpers.js';
 
 export function createProjectGroupRouter(pool: Pool): Router {
   const router = Router();
@@ -19,7 +20,7 @@ export function createProjectGroupRouter(pool: Pool): Router {
     authenticate,
     asyncHandler(async (req: Request, res: Response) => {
       const projectGroups = await projectGroupService.getAllProjectGroups();
-      res.json(projectGroups);
+      sendSuccess(res, projectGroups);
     })
   );
 
@@ -38,7 +39,7 @@ export function createProjectGroupRouter(pool: Pool): Router {
         throw new AppError('PROJECT_GROUP_NOT_FOUND', 'Project group not found', 404);
       }
 
-      res.json(projectGroup);
+      sendSuccess(res, projectGroup);
     })
   );
 
@@ -57,7 +58,7 @@ export function createProjectGroupRouter(pool: Pool): Router {
         throw new AppError('PROJECT_GROUP_NOT_FOUND', 'Project group not found', 404);
       }
 
-      res.json(projectGroup);
+      sendSuccess(res, projectGroup);
     })
   );
 
@@ -76,7 +77,7 @@ export function createProjectGroupRouter(pool: Pool): Router {
         throw new AppError('PROJECT_GROUP_NOT_FOUND', 'Project group not found', 404);
       }
 
-      res.json(stats);
+      sendSuccess(res, stats);
     })
   );
 
@@ -90,7 +91,7 @@ export function createProjectGroupRouter(pool: Pool): Router {
     asyncHandler(async (req: Request, res: Response) => {
       const { id } = req.params;
       const tasks = await projectGroupService.getTasksByProjectGroup(id);
-      res.json(tasks);
+      sendSuccess(res, tasks);
     })
   );
 
@@ -113,7 +114,7 @@ export function createProjectGroupRouter(pool: Pool): Router {
         description: description?.trim(),
       });
 
-      res.status(201).json(projectGroup);
+      sendCreated(res, projectGroup);
     })
   );
 
@@ -133,7 +134,7 @@ export function createProjectGroupRouter(pool: Pool): Router {
       if (description !== undefined) updateData.description = description?.trim();
 
       const projectGroup = await projectGroupService.updateProjectGroup(id, updateData);
-      res.json(projectGroup);
+      sendSuccess(res, projectGroup);
     })
   );
 

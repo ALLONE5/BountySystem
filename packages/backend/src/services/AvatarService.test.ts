@@ -7,6 +7,7 @@ import { TaskService } from './TaskService';
 import { RankingPeriod } from '../models/Ranking';
 import { TaskStatus } from '../models/Task';
 import { cleanupAllTestData } from '../test-utils/cleanup.js';
+import { createTestDependencies } from '../test-utils/test-setup.js';
 
 describe('AvatarService', () => {
   let pool: Pool;
@@ -27,9 +28,11 @@ describe('AvatarService', () => {
       password: process.env.DB_PASSWORD || 'postgres',
     });
 
+    const { userRepository, permissionChecker } = createTestDependencies();
+    
     avatarService = new AvatarService(pool);
     rankingService = new RankingService(pool);
-    userService = new UserService();
+    userService = new UserService(userRepository, permissionChecker);
     taskService = new TaskService();
 
     // Create test avatars with different rank requirements

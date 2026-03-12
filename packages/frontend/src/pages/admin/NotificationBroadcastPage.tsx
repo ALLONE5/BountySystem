@@ -1,21 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Typography,
-  Card,
-  Form,
-  Input,
-  Button,
-  Select,
-  message,
-  Space,
-  Alert,
-  Divider,
-} from 'antd';
+import { Typography, Card, Form, Input, Button, Select, Space, Alert, Divider } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 import { broadcastNotification } from '../../api/notification';
 import { positionApi } from '../../api/position';
 import { userApi } from '../../api/user';
 import { logger } from '../../utils/logger';
+import { message } from '../../utils/message';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;

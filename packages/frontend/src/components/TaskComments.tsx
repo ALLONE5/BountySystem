@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { List, Avatar, Form, Input, Button, message, Divider, Space, Typography, Spin } from 'antd';
+import { List, Avatar, Form, Input, Button, Divider, Space, Typography, Spin } from 'antd';
 import { UserOutlined, DollarOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { taskApi } from '../api/task';
 import { useAuthStore } from '../store/authStore';
 import { Task, UserRole } from '../types';
+import { message } from '../utils/message';
 
 const { Text } = Typography;
 

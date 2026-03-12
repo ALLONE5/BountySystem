@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { message } from 'antd';
+import { message } from '../utils/message';
 import { logger } from '../utils/logger';
 
 export interface UseCrudOperationsOptions<T> {

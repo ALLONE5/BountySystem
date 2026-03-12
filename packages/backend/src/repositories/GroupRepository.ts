@@ -17,7 +17,7 @@ export interface IGroupRepository {
   findAll(filters?: Record<string, any>): Promise<TaskGroup[]>;
   create(data: Partial<TaskGroup>, client?: PoolClient): Promise<TaskGroup>;
   update(id: string, data: Partial<TaskGroup>, client?: PoolClient): Promise<TaskGroup>;
-  delete(id: string, client?: PoolClient): Promise<void>;
+  delete(id: string, client?: PoolClient): Promise<boolean>;
   findByCreator(creatorId: string): Promise<TaskGroup[]>;
   findByMember(userId: string): Promise<TaskGroup[]>;
   findWithMembers(groupId: string): Promise<TaskGroup & { members: GroupMemberDetail[] }>;
@@ -148,7 +148,7 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
   /**
    * Delete a group (overrides base class to use string ID)
    */
-  async delete(id: string, client?: PoolClient): Promise<void> {
+  async delete(id: string, client?: PoolClient): Promise<boolean> {
     const conn = client || pool;
     
     try {
@@ -165,6 +165,8 @@ export class GroupRepository extends ImprovedBaseRepository<TaskGroup> implement
 
       // Delete group
       await conn.query('DELETE FROM task_groups WHERE id = $1', [id]);
+      
+      return true;
     } catch (error) {
       logger.error('Error deleting group:', error);
       throw error;

@@ -20,6 +20,7 @@ import {
 } from '../middleware/validation.middleware.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { resolve } from '../config/container.js';
+import { sendSuccess, sendCreated } from '../utils/responseHelpers.js';
 
 const router = Router();
 // Use DI container to get properly configured UserService
@@ -90,7 +91,7 @@ router.post(
       token,
     };
 
-    res.status(201).json(response);
+    sendCreated(res, response);
   })
 );
 
@@ -149,6 +150,14 @@ router.post(
         role: user.role,
       });
 
+      // Log token generation for debugging
+      console.log('[LOGIN] Token generated for user:', {
+        userId: user.id,
+        username: user.username,
+        tokenLength: token.length,
+        tokenPreview: token.substring(0, 30) + '...'
+      });
+
       // Audit successful login
       await auditLogin(user.username, true, ipAddress, userAgent, user.id, {
         email: user.email,
@@ -161,7 +170,8 @@ router.post(
         token,
       };
 
-      res.status(200).json(response);
+      console.log('[LOGIN] Sending response with token');
+      sendSuccess(res, response);
     } catch (error) {
       // If it's not an authentication error, audit as failed login
       if (!(error instanceof AuthenticationError)) {
@@ -179,19 +189,63 @@ router.post(
  * Get current user information (requires authentication)
  */
 router.get('/me', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  console.log('[AUTH/ME] Request received', {
+    hasUser: !!req.user,
+    userId: req.user?.userId,
+    username: req.user?.username
+  });
+
   // Get user from request (set by auth middleware)
   const userId = req.user?.userId;
 
   if (!userId) {
+    console.log('[AUTH/ME] No userId in request');
     throw new AuthenticationError('Not authenticated');
   }
 
   const user = await userService.findById(userId);
   if (!user) {
+    console.log('[AUTH/ME] User not found:', userId);
     throw new AuthenticationError('User not found');
   }
 
-  res.status(200).json(userService.toUserResponse(user));
+  console.log('[AUTH/ME] User found, sending response');
+  sendSuccess(res, userService.toUserResponse(user));
+}));
+
+/**
+ * POST /api/auth/verify-token
+ * Verify if a token is valid (for debugging)
+ */
+router.post('/verify-token', asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.body;
+  
+  if (!token) {
+    throw new ValidationError('Token is required');
+  }
+
+  try {
+    const payload = JWTService.verifyToken(token);
+    console.log('[VERIFY-TOKEN] Token is valid', {
+      userId: payload.userId,
+      username: payload.username,
+      role: payload.role
+    });
+    
+    sendSuccess(res, {
+      valid: true,
+      payload
+    });
+  } catch (error) {
+    console.log('[VERIFY-TOKEN] Token is invalid', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    
+    sendSuccess(res, {
+      valid: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 }));
 
 export default router;
