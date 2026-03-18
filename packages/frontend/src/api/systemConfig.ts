@@ -18,9 +18,6 @@ export interface SystemConfig {
   // UI Theme Configuration
   defaultTheme: 'light' | 'dark';
   allowThemeSwitch: boolean;
-  animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
-  enableAnimations: boolean;
-  reducedMotion: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,9 +40,6 @@ export interface SystemConfigUpdate {
   // UI Theme Configuration
   defaultTheme?: 'light' | 'dark';
   allowThemeSwitch?: boolean;
-  animationStyle?: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
-  enableAnimations?: boolean;
-  reducedMotion?: boolean;
 }
 
 export interface UploadedLogo {
@@ -70,9 +64,6 @@ export const systemConfigApi = {
     debugMode: boolean;
     defaultTheme: 'light' | 'dark';
     allowThemeSwitch: boolean;
-    animationStyle: 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple';
-    enableAnimations: boolean;
-    reducedMotion: boolean;
   }> {
     const response = await apiClient.get('/public/config');
     return response.data; // API client interceptor already extracts the data field

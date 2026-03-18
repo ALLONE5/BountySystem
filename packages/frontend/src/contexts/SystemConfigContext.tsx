@@ -45,9 +45,6 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         // UI Theme settings from API
         defaultTheme: data.defaultTheme || 'dark',
         allowThemeSwitch: data.allowThemeSwitch !== false,
-        animationStyle: data.animationStyle || 'scanline',
-        enableAnimations: data.enableAnimations !== false,
-        reducedMotion: data.reducedMotion || false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -86,9 +83,6 @@ export const SystemConfigProvider: React.FC<{ children: React.ReactNode }> = ({ 
         // UI Theme defaults
         defaultTheme: 'dark' as const,
         allowThemeSwitch: true,
-        animationStyle: 'scanline' as const,
-        enableAnimations: true,
-        reducedMotion: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

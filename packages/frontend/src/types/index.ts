@@ -216,8 +216,8 @@ export interface UserFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-// Theme Types
-export type ThemeMode = 'light' | 'dark';
+// Theme Types - re-exported from styles/themes (single source of truth)
+export type { ThemeMode } from './styles/themes';
 
 // System Config Types
 export interface SystemConfig {

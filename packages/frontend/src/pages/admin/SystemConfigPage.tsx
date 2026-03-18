@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Form, Input, Button, Switch, Space, InputNumber, Upload, Alert, List, Popconfirm, Select, Divider } from 'antd';
+import { Typography, Card, Form, Input, Button, Switch, Space, InputNumber, Upload, Alert, List, Popconfirm, Select } from 'antd';
 import { SaveOutlined, UploadOutlined, SettingOutlined, DeleteOutlined, BgColorsOutlined } from '@ant-design/icons';
 import { PageHeaderBar } from '../../components/common/PageHeaderBar';
 import { systemConfigApi, SystemConfig, SystemConfigUpdate, UploadedLogo } from '../../api/systemConfig';
@@ -356,53 +356,6 @@ export const SystemConfigPage: React.FC = () => {
             label="允许用户切换主题"
             valuePropName="checked"
             extra="开启后，用户可以在界面右上角切换亮色/暗色主题"
-          >
-            <Switch />
-          </Form.Item>
-
-          <Divider>动画效果设置</Divider>
-
-          <Form.Item
-            name="enableAnimations"
-            label="启用动画效果"
-            valuePropName="checked"
-            extra="关闭后将禁用所有装饰性动画效果"
-          >
-            <Switch />
-          </Form.Item>
-
-          <Form.Item
-            noStyle
-            shouldUpdate={(prevValues, currentValues) => prevValues.enableAnimations !== currentValues.enableAnimations}
-          >
-            {({ getFieldValue }) =>
-              getFieldValue('enableAnimations') ? (
-                <Form.Item
-                  name="animationStyle"
-                  label="动画风格"
-                  rules={[{ required: true, message: '请选择动画风格' }]}
-                >
-                  <Select placeholder="选择动画风格">
-                    <Option value="none">无动画</Option>
-                    <Option value="minimal">简约网格</Option>
-                    <Option value="scanline">扫描线效果</Option>
-                    <Option value="particles">浮动粒子</Option>
-                    <Option value="hexagon">六边形背景</Option>
-                    <Option value="datastream">数据流</Option>
-                    <Option value="hologram">全息投影</Option>
-                    <Option value="ripple">能量涟漪</Option>
-                    <Option value="matrix">矩阵雨滴</Option>
-                  </Select>
-                </Form.Item>
-              ) : null
-            }
-          </Form.Item>
-
-          <Form.Item
-            name="reducedMotion"
-            label="减少动画运动"
-            valuePropName="checked"
-            extra="为运动敏感用户减少动画强度，遵循系统无障碍设置"
           >
             <Switch />
           </Form.Item>

@@ -10,6 +10,7 @@ import { Task, TaskStatus } from '../../types';
 import { TaskListTable } from './TaskListTable';
 import { useTheme } from '../../contexts/ThemeContext';
 
+
 const { Panel } = Collapse;
 
 interface TaskListGroupedProps {
@@ -47,7 +48,7 @@ export const TaskListGrouped: React.FC<TaskListGroupedProps> = ({
   getSubtaskCount,
   ...actionProps
 }) => {
-  const { themeMode } = useTheme();
+  const { theme } = useTheme();
 
   // Group tasks by project
   const groupTasksByProject = (): Record<string, Task[]> => {
@@ -85,36 +86,36 @@ export const TaskListGrouped: React.FC<TaskListGroupedProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <Space>
                   <FolderOutlined style={{ 
-                    color: themeMode === 'dark' ? '#00d9ff' : '#722ed1', 
+                    color: theme.colors.accent, 
                     fontSize: 16 
                   }} />
                   <span style={{ 
                     fontWeight: 600, 
                     fontSize: 14, 
-                    color: themeMode === 'dark' ? '#f8fafc' : '#0f172a'
+                    color: theme.colors.textPrimary
                   }}>
                     {projectName}
                   </span>
                   <Badge count={projectTasks.length} style={{ 
-                    backgroundColor: themeMode === 'dark' ? '#00d9ff' : '#722ed1' 
+                    backgroundColor: theme.colors.accent 
                   }} />
                 </Space>
                 <Space size="large" onClick={(e) => e.stopPropagation()}>
                   <span style={{ 
                     fontSize: 13, 
-                    color: themeMode === 'dark' ? '#94a3b8' : '#666' 
+                    color: theme.colors.textSecondary 
                   }}>
                     {stats.inProgress} 进行中
                   </span>
                   <span style={{ 
                     fontSize: 13, 
-                    color: themeMode === 'dark' ? '#94a3b8' : '#666' 
+                    color: theme.colors.textSecondary 
                   }}>
                     {stats.completed} 已完成
                   </span>
                   <span style={{ 
                     fontSize: 13, 
-                    color: themeMode === 'dark' ? '#ff6b6b' : '#f5222d', 
+                    color: theme.colors.danger, 
                     fontWeight: 600 
                   }}>
                     ${stats.totalBounty.toFixed(2)}
@@ -124,9 +125,9 @@ export const TaskListGrouped: React.FC<TaskListGroupedProps> = ({
             }
             style={{
               marginBottom: 16,
-              background: themeMode === 'dark' ? '#1f2937' : '#fff',
+              background: theme.colors.bgElevated,
               borderRadius: 4,
-              border: themeMode === 'dark' ? '1px solid rgba(0, 242, 255, 0.1)' : '1px solid #d9d9d9',
+              border: `1px solid ${theme.colors.borderPrimary}`,
             }}
           >
             <TaskListTable

@@ -1,6 +1,5 @@
 // Design Tokens and Theme Configuration
 export type ThemeMode = 'light' | 'dark';
-export type AnimationStyle = 'none' | 'minimal' | 'scanline' | 'particles' | 'hexagon' | 'datastream' | 'hologram' | 'ripple' | 'matrix';
 
 export interface ThemeColors {
   // Background colors
