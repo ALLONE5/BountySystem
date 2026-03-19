@@ -53,7 +53,7 @@ export const DevSystemConfigPage: React.FC = () => {
   const loadLogos = async () => {
     try {
       const data = await systemConfigApi.getLogos();
-      setLogos(data);
+      setLogos(Array.isArray(data) ? data : []);
     } catch (error: any) {
       // 静默处理错误
     }
@@ -125,14 +125,6 @@ export const DevSystemConfigPage: React.FC = () => {
         </div>
       </div>
 
-      <Alert
-        title="开发者系统配置"
-        description="作为开发用户，您可以管理系统的核心配置。修改配置可能会影响所有用户的使用体验，请谨慎操作。"
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
-
       <Form
         form={form}
         layout="vertical"
@@ -187,7 +179,7 @@ export const DevSystemConfigPage: React.FC = () => {
                           cover={
                             <img
                               alt={logo.filename}
-                              src={logo.url.startsWith('http') ? logo.url : `http://localhost:3001${logo.url}`}
+                              src={logo.url.startsWith('http') ? logo.url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'}${logo.url}`}
                               style={{ height: 80, objectFit: 'contain', padding: 8 }}
                               onError={(e) => {
                                 e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyMiAyMCAyNCAyMiAyNCAyNEMyNCAyNiAyMiAyOCAyMCAyOEMxOCAyOCAxNiAyNiAxNiAyNEMxNiAyMiAxOCAyMCAyMCAyMFoiIGZpbGw9IiNEOUQ5RDkiLz4KPC9zdmc+';
@@ -348,13 +340,6 @@ export const DevSystemConfigPage: React.FC = () => {
 
         {/* UI主题设置 */}
         <Card title={<Text strong><BgColorsOutlined /> UI主题设置</Text>} style={{ marginBottom: 24 }}>
-          <Alert
-            title="主题设置说明"
-            description="这些设置将影响所有用户的界面外观和动画效果。用户可以在支持的情况下切换主题模式。"
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
 
           <Form.Item
             name="defaultTheme"

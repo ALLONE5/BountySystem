@@ -53,7 +53,7 @@ export const systemConfigApi = {
   // Get current system configuration (requires admin auth)
   async getConfig(): Promise<SystemConfig> {
     const response = await apiClient.get('/admin/system/config');
-    return response.data.data;
+    return response.data;
   },
 
   // Get public system configuration (no auth required)
@@ -72,25 +72,25 @@ export const systemConfigApi = {
   // Update system configuration
   async updateConfig(updates: SystemConfigUpdate): Promise<SystemConfig> {
     const response = await apiClient.put('/admin/system/config', updates);
-    return response.data.data;
+    return response.data;
   },
 
   // Check maintenance mode
   async getMaintenanceMode(): Promise<boolean> {
     const response = await apiClient.get('/admin/system/maintenance');
-    return response.data.data.maintenanceMode;
+    return response.data.maintenanceMode;
   },
 
   // Check registration allowed
   async getRegistrationAllowed(): Promise<boolean> {
     const response = await apiClient.get('/admin/system/registration');
-    return response.data.data.allowRegistration;
+    return response.data.allowRegistration;
   },
 
   // Get max file size
   async getMaxFileSize(): Promise<number> {
     const response = await apiClient.get('/admin/system/file-size');
-    return response.data.data.maxFileSize;
+    return response.data.maxFileSize;
   },
 
   // Upload logo
@@ -104,13 +104,13 @@ export const systemConfigApi = {
       },
     });
 
-    return response.data.data;
+    return response.data;
   },
 
   // Get uploaded logos
   async getLogos(): Promise<UploadedLogo[]> {
     const response = await apiClient.get('/upload/logos');
-    return response.data.data;
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   // Delete logo

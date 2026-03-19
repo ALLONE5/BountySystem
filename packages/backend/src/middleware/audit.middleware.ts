@@ -148,6 +148,107 @@ export const auditTaskDelete = auditMiddleware({
   })
 });
 
+export const auditTaskPublish = auditMiddleware({
+  action: AuditAction.PUBLISH_TASK,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || req.params.subtaskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId || req.params.subtaskId,
+    acceptBySelf: req.body.acceptBySelf,
+    visibility: req.body.visibility,
+    bountyAmount: req.body.bountyAmount
+  })
+});
+
+export const auditTaskAccept = auditMiddleware({
+  action: AuditAction.ACCEPT_TASK,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId
+  })
+});
+
+export const auditTaskComplete = auditMiddleware({
+  action: AuditAction.COMPLETE_TASK,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId
+  })
+});
+
+export const auditTaskTransfer = auditMiddleware({
+  action: AuditAction.TRANSFER_TASK,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId,
+    newUserId: req.body.newUserId
+  })
+});
+
+export const auditTaskProgress = auditMiddleware({
+  action: AuditAction.UPDATE_TASK_PROGRESS,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId,
+    progress: req.body.progress
+  })
+});
+
+export const auditTaskAssignToUser = auditMiddleware({
+  action: AuditAction.ASSIGN_TASK,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId,
+    invitedUserId: req.body.invitedUserId
+  })
+});
+
+export const auditTaskAcceptAssignment = auditMiddleware({
+  action: AuditAction.ACCEPT_TASK_ASSIGNMENT,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId
+  })
+});
+
+export const auditTaskRejectAssignment = auditMiddleware({
+  action: AuditAction.REJECT_TASK_ASSIGNMENT,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    taskId: req.params.taskId,
+    reason: req.body.reason
+  })
+});
+
+export const auditSubtaskCreate = auditMiddleware({
+  action: AuditAction.CREATE_SUBTASK,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.taskId || '',
+  getDetails: (req) => ({
+    parentTaskId: req.params.taskId,
+    title: req.body.title,
+    bounty: req.body.bounty
+  })
+});
+
+export const auditSubtaskPublish = auditMiddleware({
+  action: AuditAction.PUBLISH_SUBTASK,
+  resource: AuditResource.TASK,
+  getResourceId: (req) => req.params.subtaskId || '',
+  getDetails: (req) => ({
+    subtaskId: req.params.subtaskId,
+    visibility: req.body.visibility,
+    bountyAmount: req.body.bountyAmount
+  })
+});
+
 // System configuration
 export const auditSystemConfigUpdate = auditMiddleware({
   action: AuditAction.UPDATE_SYSTEM_CONFIG,

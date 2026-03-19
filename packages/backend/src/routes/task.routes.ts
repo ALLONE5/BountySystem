@@ -6,6 +6,22 @@ import { CommentService } from '../services/CommentService.js';
 import { AttachmentService } from '../services/AttachmentService.js';
 import { TaskAssistantService } from '../services/TaskAssistantService.js';
 import { authenticate } from '../middleware/auth.middleware.js';
+import {
+  auditTaskCreate,
+  auditTaskUpdate,
+  auditTaskDelete,
+  auditTaskPublish,
+  auditTaskAccept,
+  auditTaskComplete,
+  auditTaskTransfer,
+  auditTaskProgress,
+  auditTaskAssignToUser,
+  auditTaskAcceptAssignment,
+  auditTaskRejectAssignment,
+  auditSubtaskCreate,
+  auditSubtaskPublish,
+  auditBonusReward,
+} from '../middleware/audit.middleware.js';
 import { ValidationError } from '../utils/errors.js';
 import { AllocationType } from '../models/TaskAssistant.js';
 import { UserRole } from '../models/User.js';
@@ -261,7 +277,7 @@ router.get('/invitations', authenticate, asyncHandler(async (req: Request, res: 
  * POST /api/tasks/:taskId/publish
  * Publisher can choose to accept the task themselves or publish it for others
  */
-router.post('/:taskId/publish', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/publish', authenticate, auditTaskPublish, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const publisherId = req.user!.userId;
   const { acceptBySelf } = req.body;
@@ -288,7 +304,7 @@ router.post('/:taskId/publish', authenticate, asyncHandler(async (req: Request, 
  * - Allows any user to accept tasks without position requirement
  * - Updates task status and assigns to user
  */
-router.post('/:taskId/accept', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/accept', authenticate, auditTaskAccept, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const userId = req.user!.userId;
 
@@ -301,7 +317,7 @@ router.post('/:taskId/accept', authenticate, asyncHandler(async (req: Request, r
  * Create a new task
  * POST /api/tasks
  */
-router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/', authenticate, auditTaskCreate, asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const taskData = {
     ...req.body,
@@ -334,7 +350,7 @@ router.get('/:taskId', authenticate, asyncHandler(async (req: Request, res: Resp
  * Update task
  * PUT /api/tasks/:taskId
  */
-router.put('/:taskId', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.put('/:taskId', authenticate, auditTaskUpdate, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const updates = req.body;
 
@@ -347,7 +363,7 @@ router.put('/:taskId', authenticate, asyncHandler(async (req: Request, res: Resp
  * Delete task
  * DELETE /api/tasks/:taskId
  */
-router.delete('/:taskId', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.delete('/:taskId', authenticate, auditTaskDelete, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const userId = req.user!.userId;
 
@@ -372,7 +388,7 @@ router.get('/:taskId/subtasks', authenticate, asyncHandler(async (req: Request, 
  * Add a subtask to a parent task
  * POST /api/tasks/:taskId/subtasks
  */
-router.post('/:taskId/subtasks', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/subtasks', authenticate, auditSubtaskCreate, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const userId = req.user!.userId;
   const subtaskData = {
@@ -407,7 +423,7 @@ router.post('/:taskId/subtasks', authenticate, asyncHandler(async (req: Request,
  * POST /api/tasks/:subtaskId/publish
  * Only parent task assignee can publish subtasks
  */
-router.post('/:subtaskId/publish', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:subtaskId/publish', authenticate, auditSubtaskPublish, asyncHandler(async (req: Request, res: Response) => {
   const { subtaskId } = req.params;
   const userId = req.user!.userId;
   const { visibility, bountyAmount, positionId } = req.body;
@@ -428,7 +444,7 @@ router.post('/:subtaskId/publish', authenticate, asyncHandler(async (req: Reques
   });
 }));
 
-router.post('/:taskId/complete', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/complete', authenticate, auditTaskComplete, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const userId = req.user!.userId;
 
@@ -441,7 +457,7 @@ router.post('/:taskId/complete', authenticate, asyncHandler(async (req: Request,
 }));
 
 // Add bonus reward to completed task (admin only)
-router.post('/:taskId/bonus', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/bonus', authenticate, auditBonusReward, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const { amount, reason } = req.body;
   const userId = req.user!.userId;
@@ -477,7 +493,7 @@ router.get('/:taskId/bonus-rewards', authenticate, asyncHandler(async (req: Requ
   });
 }));
 
-router.post('/:taskId/transfer', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/transfer', authenticate, auditTaskTransfer, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const userId = req.user!.userId;
   const { newUserId } = req.body;
@@ -494,7 +510,7 @@ router.post('/:taskId/transfer', authenticate, asyncHandler(async (req: Request,
   });
 }));
 
-router.put('/:taskId/progress', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.put('/:taskId/progress', authenticate, auditTaskProgress, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const { progress } = req.body;
 
@@ -657,7 +673,7 @@ router.delete('/:id/assistants/:assistantId', authenticate, asyncHandler(async (
  * Assign an existing task to a user
  * POST /api/tasks/:taskId/assign-to-user
  */
-router.post('/:taskId/assign-to-user', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/assign-to-user', authenticate, auditTaskAssignToUser, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const publisherId = req.user!.userId;
   const { invitedUserId } = req.body;
@@ -678,7 +694,7 @@ router.post('/:taskId/assign-to-user', authenticate, asyncHandler(async (req: Re
  * Accept task assignment invitation
  * POST /api/tasks/:taskId/accept-assignment
  */
-router.post('/:taskId/accept-assignment', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/accept-assignment', authenticate, auditTaskAcceptAssignment, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const userId = req.user!.userId;
 
@@ -694,7 +710,7 @@ router.post('/:taskId/accept-assignment', authenticate, asyncHandler(async (req:
  * Reject task assignment invitation
  * POST /api/tasks/:taskId/reject-assignment
  */
-router.post('/:taskId/reject-assignment', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:taskId/reject-assignment', authenticate, auditTaskRejectAssignment, asyncHandler(async (req: Request, res: Response) => {
   const { taskId } = req.params;
   const userId = req.user!.userId;
   const { reason } = req.body;

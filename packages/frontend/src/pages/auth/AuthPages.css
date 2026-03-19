@@ -7,6 +7,25 @@
    Auth Container - Full Screen Layout
    ============================================ */
 
+/* Override antd App wrapper and body when auth page is shown */
+body:has(.auth-container) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body:has(.auth-container) #root,
+body:has(.auth-container) .ant-app,
+body:has(.auth-container) .ant-app > * {
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
 .auth-container {
   min-height: 100vh;
   width: 100vw;
@@ -16,8 +35,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  overflow: hidden;
+  overflow-y: auto;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* Animated Background Effects */
@@ -47,7 +69,8 @@
    ============================================ */
 
 .auth-left {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -156,6 +179,7 @@
 
 .auth-right {
   flex: 0 0 550px;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,7 +204,6 @@
     0 0 0 1px rgba(255, 255, 255, 0.5) inset;
   animation: formSlideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 @keyframes formSlideIn {
@@ -387,7 +410,7 @@
   }
 
   .auth-right {
-    flex: 0 0 480px;
+    flex: 0 0 440px;
     padding: 40px;
   }
 
@@ -405,20 +428,27 @@
   .auth-container {
     flex-direction: column;
     position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow-y: auto;
   }
 
   .auth-left {
     flex: 0 0 auto;
-    min-height: 40vh;
+    width: 100%;
+    min-height: 35vh;
     padding: 40px 30px;
+    box-sizing: border-box;
   }
 
   .auth-right {
-    flex: 1;
+    flex: 1 1 auto;
     width: 100%;
     padding: 40px 30px;
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-sizing: border-box;
+    align-items: flex-start;
   }
 
   .auth-title {
@@ -433,46 +463,56 @@
   .auth-features {
     display: none;
   }
+
+  .auth-form-container {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 640px) {
+  .auth-container {
+    position: relative;
+  }
+
   .auth-left {
     padding: 30px 20px;
-    min-height: 30vh;
+    min-height: 28vh;
   }
 
   .auth-right {
-    padding: 30px 20px;
+    padding: 20px 16px;
   }
 
   .auth-title {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .auth-subtitle {
-    font-size: 16px;
+    font-size: 15px;
+    margin-bottom: 24px;
   }
 
   .auth-logo {
-    width: 80px;
-    height: 80px;
-    font-size: 40px;
-    margin-bottom: 30px;
+    width: 72px;
+    height: 72px;
+    font-size: 36px;
+    margin-bottom: 24px;
   }
 
   .auth-form-container {
-    padding: 36px 28px;
-    border-radius: 20px;
+    padding: 24px 16px;
+    border-radius: 16px;
+    max-width: 100%;
   }
 
   .auth-form-logo {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
   }
 
   .auth-form-title {
-    font-size: 28px;
+    font-size: 22px;
   }
 
   .auth-form .ant-input,

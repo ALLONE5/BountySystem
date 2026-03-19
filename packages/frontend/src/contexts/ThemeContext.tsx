@@ -82,7 +82,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     localStorage.setItem('theme', mode);
   };
 
-  // toggleTheme delegates to setThemeMode to avoid duplicated logic
   const toggleTheme = () => setThemeMode(themeMode === 'light' ? 'dark' : 'light');
 
   const value: ThemeContextType = {
