@@ -83,19 +83,19 @@ export const NotificationPage: React.FC = () => {
     if (notification.relatedTaskId) {
       // For task invitations, go to assigned tasks page (invitations tab)
       if (notification.type === 'task_invitation') {
-        navigate('/tasks/assigned');
+        navigate('/my/tasks');
       }
       // For task assignments and other task-related notifications, go to assigned tasks
       else if (notification.type === 'task_assigned' || 
                notification.type === 'deadline_reminder' ||
                notification.type === 'dependency_resolved' ||
                notification.type === 'status_changed') {
-        navigate('/tasks/assigned');
+        navigate('/my/tasks');
       }
       // For invitation responses, go to published tasks
       else if (notification.type === 'task_invitation_accepted' ||
                notification.type === 'task_invitation_rejected') {
-        navigate('/tasks/published');
+        navigate('/my/bounties');
       }
       // Default: go to dashboard
       else {

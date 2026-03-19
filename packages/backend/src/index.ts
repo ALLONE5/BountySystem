@@ -20,6 +20,7 @@ import systemConfigRoutes from './routes/systemConfig.routes.js';
 import publicSystemConfigRoutes from './routes/publicSystemConfig.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import { adminRouter as auditLogAdminRoutes, devRouter as auditLogDevRoutes } from './routes/auditLog.routes.js';
+import devUserRoutes from './routes/devUser.routes.js';
 import schedulerRoutes from './routes/scheduler.routes.js';
 import metricsRoutes from './routes/metrics.routes.js';
 import systemMonitorRoutes from './routes/systemMonitor.routes.js';
@@ -149,6 +150,9 @@ app.use('/api/system-config', publicSystemConfigRoutes);
 // Audit log routes (Admin and Developer)
 app.use('/api/admin/audit', auditLogAdminRoutes);
 app.use('/api/dev/audit', auditLogDevRoutes);
+
+// Developer user management routes
+app.use('/api/dev/users', devUserRoutes);
 
 // Upload routes
 app.use('/api/upload', uploadRoutes);

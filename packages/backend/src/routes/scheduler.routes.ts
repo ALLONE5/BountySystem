@@ -20,7 +20,7 @@ router.get('/workload/:userId', authenticate, asyncHandler(async (req: Request, 
   const { userId } = req.params;
 
   // Users can only check their own workload unless they're admin
-  if (req.user?.userId !== userId && req.user?.role !== UserRole.SUPER_ADMIN) {
+  if (req.user?.userId !== userId && req.user?.role !== UserRole.SUPER_ADMIN && req.user?.role !== UserRole.DEVELOPER) {
     return sendForbidden(res, 'Forbidden: Can only check your own workload');
   }
 
@@ -50,7 +50,7 @@ router.get('/recommendations', authenticate, asyncHandler(async (req: Request, r
 router.post(
   '/push-unaccepted',
   authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
+  requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]),
   asyncHandler(async (req: Request, res: Response) => {
     const hoursThreshold = req.body.hoursThreshold || 48;
 
@@ -71,7 +71,7 @@ router.post(
 router.post(
   '/reprioritize',
   authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
+  requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]),
   asyncHandler(async (req: Request, res: Response) => {
     const updatedCount = await schedulerService.reprioritizeTasks();
     res.json({

@@ -64,7 +64,7 @@ export const DashboardQuickActions: React.FC<DashboardQuickActionsProps> = ({
           <div className="action-title">我的团队</div>
           <div className="action-description">管理项目组和成员</div>
         </div>
-        <div className="action-card" onClick={() => navigate('/tasks/assigned')}>
+        <div className="action-card" onClick={() => navigate('/my/tasks')}>
           <div className="action-icon">📋</div>
           <div className="action-title">我的任务</div>
           <div className="action-description">查看承接的任务</div>

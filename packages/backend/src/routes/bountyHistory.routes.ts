@@ -34,7 +34,7 @@ export function createBountyHistoryRouter(pool: Pool): Router {
       validateUuid(userId, 'User ID');
 
       // Authorization: Users can only view their own history, super admins can view any
-      if (user.id !== userId && user.role !== 'super_admin') {
+      if (user.userId !== userId && user.role !== 'super_admin' && user.role !== 'developer') {
         throw new AppError(
           'FORBIDDEN',
           'You do not have permission to view this user\'s transaction history',
@@ -90,7 +90,7 @@ export function createBountyHistoryRouter(pool: Pool): Router {
       validateUuid(userId, 'User ID');
 
       // Authorization: Users can only view their own summary, super admins can view any
-      if (user.id !== userId && user.role !== 'super_admin') {
+      if (user.userId !== userId && user.role !== 'super_admin' && user.role !== 'developer') {
         throw new AppError(
           'FORBIDDEN',
           'You do not have permission to view this user\'s bounty summary',

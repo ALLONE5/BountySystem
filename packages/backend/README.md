@@ -1,281 +1,307 @@
-# Backend Implementation
+# 赏金猎人平台 - 后端
 
-## Architecture Overview
-
-The backend has been refactored to use a clean, layered architecture with clear separation of concerns. For comprehensive architecture documentation, see:
-
-- **[Architecture Documentation](../ARCHITECTURE.md)** - Complete architecture overview
-- **[Refactoring Migration Guide](../REFACTORING_MIGRATION_GUIDE.md)** - Migration guide with before/after examples
-
-### Pattern Documentation
-
-- **[Repository Pattern](./repositories/REPOSITORY_PATTERN.md)** - Data access layer implementation
-- **[DI Container Usage](./config/CONTAINER_USAGE.md)** - Dependency injection patterns
-- **[Transaction Manager](./utils/TRANSACTION_MANAGER.md)** - Safe transaction handling
-- **[Permission Checker](./utils/PERMISSION_CHECKER.md)** - Centralized authorization
-- **[Mapper Pattern](./utils/mappers/MAPPER_PATTERN.md)** - Model to DTO transformation
+Node.js + TypeScript + Express 后端服务，提供完整的 REST API 和 WebSocket 实时通信。
 
 ---
 
-## Authentication and Authorization System
+## 技术栈
 
-This implementation covers Task 3 from the specification: User Authentication and Authorization System.
+- 运行时: Node.js 18+ + TypeScript (ESM)
+- 框架: Express.js 4.x
+- 数据库: PostgreSQL 14+ (pg 驱动)
+- 缓存: Redis 6+ (ioredis)
+- 认证: JWT (jsonwebtoken)
+- 实时通信: Socket.IO 4.x
+- 日志: Winston + winston-daily-rotate-file
+- 验证: Zod
+- 测试: Vitest + Supertest
+- 进程管理: PM2 (生产环境)
 
-### Implemented Features
+---
 
-#### 3.1 User Registration and Login
-- **User Model** (`models/User.ts`): Defines user data structures and DTOs
-- **UserService** (`services/UserService.ts`): Handles user CRUD operations
-  - Password hashing using bcrypt (10 salt rounds)
-  - User creation, retrieval, and updates
-  - Password verification
-  - Secure user response (removes sensitive data)
-- **JWT Service** (`utils/jwt.ts`): Token generation and verification
-  - Configurable expiration time (default: 24h)
-  - Secure token signing with JWT_SECRET
-- **Auth Routes** (`routes/auth.routes.ts`):
-  - `POST /api/auth/register` - Register new user
-  - `POST /api/auth/login` - Login user
-  - `GET /api/auth/me` - Get current user info (requires authentication)
+## 项目结构
 
-#### 3.2 Role-Based Permission Control
-- **Permission Service** (`services/PermissionService.ts`): Manages role-based access control
-  - Page access control based on user roles
-  - Position management permissions
-  - User data access control
-  - Task access control
-- **Auth Middleware** (`middleware/auth.middleware.ts`):
-  - JWT token verification
-  - User authentication
-  - Optional authentication support
-- **Permission Middleware** (`middleware/permission.middleware.ts`):
-  - Role-based access control
-  - Page access verification
-  - Resource-specific permissions (users, tasks)
-
-### User Roles
-
-1. **User** (`user`): Regular users
-   - Access to: Personal, Published Tasks, Accepted Tasks, Bounty Tasks, Ranking pages
-   
-2. **Position Admin** (`position_admin`): Position administrators
-   - All user permissions
-   - Additional access to: User Management, Task Management, Audit Operations
-   - Can only manage users/tasks related to their assigned positions
-   
-3. **Super Admin** (`super_admin`): System administrators
-   - Full access to all pages and resources
-   - Can manage all users, tasks, and positions
-
-### API Endpoints
-
-#### Authentication
-
-**Register User**
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "username": "johndoe",
-  "email": "john@example.com",
-  "password": "securepassword123"
-}
-
-Response: 201 Created
-{
-  "user": {
-    "id": "uuid",
-    "username": "johndoe",
-    "email": "john@example.com",
-    "role": "user",
-    "avatarId": null,
-    "createdAt": "2024-12-10T...",
-    "lastLogin": null
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
+```
+src/
+├── config/           # 配置模块
+│   ├── container.ts  # 依赖注入容器
+│   ├── database.ts   # PostgreSQL 连接池
+│   ├── env.ts        # 环境变量解析
+│   ├── logger.ts     # Winston 日志配置
+│   └── redis.ts      # Redis 客户端
+├── constants/        # 全局常量
+├── middleware/       # Express 中间件
+│   ├── audit.middleware.ts       # 审计日志中间件
+│   ├── auth.middleware.ts        # JWT 认证
+│   ├── cache.middleware.ts       # 响应缓存
+│   ├── errorHandler.middleware.ts # 全局错误处理
+│   ├── performance.middleware.ts  # 性能追踪
+│   ├── permission.middleware.ts   # 权限控制
+│   ├── queryPerformance.middleware.ts # 慢查询监控
+│   ├── rateLimit.middleware.ts    # 速率限制
+│   └── validation.middleware.ts   # 请求验证
+├── models/           # TypeScript 接口和枚举 (18 个模型)
+├── repositories/     # 数据访问层 (10 个 Repository)
+├── routes/           # 路由定义 (23 个路由文件)
+├── services/         # 业务逻辑层 (50+ 个 Service)
+├── utils/            # 工具类
+│   ├── decorators/   # 缓存、错误处理装饰器
+│   ├── mappers/      # Model → DTO 转换器
+│   ├── DIContainer.ts
+│   ├── errors.ts     # 自定义错误类
+│   ├── jwt.ts
+│   ├── pagination.ts
+│   ├── PermissionChecker.ts
+│   ├── QueryBuilder.ts
+│   └── TransactionManager.ts
+├── workers/          # 后台队列 Worker
+└── index.ts          # 应用入口
 ```
 
-**Login**
+---
+
+## API 路由总览
+
+| 前缀 | 说明 | 认证 |
+|------|------|------|
+| `POST /api/auth/register` | 用户注册 | 无 |
+| `POST /api/auth/login` | 用户登录 | 无 |
+| `GET /api/auth/me` | 获取当前用户 | JWT |
+| `GET /api/public/*` | 公开数据 | 无 |
+| `GET /api/system-config` | 公开系统配置 | 无 |
+| `/api/users` | 用户管理 | JWT |
+| `/api/tasks` | 任务 CRUD + 全生命周期操作 | JWT |
+| `/api/positions` | 岗位管理 | JWT |
+| `/api/groups` | 任务组管理 | JWT |
+| `/api/project-groups` | 项目组管理 | JWT |
+| `/api/dependencies` | 任务依赖关系 | JWT |
+| `/api/bounty` | 赏金算法和分配 | JWT |
+| `/api/bounty-history` | 赏金历史记录 | JWT |
+| `/api/rankings` | 排行榜 | JWT |
+| `/api/avatars` | 头像管理 | JWT |
+| `/api/notifications` | 通知管理 | JWT |
+| `/api/upload` | 文件上传 | JWT |
+| `/api/admin/*` | 管理员功能 | JWT + Admin |
+| `/api/admin/system` | 系统配置管理 | JWT + Admin |
+| `/api/admin/audit` | 审计日志 (管理员) | JWT + Admin |
+| `/api/dev/audit` | 审计日志 (开发者) | JWT + Developer |
+| `/api/system-monitor` | 系统监控 | JWT + Developer |
+| `/api/performance` | 性能监控 | JWT + Developer |
+| `/api/metrics` | 实时指标 | JWT |
+| `/api/scheduler` | 定时任务管理 | JWT + Admin |
+| `GET /health` | 健康检查 | 无 |
+
+---
+
+## 用户角色
+
+| 角色 | 说明 | 权限 |
+|------|------|------|
+| `user` | 普通用户 | 浏览任务、承接任务、个人管理 |
+| `position_admin` | 岗位管理员 | 用户权限 + 岗位管理、任务审核 |
+| `super_admin` | 超级管理员 | 全部权限 |
+| `developer` | 开发者 | 用户权限 + 系统监控、审计日志、系统配置 |
+
+---
+
+## 认证流程
+
+所有受保护路由需要在请求头中携带 JWT Token：
+
 ```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "securepassword123"
-}
-
-Response: 200 OK
-{
-  "user": { ... },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Get Current User**
-```http
-GET /api/auth/me
 Authorization: Bearer <token>
+```
 
-Response: 200 OK
+JWT payload 结构：
+```json
 {
-  "id": "uuid",
-  "username": "johndoe",
-  "email": "john@example.com",
-  "role": "user",
-  ...
+  "userId": "uuid",
+  "username": "string",
+  "role": "user | position_admin | super_admin | developer"
 }
 ```
 
-### Middleware Usage
+---
 
-**Protect Routes with Authentication**
-```typescript
-import { authenticate } from './middleware/auth.middleware.js';
+## 错误响应格式
 
-router.get('/protected', authenticate, (req, res) => {
-  // req.user contains authenticated user info
-  res.json({ message: 'Protected resource' });
-});
-```
-
-**Require Specific Role**
-```typescript
-import { requireRole } from './middleware/permission.middleware.js';
-import { UserRole } from './models/User.js';
-
-router.post('/admin-only', 
-  authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
-  (req, res) => {
-    res.json({ message: 'Admin only resource' });
-  }
-);
-```
-
-**Require Page Access**
-```typescript
-import { requirePageAccess } from './middleware/permission.middleware.js';
-import { PageAccess } from './services/PermissionService.js';
-
-router.get('/user-management',
-  authenticate,
-  requirePageAccess(PageAccess.USER_MANAGEMENT),
-  (req, res) => {
-    res.json({ message: 'User management page' });
-  }
-);
-```
-
-### Error Handling
-
-The system uses custom error classes for consistent error responses:
-
-- `ValidationError` (400): Invalid input data
-- `AuthenticationError` (401): Authentication failed
-- `AuthorizationError` (403): Insufficient permissions
-- `NotFoundError` (404): Resource not found
-- `ConflictError` (409): Resource conflict (e.g., duplicate email)
-
-Error Response Format:
 ```json
 {
   "code": "AUTHENTICATION_ERROR",
   "message": "Invalid email or password",
-  "timestamp": "2024-12-10T..."
+  "timestamp": "2026-03-19T..."
 }
 ```
 
-### Security Features
+| 错误类 | HTTP 状态码 | 说明 |
+|--------|------------|------|
+| `ValidationError` | 400 | 请求参数无效 |
+| `AuthenticationError` | 401 | 未认证或 Token 无效 |
+| `AuthorizationError` | 403 | 权限不足 |
+| `NotFoundError` | 404 | 资源不存在 |
+| `ConflictError` | 409 | 资源冲突（如重复邮箱） |
 
-1. **Password Security**
-   - Passwords hashed with bcrypt (10 salt rounds)
-   - Never stored or transmitted in plain text
-   
-2. **JWT Security**
-   - Tokens signed with secret key
-   - Configurable expiration time
-   - Verified on every protected request
-   
-3. **Input Validation**
-   - Zod schema validation for all inputs
-   - Email format validation
-   - Password minimum length (6 characters)
-   - Username minimum length (3 characters)
+---
 
-4. **Database Security**
-   - Parameterized queries (prevents SQL injection)
-   - Unique constraints on email and username
-   - Role-based data access control
+## 中间件说明
 
-### Testing
+### 认证中间件
+```typescript
+import { authenticate } from './middleware/auth.middleware.js';
+import { requireRole } from './middleware/permission.middleware.js';
 
-Run tests:
+// 需要登录
+router.get('/protected', authenticate, handler);
+
+// 需要特定角色
+router.post('/admin-only', authenticate, requireRole(['super_admin']), handler);
+```
+
+### 审计日志中间件
+```typescript
+import { auditLog } from './middleware/audit.middleware.js';
+import { AuditAction, AuditResource } from './models/AuditLog.js';
+
+router.post('/tasks', authenticate, auditLog(AuditAction.CREATE_TASK, AuditResource.TASK), handler);
+```
+
+### 缓存中间件
+```typescript
+import { cacheMiddleware } from './middleware/cache.middleware.js';
+
+router.get('/rankings', cacheMiddleware(300), handler); // 缓存 300 秒
+```
+
+---
+
+## 环境变量
+
+复制 `.env.example` 为 `.env` 并按需修改：
+
+```bash
+cp .env.example .env
+```
+
+关键配置项：
+
+```env
+PORT=3001
+NODE_ENV=development
+
+# 数据库
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=bounty_hunter
+DB_USER=postgres
+DB_PASSWORD=postgres
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# JWT
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=24h
+
+# CORS
+CORS_ORIGIN=http://localhost:5173
+```
+
+---
+
+## 开发命令
+
+```bash
+# 开发模式（热重载）
+npm run dev
+
+# 构建
+npm run build
+
+# 生产启动
+npm start
+
+# 运行测试
+npm test
+
+# 启动后台 Worker
+npm run workers
+```
+
+---
+
+## 测试
+
+测试框架使用 Vitest + Supertest，测试文件与源文件同目录（`*.test.ts`）。
+
 ```bash
 npm test
 ```
 
-Test coverage includes:
-- JWT token generation and verification
-- Permission service role checks
-- User service CRUD operations (requires database)
+测试覆盖范围：
+- JWT 工具函数
+- 权限服务
+- 用户服务
+- 任务服务
+- 赏金服务
+- 通知服务
+- 缓存服务
+- 排名服务
+- 中间件（速率限制、验证）
+- Repository 连接
+- DI 容器
+- 工具类（Validator、TransactionManager 等）
 
-### Environment Variables
+---
 
-Required environment variables (see `.env.example`):
+## 数据库管理
+
+```bash
+# 检查连接
+node scripts/db-manager.js check
+
+# 初始化（迁移 + 种子数据）
+node scripts/db-manager.js seed
+
+# 仅运行迁移
+cd packages/database && node scripts/run_migrations.js
+
+# 重置管理员密码
+node scripts/db-manager.js reset-admin
+
+# 刷新排名数据
+node scripts/db-manager.js refresh-ranks
 ```
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRES_IN=24h
+
+---
+
+## 生产部署
+
+使用 PM2 管理进程：
+
+```bash
+npm run build
+pm2 start ecosystem.config.js
 ```
 
-### Requirements Validation
+日志文件位于 `logs/` 目录：
+- `combined.log` — 所有日志
+- `error.log` — 仅错误日志
 
-This implementation satisfies the following requirements:
+---
 
-**Requirement 6.1**: User role-based page access
-- ✅ Regular users can access personal, task, and ranking pages
-- ✅ Position admins have additional management access
-- ✅ Super admins have full system access
+## 架构说明
 
-**Requirement 6.2**: Position admin permissions
-- ✅ Position admins can access management interfaces
-- ✅ Data scope limited to managed positions
+后端采用分层架构：
 
-**Requirement 6.3**: Super admin permissions
-- ✅ Super admins have unrestricted access
-
-**Requirement 6.4**: Position admin data scope
-- ✅ Position admins can only view users with their managed positions
-
-**Requirement 6.5**: Position admin task scope
-- ✅ Position admins can only edit tasks related to their positions
-
-**Requirement 6.6**: Super admin full access
-- ✅ Super admins can view, edit, and delete any resource
-
-### Next Steps
-
-To use this authentication system in other routes:
-1. Import the `authenticate` middleware
-2. Import permission middleware as needed
-3. Apply to route handlers
-4. Access user info via `req.user`
-
-Example:
-```typescript
-import { authenticate } from './middleware/auth.middleware.js';
-import { requireAdmin } from './middleware/permission.middleware.js';
-
-// Protected route
-router.get('/tasks', authenticate, async (req, res) => {
-  const userId = req.user!.userId;
-  // Fetch user's tasks
-});
-
-// Admin-only route
-router.delete('/tasks/:id', authenticate, requireAdmin, async (req, res) => {
-  // Delete task
-});
 ```
+Routes → Middleware → Services → Repositories → Database
+```
+
+- Routes: 路由定义和请求解析
+- Middleware: 认证、权限、缓存、审计、限流
+- Services: 业务逻辑，通过 DI 容器注入依赖
+- Repositories: 封装 SQL 查询，使用参数化查询防止注入
+- Database: PostgreSQL 连接池
+
+WebSocket 通过 `WebSocketService` 管理，支持按用户 ID 推送实时通知。

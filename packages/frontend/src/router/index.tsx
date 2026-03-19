@@ -8,11 +8,6 @@ import { RegisterPage } from '../pages/auth/RegisterPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { BrowseTasksPage } from '../pages/BrowseTasksPage';
 import { RankingPage } from '../pages/RankingPage';
-import { TaskListPage } from '../pages/TaskListPage';
-import { CalendarPage } from '../pages/CalendarPage';
-import { KanbanPage } from '../pages/KanbanPage';
-import { GanttChartPage } from '../pages/GanttChartPage';
-import { TaskVisualizationPage } from '../pages/TaskVisualizationPage';
 
 // 其他页面
 import { PublishedTasksPage } from '../pages/PublishedTasksPage';
@@ -23,7 +18,6 @@ import { ProfilePage } from '../pages/ProfilePage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { MyPage } from '../pages/MyPage';
 import { AdminPage } from '../pages/AdminPage';
-import { TaskInvitationsPage } from '../pages/TaskInvitationsPage';
 
 // 管理页面
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
@@ -41,6 +35,7 @@ import { AuditLogPage } from '../pages/admin/AuditLogPage';
 import { DevAuditLogPage } from '../pages/developer/DevAuditLogPage';
 import { DevSystemMonitorPage } from '../pages/developer/DevSystemMonitorPage';
 import { DevSystemConfigPage } from '../pages/developer/DevSystemConfigPage';
+import { DevUserManagementPage } from '../pages/developer/DevUserManagementPage';
 
 // 组件
 import { ProtectedRoute } from '../components/ProtectedRoute';
@@ -118,52 +113,6 @@ export const router = createBrowserRouter(
         {
           path: 'bounty-tasks',
           element: <BrowseTasksPage />,
-        },
-        
-        // 任务相关页面
-        {
-          path: 'tasks/published',
-          element: <PublishedTasksPage />,
-        },
-        {
-          path: 'tasks/assigned',
-          element: <AssignedTasksPage />,
-        },
-        {
-          path: 'tasks/list',
-          element: <TaskListPage />,
-        },
-        {
-          path: 'tasks/browse',
-          element: <BrowseTasksPage />,
-        },
-        {
-          path: 'tasks/invitations',
-          element: <TaskInvitationsPage />,
-        },
-        
-        // 任务视图页面
-        {
-          path: 'tasks/calendar',
-          element: <CalendarPage />,
-        },
-        {
-          path: 'tasks/kanban',
-          element: <KanbanPage />,
-        },
-        {
-          path: 'tasks/gantt',
-          element: <GanttChartPage />,
-        },
-        {
-          path: 'tasks/visualization',
-          element: <TaskVisualizationPage />,
-        },
-        
-        // 项目组
-        {
-          path: 'groups',
-          element: <GroupsPage />,
         },
         
         // 排行榜
@@ -246,6 +195,10 @@ export const router = createBrowserRouter(
         {
           path: 'dev/system-config',
           element: <DevSystemConfigPage />,
+        },
+        {
+          path: 'dev/users',
+          element: <DevUserManagementPage />,
         },
       ],
     },

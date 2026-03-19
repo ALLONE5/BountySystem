@@ -327,6 +327,64 @@
 
 ---
 
+## 系统模型
+
+### 17. AuditLog (审计日志)
+**文件**: `packages/backend/src/models/AuditLog.ts`
+
+**作用**: 记录平台上所有关键操作，用于安全审计和操作追踪
+
+**主要字段**:
+- `id`: 日志唯一标识符 (UUID)
+- `userId`: 操作用户ID
+- `username`: 操作用户名
+- `action`: 操作类型 (AuditAction 枚举)
+- `resource`: 资源类型 (AuditResource 枚举)
+- `resourceId`: 操作的资源ID
+- `details`: 操作详情 (JSON)
+- `ipAddress`: 客户端 IP 地址
+- `userAgent`: 客户端 User-Agent
+- `timestamp`: 操作时间
+- `success`: 操作是否成功
+
+**AuditAction 枚举** (部分):
+- 任务操作: `CREATE_TASK`, `UPDATE_TASK`, `DELETE_TASK`, `PUBLISH_TASK`, `ASSIGN_TASK`, `COMPLETE_TASK`, `ABANDON_TASK`, `ACCEPT_TASK`, `TRANSFER_TASK`, `UPDATE_TASK_PROGRESS`, `ACCEPT_TASK_ASSIGNMENT`, `REJECT_TASK_ASSIGNMENT`, `CREATE_SUBTASK`, `PUBLISH_SUBTASK`
+- 用户操作: `CREATE_USER`, `UPDATE_USER`, `DELETE_USER`, `LOGIN`, `LOGIN_FAILED`, `LOGOUT`
+- 系统操作: `UPDATE_SYSTEM_CONFIG`, `UPLOAD_FILE`, `DELETE_FILE`
+- 赏金操作: `ADD_BONUS_REWARD`, `DISTRIBUTE_BOUNTY`
+- 组织操作: `CREATE_POSITION`, `CREATE_GROUP`, `JOIN_GROUP` 等
+
+**AuditResource 枚举**:
+- `USER`, `TASK`, `POSITION`, `GROUP`, `AUTH`, `SYSTEM`, `BOUNTY`, `FILE`
+
+---
+
+### 18. SystemConfig (系统配置)
+**文件**: `packages/backend/src/models/SystemConfig.ts`
+
+**作用**: 存储平台的全局系统配置，包括站点设置、主题和邮件配置
+
+**主要字段**:
+- `id`: 配置唯一标识符 (UUID)
+- `siteName`: 站点名称
+- `siteDescription`: 站点描述
+- `logoUrl`: Logo 图片 URL
+- `allowRegistration`: 是否允许注册
+- `maintenanceMode`: 维护模式开关
+- `debugMode`: 调试模式开关
+- `maxFileSize`: 最大文件上传大小 (MB)
+- `defaultUserRole`: 默认用户角色
+- `emailEnabled`: 是否启用邮件
+- `smtpHost` / `smtpPort` / `smtpUser` / `smtpPassword` / `smtpSecure`: SMTP 配置
+- `defaultTheme`: 默认主题 (light/dark)
+- `allowThemeSwitch`: 是否允许用户切换主题
+- `animationStyle`: 动画风格 (none/minimal/scanline/particles/hexagon/datastream/hologram/ripple/matrix)
+- `enableAnimations`: 是否启用动画
+- `reducedMotion`: 减少动效模式
+- `createdAt` / `updatedAt`: 时间戳
+
+---
+
 ## 协作与组织模型
 
 ### 15. TaskGroup (任务组)
@@ -415,7 +473,8 @@ ProjectGroup
 | 赏金系统 | 3 | BountyAlgorithm, BountyTransaction, AdminBudget |
 | 用户管理 | 3 | Avatar, Ranking, Notification |
 | 协作组织 | 2 | TaskGroup, ProjectGroup |
-| **总计** | **16** | |
+| 系统模型 | 2 | AuditLog, SystemConfig |
+| **总计** | **18** | |
 
 ---
 
@@ -431,4 +490,5 @@ ProjectGroup
 
 ## 更新日志
 
+- 2026-03-19: 新增 AuditLog (模型17) 和 SystemConfig (模型18) 的详细说明
 - 2026-01-29: 创建初始文档，包含所有16个数据模型的详细说明

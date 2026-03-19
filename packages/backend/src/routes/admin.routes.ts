@@ -175,9 +175,9 @@ router.put('/users/:userId', async (req: Request, res: Response, next: NextFunct
     // Validate input
     const validatedData = updateUserSchema.parse(req.body);
 
-    // Only super admin can change roles
-    if (validatedData.role && userRole !== UserRole.SUPER_ADMIN) {
-      throw new AuthorizationError('Only super admin can change user roles');
+    // Only super admin or developer can change roles
+    if (validatedData.role && !Validator.isSuperAdmin(userRole)) {
+      throw new AuthorizationError('Insufficient permissions to change user roles');
     }
 
     // Track changes for notification
@@ -213,12 +213,8 @@ router.put('/users/:userId', async (req: Request, res: Response, next: NextFunct
     if (validatedData.managedPositionIds) {
       // Only super admin or position admin can update managed positions?
       // Actually, usually only super admin assigns position admins.
-      if (userRole !== UserRole.SUPER_ADMIN) {
-         // Maybe allow position admin to assign sub-admins? 
-         // For now, let's restrict to Super Admin or if the user is updating themselves (unlikely here)
-         // But wait, the requirement says "Each position admin needs to explicitly define positions they manage".
-         // Let's assume Super Admin does this configuration.
-         throw new AuthorizationError('Only super admin can update managed positions');
+      if (!Validator.isSuperAdmin(userRole)) {
+         throw new AuthorizationError('Insufficient permissions to update managed positions');
       }
       
       await userService.updateUserManagedPositions(userId, validatedData.managedPositionIds);
@@ -252,9 +248,9 @@ router.delete('/users/:userId', async (req: Request, res: Response, next: NextFu
     const userRole = (req as any).user?.role;
     const { userId } = req.params;
 
-    // Only super admin can delete users
-    if (userRole !== UserRole.SUPER_ADMIN) {
-      throw new AuthorizationError('Only super admin can delete users');
+    // Only super admin or developer can delete users
+    if (!Validator.isSuperAdmin(userRole)) {
+      throw new AuthorizationError('Insufficient permissions to delete users');
     }
 
     // Delete user
@@ -555,9 +551,9 @@ router.get('/groups', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const userRole = (req as any).user?.role;
 
-    // Only super admin can manage groups (for now)
-    if (userRole !== UserRole.SUPER_ADMIN) {
-      throw new AuthorizationError('Only super admin can manage groups');
+    // Only super admin or developer can manage groups
+    if (!Validator.isSuperAdmin(userRole)) {
+      throw new AuthorizationError('Insufficient permissions');
     }
 
     const groups = await groupService.getAllGroups();
@@ -576,9 +572,9 @@ router.delete('/groups/:groupId', async (req: Request, res: Response, next: Next
     const userRole = (req as any).user?.role;
     const { groupId } = req.params;
 
-    // Only super admin can delete groups
-    if (userRole !== UserRole.SUPER_ADMIN) {
-      throw new AuthorizationError('Only super admin can delete groups');
+    // Only super admin or developer can delete groups
+    if (!Validator.isSuperAdmin(userRole)) {
+      throw new AuthorizationError('Insufficient permissions');
     }
 
     await groupService.deleteGroupAsAdmin(groupId);

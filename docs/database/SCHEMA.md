@@ -225,8 +225,61 @@ Administrator extra bounty budget tracking.
 - Used budget cannot exceed total budget
 - Unique (admin_id, year, month)
 
-### task_reviews
-Task reviews with ratings and extra bounties.
+### bounty_transactions
+Bounty payment history between users.
+
+**Key Columns:**
+- `id` (UUID, PK)
+- `task_id` (UUID, FK → tasks)
+- `from_user_id` (UUID, FK → users)
+- `to_user_id` (UUID, FK → users)
+- `amount` (DECIMAL)
+- `type` (VARCHAR) - `task_completion`, `extra_reward`, `assistant_share`, `refund`
+- `description` (TEXT)
+- `created_at` (TIMESTAMP)
+
+### audit_logs
+Audit trail for all critical platform operations.
+
+**Key Columns:**
+- `id` (UUID, PK)
+- `user_id` (UUID, FK → users)
+- `username` (VARCHAR)
+- `action` (VARCHAR) - AuditAction enum value
+- `resource` (VARCHAR) - AuditResource enum value
+- `resource_id` (UUID, nullable)
+- `details` (JSONB)
+- `ip_address` (VARCHAR)
+- `user_agent` (TEXT)
+- `timestamp` (TIMESTAMP)
+- `success` (BOOLEAN)
+
+**Indexes:**
+- `(user_id, timestamp)`
+- `(action, timestamp)`
+- `(resource, resource_id)`
+
+### system_configs
+Global platform configuration settings.
+
+**Key Columns:**
+- `id` (UUID, PK)
+- `site_name` (VARCHAR)
+- `site_description` (TEXT)
+- `logo_url` (VARCHAR)
+- `allow_registration` (BOOLEAN)
+- `maintenance_mode` (BOOLEAN)
+- `debug_mode` (BOOLEAN)
+- `max_file_size` (INTEGER) - in MB
+- `default_user_role` (VARCHAR)
+- `email_enabled` (BOOLEAN)
+- `smtp_host` / `smtp_port` / `smtp_user` / `smtp_password` / `smtp_secure` - SMTP settings
+- `default_theme` (VARCHAR) - `light` or `dark`
+- `allow_theme_switch` (BOOLEAN)
+- `animation_style` (VARCHAR)
+- `enable_animations` (BOOLEAN)
+- `reduced_motion` (BOOLEAN)
+- `created_at` / `updated_at` (TIMESTAMP)
 
 **Key Columns:**
 - `id` (UUID, PK)

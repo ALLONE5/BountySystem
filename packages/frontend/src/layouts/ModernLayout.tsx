@@ -217,7 +217,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
 
   // 管理员菜单项
   const getAdminMenuItems = () => {
-    if (user?.role !== 'super_admin' && user?.role !== 'position_admin') return [];
+    if (user?.role !== 'super_admin' && user?.role !== 'position_admin' && user?.role !== 'developer') return [];
 
     return [
       {
@@ -270,6 +270,11 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
         icon: <SettingOutlined />,
         label: '开发管理',
         children: [
+          {
+            key: '/dev/users',
+            label: '用户管理',
+            onClick: () => navigate('/dev/users'),
+          },
           {
             key: '/dev/system-config',
             label: '系统配置',
@@ -334,7 +339,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                   <img
                     src={systemConfig.logoUrl.startsWith('http')
                       ? systemConfig.logoUrl
-                      : `http://localhost:3001${systemConfig.logoUrl}`
+                      : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${systemConfig.logoUrl}`
                     }
                     alt="Logo"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -472,6 +477,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                         <div 
                           className="custom-dropdown-trigger"
                           onMouseEnter={(e) => createHoverMenu(e, [
+                            { path: '/dev/users', label: '用户管理' },
                             { path: '/dev/system-config', label: '系统配置' },
                             { path: '/dev/audit-logs', label: '审计日志' },
                             { path: '/dev/system-monitor', label: '系统监控' }

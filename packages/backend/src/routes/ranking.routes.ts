@@ -148,7 +148,7 @@ export function createRankingRouter(pool: Pool): Router {
     const user = (req as any).user;
     
     // Only super admins can trigger ranking calculations
-    if (user.role !== 'super_admin') {
+    if (user.role !== 'super_admin' && user.role !== 'developer') {
       throw new AppError('FORBIDDEN', 'Only super admins can calculate rankings', 403);
     }
 
@@ -185,7 +185,7 @@ export function createRankingRouter(pool: Pool): Router {
     const user = (req as any).user;
     
     // Only super admins can trigger ranking updates
-    if (user.role !== 'super_admin') {
+    if (user.role !== 'super_admin' && user.role !== 'developer') {
       throw new AppError('FORBIDDEN', 'Only super admins can update rankings', 403);
     }
 

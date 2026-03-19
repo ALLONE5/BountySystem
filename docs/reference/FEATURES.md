@@ -16,6 +16,8 @@
 6. [通知系统](#通知系统)
 7. [管理员功能](#管理员功能)
 8. [可视化功能](#可视化功能)
+9. [审计日志](#审计日志)
+10. [系统配置](#系统配置)
 
 ---
 
@@ -465,15 +467,84 @@ node packages/backend/scripts/db-manager.js seed-bounty
 
 ---
 
+## 审计日志
+
+### 覆盖范围
+
+审计日志记录平台上所有关键操作，支持安全审计和操作追踪。
+
+**任务操作**:
+- `CREATE_TASK` / `UPDATE_TASK` / `DELETE_TASK` - 任务增删改
+- `PUBLISH_TASK` - 发布任务
+- `ASSIGN_TASK` - 分配任务
+- `ACCEPT_TASK` - 承接任务
+- `COMPLETE_TASK` / `ABANDON_TASK` - 完成/放弃任务
+- `TRANSFER_TASK` - 转让任务
+- `UPDATE_TASK_PROGRESS` - 更新任务进度
+- `ACCEPT_TASK_ASSIGNMENT` / `REJECT_TASK_ASSIGNMENT` - 接受/拒绝任务分配邀请
+- `CREATE_SUBTASK` / `PUBLISH_SUBTASK` - 创建/发布子任务
+
+**用户操作**:
+- `CREATE_USER` / `UPDATE_USER` / `DELETE_USER`
+- `LOGIN` / `LOGIN_FAILED` / `LOGOUT`
+
+**系统操作**:
+- `UPDATE_SYSTEM_CONFIG` - 修改系统配置
+- `UPLOAD_FILE` / `DELETE_FILE` - 文件管理
+- `ADD_BONUS_REWARD` / `DISTRIBUTE_BOUNTY` - 赏金操作
+
+**组织操作**:
+- `CREATE_POSITION` / `UPDATE_POSITION` / `DELETE_POSITION`
+- `CREATE_GROUP` / `UPDATE_GROUP` / `DELETE_GROUP` / `JOIN_GROUP` / `LEAVE_GROUP`
+
+### 审计日志查询
+
+开发者面板提供审计日志查询界面，支持：
+- 按操作类型筛选
+- 按资源类型筛选
+- 按用户筛选
+- 按时间范围筛选
+- 按成功/失败筛选
+- 分页浏览
+
+---
+
+## 系统配置
+
+### 可配置项
+
+通过开发者面板的系统配置页面可管理：
+
+**站点设置**:
+- 站点名称和描述
+- Logo 图片（支持上传和管理多个 Logo）
+- 是否允许注册
+- 维护模式开关
+- 调试模式开关
+- 最大文件上传大小
+
+**主题设置**:
+- 默认主题（亮色/暗色）
+- 是否允许用户切换主题
+- 动画风格（none/minimal/scanline/particles/hexagon/datastream/hologram/ripple/matrix）
+- 是否启用动画
+- 减少动效模式
+
+**邮件设置**:
+- SMTP 主机、端口、用户名、密码
+- 是否启用邮件通知
+
+---
+
 ## 相关文档
 
 - [系统架构](ARCHITECTURE.md) - 系统架构和技术设计
-- [开发指南](DEVELOPMENT.md) - 开发规范和工具
-- [数据库模型](DATABASE_MODELS_OVERVIEW.md) - 数据库设计
-- [项目状态](PROJECT_STATUS.md) - 项目概览和状态
+- [开发指南](../guides/DEVELOPMENT.md) - 开发规范和工具
+- [数据库模型](../database/MODELS.md) - 数据库设计
+- [项目概览](../PROJECT_OVERVIEW.md) - 项目概览和状态
 
 ---
 
 **文档维护**: 本文档整合了所有功能文档，定期更新  
-**最后更新**: 2026-03-11  
+**最后更新**: 2026-03-19  
 **维护者**: 开发团队

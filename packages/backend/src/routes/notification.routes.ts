@@ -82,7 +82,7 @@ router.post('/broadcast', authenticate, asyncHandler(async (req: Request, res: R
 
   // Validate admin role
   const userRole = req.user!.role;
-  if (userRole !== 'position_admin' && userRole !== 'super_admin') {
+  if (userRole !== 'position_admin' && userRole !== 'super_admin' && userRole !== 'developer') {
     return res.status(403).json({
       success: false,
       message: 'Only administrators can send broadcast notifications',

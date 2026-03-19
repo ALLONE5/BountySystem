@@ -1,153 +1,203 @@
 # 赏金猎人平台 - 前端
 
+React 18 + TypeScript + Vite 前端应用，提供完整的任务管理和赏金系统 UI。
+
+---
+
 ## 技术栈
 
-- **框架**: React 18 + TypeScript
-- **路由**: React Router v6
-- **状态管理**: Zustand (with persist middleware)
-- **UI组件库**: Ant Design
-- **HTTP客户端**: Axios
-- **构建工具**: Vite
+- 框架: React 18.2.0 + TypeScript
+- 路由: React Router v6.21.1
+- 状态管理: Zustand 4.x
+- UI 组件库: Ant Design 6.x + @ant-design/icons
+- HTTP 客户端: Axios 1.x
+- 实时通信: Socket.IO Client 4.x
+- 可视化: D3.js 7.x + FullCalendar 6.x + react-beautiful-dnd
+- 构建工具: Vite 5.x
+- 测试: Vitest 1.x
+
+---
 
 ## 项目结构
 
 ```
 src/
-├── api/              # API 客户端和接口
-│   ├── client.ts     # Axios 实例配置
-│   └── auth.ts       # 认证相关 API
+├── api/              # API 客户端 (16 个模块)
+│   ├── client.ts     # Axios 实例 + 响应拦截器
+│   └── *.ts          # 各业务模块 API
 ├── components/       # 可复用组件
-│   └── ProtectedRoute.tsx  # 路由守卫组件
+│   ├── common/       # 通用基础组件 (20 个)
+│   ├── Dashboard/    # 仪表盘组件
+│   ├── TaskDetail/   # 任务详情组件
+│   ├── TaskList/     # 任务列表组件
+│   ├── Kanban/       # 看板组件
+│   ├── Gantt/        # 甘特图组件
+│   ├── Calendar/     # 日历组件
+│   ├── Groups/       # 组群组件
+│   ├── Ranking/      # 排行榜组件
+│   ├── Notifications/ # 通知组件
+│   ├── Profile/      # 个人资料组件
+│   └── ...           # 其他业务组件
+├── contexts/         # React Context
+│   ├── AuthContext.tsx         # 认证状态
+│   ├── NotificationContext.tsx # 通知状态
+│   ├── SystemConfigContext.tsx # 系统配置
+│   └── ThemeContext.tsx        # 主题状态
+├── hooks/            # 自定义 Hooks (8 个)
 ├── layouts/          # 布局组件
-│   ├── MainLayout.tsx      # 主应用布局
-│   └── AuthLayout.tsx      # 认证页面布局
+│   ├── ModernLayout.tsx  # 主应用布局（侧边栏 + 顶部导航）
+│   └── AuthLayout.tsx    # 认证页面布局
 ├── pages/            # 页面组件
-│   ├── auth/         # 认证相关页面
-│   │   ├── LoginPage.tsx
-│   │   └── RegisterPage.tsx
-│   └── DashboardPage.tsx   # 仪表板页面
+│   ├── auth/         # 登录、注册
+│   ├── admin/        # 管理员页面 (12 个)
+│   ├── developer/    # 开发者页面 (3 个)
+│   └── *.tsx         # 普通用户页面
 ├── router/           # 路由配置
-│   └── index.tsx
-├── store/            # 状态管理
-│   └── authStore.ts  # 认证状态
+├── store/            # Zustand Store
+│   └── authStore.ts  # 认证状态持久化
+├── styles/           # 全局样式
 ├── types/            # TypeScript 类型定义
-│   └── index.ts
-├── App.tsx           # 根组件
-└── main.tsx          # 应用入口
+└── utils/            # 工具函数
 ```
 
-## 功能特性
+---
 
-### 已实现
+## 页面路由
 
-1. **项目基础架构**
-   - React + TypeScript 项目配置
-   - Vite 构建工具配置
-   - Ant Design UI 组件库集成
+### 公开路由
+| 路径 | 页面 |
+|------|------|
+| `/auth/login` | 登录页 |
+| `/auth/register` | 注册页 |
 
-2. **路由系统**
-   - React Router 配置
-   - 路由守卫（ProtectedRoute）
-   - 认证路由和主应用路由分离
+### 普通用户路由
+| 路径 | 页面 |
+|------|------|
+| `/dashboard` | 仪表盘 |
+| `/my` | 我的工作台 |
+| `/my/bounties` | 我的悬赏（已发布任务） |
+| `/my/tasks` | 我的任务（已承接任务） |
+| `/my/groups` | 我的组群 |
+| `/bounty-tasks` | 任务市场（浏览任务） |
+| `/ranking` | 排行榜 |
+| `/notifications` | 通知中心 |
+| `/profile` | 个人资料 |
+| `/settings` | 账户设置 |
 
-3. **状态管理**
-   - Zustand 状态管理
-   - 认证状态持久化（localStorage）
+### 管理员路由（需要 admin 角色）
+| 路径 | 页面 |
+|------|------|
+| `/admin` | 管理中心入口 |
+| `/admin/dashboard` | 管理仪表盘 |
+| `/admin/users` | 用户管理 |
+| `/admin/groups` | 组群管理 |
+| `/admin/tasks` | 任务管理 |
+| `/admin/approval` | 岗位申请审核 |
+| `/admin/avatars` | 头像管理 |
+| `/admin/positions` | 岗位管理 |
+| `/admin/bounty-algorithm` | 赏金算法配置 |
+| `/admin/notifications` | 广播通知 |
+| `/admin/audit-logs` | 审计日志 |
 
-4. **API 客户端**
-   - Axios 实例配置
-   - 请求拦截器（自动添加 JWT token）
-   - 响应拦截器（处理 401 错误）
+### 开发者路由（需要 developer 角色）
+| 路径 | 页面 |
+|------|------|
+| `/dev/audit-logs` | 审计日志（开发者视图） |
+| `/dev/system-monitor` | 系统监控 |
+| `/dev/system-config` | 系统配置 |
 
-5. **布局系统**
-   - 主应用布局（带侧边栏和顶部导航）
-   - 认证页面布局
-   - 响应式设计
+---
 
-6. **认证页面**
-   - 登录页面
-   - 注册页面
-   - 表单验证
+## API 客户端
 
-### 待实现
+`src/api/client.ts` 配置了 Axios 实例，包含：
+- 自动在请求头附加 JWT Token
+- 响应拦截器：自动解包 `{ success, data }` 结构，直接返回 `data`
+- 401 响应自动清除认证状态并跳转登录页
 
-- 任务管理页面
-- 赏金任务浏览
-- 排名页面
-- 管理员功能
-- 通知系统
-- 任务可视化（甘特图、看板等）
-
-## 开发指南
-
-### 启动开发服务器
-
-```bash
-npm run dev
+```typescript
+// 所有 API 方法直接返回业务数据，无需手动解包
+const tasks = await taskApi.getMyTasks(); // 直接是 Task[]
 ```
 
-访问 http://localhost:5173
+---
 
-### 构建生产版本
+## 状态管理
+
+- `authStore` (Zustand + persist): 用户信息和 Token，持久化到 localStorage
+- `AuthContext`: 提供登录/登出方法和用户状态
+- `NotificationContext`: 未读通知数量，WebSocket 实时更新
+- `SystemConfigContext`: 系统配置（站点名称、Logo、主题等）
+- `ThemeContext`: 亮色/暗色主题切换
+
+---
+
+## 自定义 Hooks
+
+| Hook | 说明 |
+|------|------|
+| `useDataFetch` | 通用数据加载，含 loading/error 状态 |
+| `useErrorHandler` | 统一错误处理和提示 |
+| `useLoadingState` | 多状态 loading 管理 |
+| `useModalState` | Modal 开关状态管理 |
+| `useCrudOperations` | 增删改查通用操作 |
+| `usePermission` | 基于角色的权限判断 |
+| `useResponsive` | 响应式断点检测 |
+| `useWebSocket` | WebSocket 连接和事件监听 |
+
+---
+
+## 环境变量
 
 ```bash
+# packages/frontend/.env
+VITE_API_URL=http://localhost:3001/api
+```
+
+Vite 开发服务器已配置代理，`/api` 请求自动转发到 `http://localhost:3001`。
+
+---
+
+## 开发命令
+
+```bash
+# 开发模式
+npm run dev        # http://localhost:5173
+
+# 构建生产版本
 npm run build
+
+# 预览构建结果
+npm run preview
+
+# 运行测试
+npm test
 ```
 
-### 运行测试
+---
+
+## 测试
+
+测试文件与源文件同目录（`*.test.tsx`），使用 Vitest + jsdom。
 
 ```bash
 npm test
 ```
 
-## API 配置
+测试覆盖范围：
+- ProtectedRoute 组件
+- PublishedTasksPage
+- TaskListPage
+- TaskInvitationsPage
+- BountyHistoryDrawer
+- StatusTag 组件
 
-前端通过 Vite 代理将 `/api` 请求转发到后端服务器（默认 http://localhost:3000）。
+---
 
-配置位于 `vite.config.ts`:
+## 主题系统
 
-```typescript
-server: {
-  proxy: {
-    '/api': {
-      target: 'http://localhost:3000',
-      changeOrigin: true,
-    },
-  },
-}
-```
-
-## 认证流程
-
-1. 用户在登录页面输入凭据
-2. 前端调用 `/api/auth/login` 接口
-3. 后端验证成功后返回 JWT token 和用户信息
-4. 前端将 token 和用户信息存储到 Zustand store（持久化到 localStorage）
-5. 后续请求自动在 header 中携带 token
-6. 如果 token 过期（401 响应），自动清除认证状态并重定向到登录页
-
-## 路由守卫
-
-使用 `ProtectedRoute` 组件保护需要认证的路由：
-
-```tsx
-<ProtectedRoute>
-  <MainLayout />
-</ProtectedRoute>
-```
-
-支持基于角色的访问控制：
-
-```tsx
-<ProtectedRoute requiredRole={UserRole.SUPER_ADMIN}>
-  <AdminPage />
-</ProtectedRoute>
-```
-
-## 下一步
-
-1. 实现任务管理相关页面
-2. 集成 WebSocket 实现实时通知
-3. 添加任务可视化组件
-4. 完善用户个人信息管理
-5. 实现管理员功能界面
+支持亮色/暗色主题，通过 `ThemeContext` 管理。主题配置来自后端 `SystemConfig`，支持：
+- 默认主题设置
+- 用户手动切换
+- 多种动画风格（none/minimal/scanline/particles 等）
+- 减少动效模式

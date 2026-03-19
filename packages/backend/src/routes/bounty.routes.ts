@@ -19,7 +19,7 @@ const reviewService = new TaskReviewService();
  * Get all bounty algorithms
  * GET /api/bounty/algorithms
  */
-router.get('/algorithms', authenticate, requireRole([UserRole.SUPER_ADMIN]), asyncHandler(async (req: Request, res: Response) => {
+router.get('/algorithms', authenticate, requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]), asyncHandler(async (req: Request, res: Response) => {
   const algorithms = await bountyAlgorithmService.getAllAlgorithms();
   res.json(algorithms);
 }));
@@ -28,7 +28,7 @@ router.get('/algorithms', authenticate, requireRole([UserRole.SUPER_ADMIN]), asy
  * Get current active bounty algorithm
  * GET /api/bounty/algorithms/current
  */
-router.get('/algorithms/current', authenticate, requireRole([UserRole.SUPER_ADMIN]), asyncHandler(async (req: Request, res: Response) => {
+router.get('/algorithms/current', authenticate, requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]), asyncHandler(async (req: Request, res: Response) => {
   const algorithm = await bountyAlgorithmService.getCurrentAlgorithm();
   
   if (!algorithm) {
@@ -42,7 +42,7 @@ router.get('/algorithms/current', authenticate, requireRole([UserRole.SUPER_ADMI
  * Get bounty algorithm by version
  * GET /api/bounty/algorithms/:version
  */
-router.get('/algorithms/:version', authenticate, requireRole([UserRole.SUPER_ADMIN]), asyncHandler(async (req: Request, res: Response) => {
+router.get('/algorithms/:version', authenticate, requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]), asyncHandler(async (req: Request, res: Response) => {
   const { version } = req.params;
   const algorithm = await bountyAlgorithmService.getAlgorithmByVersion(version);
   
@@ -58,7 +58,7 @@ router.get('/algorithms/:version', authenticate, requireRole([UserRole.SUPER_ADM
  * POST /api/bounty/algorithms
  * Requirements 20.1, 20.2, 20.3: Create and manage bounty algorithms
  */
-router.post('/algorithms', authenticate, requireRole([UserRole.SUPER_ADMIN]), asyncHandler(async (req: Request, res: Response) => {
+router.post('/algorithms', authenticate, requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]), asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { version, baseAmount, urgencyWeight, importanceWeight, durationWeight, remainingDaysWeight, formula, effectiveFrom } = req.body;
 

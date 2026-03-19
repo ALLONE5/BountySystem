@@ -41,7 +41,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
 router.post(
   '/',
   authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
+  requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]),
   asyncHandler(async (req: Request, res: Response) => {
     const { name, description, requiredSkills } = req.body;
 
@@ -66,7 +66,7 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
+  requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]),
   asyncHandler(async (req: Request, res: Response) => {
     const { name, description, requiredSkills } = req.body;
 
@@ -87,7 +87,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
+  requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]),
   asyncHandler(async (req: Request, res: Response) => {
     await positionService.deletePosition(req.params.id);
     res.status(204).send();
@@ -217,7 +217,7 @@ router.get('/users/:userId/positions', authenticate, asyncHandler(async (req: Re
 router.post(
   '/users/:userId/positions/:positionId',
   authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
+  requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]),
   asyncHandler(async (req: Request, res: Response) => {
     const { userId, positionId } = req.params;
 
@@ -233,7 +233,7 @@ router.post(
 router.delete(
   '/users/:userId/positions/:positionId',
   authenticate,
-  requireRole([UserRole.SUPER_ADMIN]),
+  requireRole([UserRole.SUPER_ADMIN, UserRole.DEVELOPER]),
   asyncHandler(async (req: Request, res: Response) => {
     const { userId, positionId } = req.params;
 

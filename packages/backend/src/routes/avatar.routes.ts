@@ -75,7 +75,7 @@ export function createAvatarRouter(pool: Pool): Router {
     const user = (req as any).user;
     
     // Only super admins can create avatars
-    if (user.role !== 'super_admin') {
+    if (user.role !== 'super_admin' && user.role !== 'developer') {
       throw new AppError('FORBIDDEN', 'Only super admins can create avatars', 403);
     }
 
@@ -102,7 +102,7 @@ export function createAvatarRouter(pool: Pool): Router {
     const user = (req as any).user;
     
     // Only super admins can update avatars
-    if (user.role !== 'super_admin') {
+    if (user.role !== 'super_admin' && user.role !== 'developer') {
       throw new AppError('FORBIDDEN', 'Only super admins can update avatars', 403);
     }
 
@@ -126,7 +126,7 @@ export function createAvatarRouter(pool: Pool): Router {
     const user = (req as any).user;
     
     // Only super admins can delete avatars
-    if (user.role !== 'super_admin') {
+    if (user.role !== 'super_admin' && user.role !== 'developer') {
       throw new AppError('FORBIDDEN', 'Only super admins can delete avatars', 403);
     }
 
@@ -157,7 +157,7 @@ export function createAvatarRouter(pool: Pool): Router {
     const user = (req as any).user;
     
     // Only super admins can trigger permission updates
-    if (user.role !== 'super_admin') {
+    if (user.role !== 'super_admin' && user.role !== 'developer') {
       throw new AppError('FORBIDDEN', 'Only super admins can update unlock permissions', 403);
     }
 

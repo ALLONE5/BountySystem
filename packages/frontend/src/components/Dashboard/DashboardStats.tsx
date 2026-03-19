@@ -36,7 +36,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
   return (
     <div className="stats-grid">
-      <Card className="stat-card" onClick={() => navigate('/tasks/published')}>
+      <Card className="stat-card" onClick={() => navigate('/my/bounties')}>
         <div className="stat-header">
           <div className="stat-icon primary">
             <FileTextOutlined />
@@ -54,7 +54,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         </div>
       </Card>
 
-      <Card className="stat-card" onClick={() => navigate('/tasks/assigned')}>
+      <Card className="stat-card" onClick={() => navigate('/my/tasks')}>
         <div className="stat-header">
           <div className="stat-icon success">
             <CheckSquareOutlined />

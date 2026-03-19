@@ -36,7 +36,7 @@ export const DashboardHero: React.FC<DashboardHeroProps> = ({ user }) => {
             </Button>
             <Button 
               className="hero-btn hero-btn-secondary"
-              onClick={() => navigate('/tasks/published')}
+              onClick={() => navigate('/my/bounties')}
             >
               查看我的任务
             </Button>

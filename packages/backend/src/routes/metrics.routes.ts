@@ -16,7 +16,7 @@ const router = Router();
  */
 router.get('/performance', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is admin
-  if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.POSITION_ADMIN) {
+  if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.POSITION_ADMIN && req.user!.role !== UserRole.DEVELOPER) {
     return sendForbidden(res, 'Admin access required');
   }
 
@@ -48,7 +48,7 @@ router.get('/performance', authenticate, asyncHandler(async (req: Request, res: 
  */
 router.get('/performance/:operation', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is admin
-  if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.POSITION_ADMIN) {
+  if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.POSITION_ADMIN && req.user!.role !== UserRole.DEVELOPER) {
     return sendForbidden(res, 'Admin access required');
   }
 
@@ -73,7 +73,7 @@ router.get('/performance/:operation', authenticate, asyncHandler(async (req: Req
  */
 router.delete('/performance/:operation', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is super admin
-  if (req.user!.role !== UserRole.SUPER_ADMIN) {
+  if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.DEVELOPER) {
     return sendForbidden(res, 'Super admin access required');
   }
 
@@ -90,7 +90,7 @@ router.delete('/performance/:operation', authenticate, asyncHandler(async (req: 
  */
 router.delete('/performance', authenticate, asyncHandler(async (req: Request, res: Response) => {
   // Check if user is super admin
-  if (req.user!.role !== UserRole.SUPER_ADMIN) {
+  if (req.user!.role !== UserRole.SUPER_ADMIN && req.user!.role !== UserRole.DEVELOPER) {
     return sendForbidden(res, 'Super admin access required');
   }
 
