@@ -339,7 +339,7 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                   <img
                     src={systemConfig.logoUrl.startsWith('http')
                       ? systemConfig.logoUrl
-                      : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${systemConfig.logoUrl}`
+                      : `${(import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/api$/, '')}${systemConfig.logoUrl}`
                     }
                     alt="Logo"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
