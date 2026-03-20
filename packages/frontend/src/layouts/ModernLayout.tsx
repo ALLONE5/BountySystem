@@ -271,11 +271,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
         label: '开发管理',
         children: [
           {
-            key: '/dev/users',
-            label: '用户管理',
-            onClick: () => navigate('/dev/users'),
-          },
-          {
             key: '/dev/system-config',
             label: '系统配置',
             onClick: () => navigate('/dev/system-config'),
@@ -477,7 +472,6 @@ export const ModernLayout: React.FC<ModernLayoutProps> = () => {
                         <div 
                           className="custom-dropdown-trigger"
                           onMouseEnter={(e) => createHoverMenu(e, [
-                            { path: '/dev/users', label: '用户管理' },
                             { path: '/dev/system-config', label: '系统配置' },
                             { path: '/dev/audit-logs', label: '审计日志' },
                             { path: '/dev/system-monitor', label: '系统监控' }
