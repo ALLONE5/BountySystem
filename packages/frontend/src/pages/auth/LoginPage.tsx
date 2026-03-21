@@ -114,24 +114,24 @@ export const LoginPage: React.FC = () => {
             {systemConfig?.siteName || '赏金平台'}
           </h1>
           <p className="auth-subtitle">
-            高效协作，智能管理，让每一份努力都有回报
+            测试版
           </p>
 
           <div className="auth-features">
             <div className="auth-feature">
               <div className="auth-feature-icon"><RocketOutlined /></div>
               <div className="auth-feature-title">高效协作</div>
-              <div className="auth-feature-desc">实时任务分配与进度跟踪</div>
+              <div className="auth-feature-desc">多视图查看任务</div>
             </div>
             <div className="auth-feature">
               <div className="auth-feature-icon"><TeamOutlined /></div>
               <div className="auth-feature-title">团队管理</div>
-              <div className="auth-feature-desc">灵活的项目组与权限控制</div>
+              <div className="auth-feature-desc">自由进行团队任务</div>
             </div>
             <div className="auth-feature">
               <div className="auth-feature-icon"><SafetyOutlined /></div>
-              <div className="auth-feature-title">安全可靠</div>
-              <div className="auth-feature-desc">企业级数据安全保障</div>
+              <div className="auth-feature-title">分级</div>
+              <div className="auth-feature-desc">不同角色不同界面</div>
             </div>
           </div>
         </div>

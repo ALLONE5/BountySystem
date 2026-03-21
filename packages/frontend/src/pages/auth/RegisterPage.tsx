@@ -118,26 +118,26 @@ export const RegisterPage: React.FC = () => {
             {systemConfig?.siteName || '赏金平台'}
           </h1>
           <p className="auth-subtitle">
-            加入我们，开启高效协作之旅
+            加入测试
           </p>
 
           <div className="auth-features">
-            <div className="auth-feature">
-              <div className="auth-feature-icon"><RocketOutlined /></div>
-              <div className="auth-feature-title">快速上手</div>
-              <div className="auth-feature-desc">简单注册，即刻开始使用</div>
+              <div className="auth-feature">
+                <div className="auth-feature-icon"><RocketOutlined /></div>
+                <div className="auth-feature-title">高效协作</div>
+                <div className="auth-feature-desc">多视图查看任务</div>
+              </div>
+              <div className="auth-feature">
+                <div className="auth-feature-icon"><TeamOutlined /></div>
+                <div className="auth-feature-title">团队管理</div>
+                <div className="auth-feature-desc">自由进行团队任务</div>
+              </div>
+              <div className="auth-feature">
+                <div className="auth-feature-icon"><SafetyOutlined /></div>
+                <div className="auth-feature-title">分级</div>
+                <div className="auth-feature-desc">不同角色不同界面</div>
+              </div>
             </div>
-            <div className="auth-feature">
-              <div className="auth-feature-icon"><TeamOutlined /></div>
-              <div className="auth-feature-title">团队协作</div>
-              <div className="auth-feature-desc">与团队成员高效协作</div>
-            </div>
-            <div className="auth-feature">
-              <div className="auth-feature-icon"><SafetyOutlined /></div>
-              <div className="auth-feature-title">数据安全</div>
-              <div className="auth-feature-desc">您的数据安全有保障</div>
-            </div>
-          </div>
         </div>
       </div>
 
