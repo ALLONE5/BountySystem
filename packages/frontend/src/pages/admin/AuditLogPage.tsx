@@ -44,7 +44,7 @@ export const AuditLogPage: React.FC = () => {
         pageSize: pagination.pageSize,
       });
       
-      setLogs(data.logs);
+      setLogs(data.data);
       setPagination(prev => ({
         ...prev,
         total: data.pagination.total,
