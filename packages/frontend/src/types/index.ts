@@ -217,7 +217,7 @@ export interface UserFilters {
 }
 
 // Theme Types - re-exported from styles/themes (single source of truth)
-export type { ThemeMode } from './styles/themes';
+export type { ThemeMode } from '../styles/themes';
 
 // System Config Types
 export interface SystemConfig {
