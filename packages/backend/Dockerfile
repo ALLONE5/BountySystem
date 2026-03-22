@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install ALL dependencies (including devDeps for tsc build)
-RUN npm ci && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 COPY . .
 
@@ -25,8 +25,8 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# npm ci --omit=dev is the modern equivalent of --only=production
-RUN npm ci --omit=dev && npm cache clean --force
+# Install production dependencies only
+RUN npm install --omit=dev && npm cache clean --force
 
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 
