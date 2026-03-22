@@ -44,7 +44,7 @@ npm run dev:frontend # 终端2：前端 http://localhost:5173
 | 角色 | 用户名 | 密码 |
 |------|--------|------|
 | 超级管理员 | `admin` | `Password123` |
-| 开发者 | `dev_test_840023` | `DevTest123` |
+| 开发者用户 | `dev_test_840023` | `DevTest123` |
 | 普通用户 | `developer2` | `Password123` |
 
 ---
