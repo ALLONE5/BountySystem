@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { config } from './config/env.js';
 import { logger } from './config/logger.js';
@@ -49,10 +48,6 @@ import { TaskService } from './services/TaskService.js';
 import performanceRoutes from './routes/performance.routes.js';
 
 const app = express();
-
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Security headers middleware
 app.use((req, res, next) => {
