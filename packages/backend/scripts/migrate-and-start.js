@@ -80,7 +80,20 @@ async function migrate() {
 
       const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8');
       try {
-        await client.query(sql);
+        // 包含 CONCURRENTLY 的文件需要逐条执行（不能在事务块中运行）
+        if (sql.includes('CONCURRENTLY')) {
+          const stmts = sql.split(';').map(s => s.trim()).filter(Boolean);
+          for (const stmt of stmts) {
+            try {
+              await client.query(stmt);
+            } catch(e) {
+              if (!e.message.includes('already exists') && !e.message.includes('duplicate')) throw e;
+              try { await client.query('ROLLBACK'); } catch(_) {}
+            }
+          }
+        } else {
+          await client.query(sql);
+        }
         await client.query('INSERT INTO _migrations(filename) VALUES($1)', [file]);
         console.log('[migrate] ok: ' + file);
       } catch(e) {
