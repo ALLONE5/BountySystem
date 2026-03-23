@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-/**
- * 按顺序执行所有迁移文件
- */
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
@@ -21,25 +18,22 @@ const INIT_SQL = path.resolve(__dirname, '../migrations/init.sql');
 async function run() {
   const client = await pool.connect();
   try {
-    // 先执行 init.sql（创建扩展和枚举类型），忽略已存在的错误
+    // 1. 执行 init.sql（扩展和枚举类型），逐条执行忽略 already exists
     const initSql = fs.readFileSync(INIT_SQL, 'utf8')
-      // 去掉 \c 命令（psql 专用，pg 驱动不支持）
       .split('\n')
-      .filter(line => !line.trim().startsWith('\\c'))
+      .filter(line => !line.trim().startsWith('\\'))
       .join('\n');
 
-    // 逐条执行，忽略 already exists 错误
-    const statements = initSql.split(';').map(s => s.trim()).filter(s => s.length > 0);
-    for (const stmt of statements) {
+    for (const stmt of initSql.split(';').map(s => s.trim()).filter(Boolean)) {
       try {
         await client.query(stmt);
       } catch (err) {
         if (!err.message.includes('already exists')) throw err;
       }
     }
-    console.log('✓ init.sql (extensions and types)');
+    console.log('✓ init.sql');
 
-    // 创建迁移记录表
+    // 2. 创建迁移记录表
     await client.query(`
       CREATE TABLE IF NOT EXISTS _migrations (
         filename VARCHAR(255) PRIMARY KEY,
@@ -47,8 +41,9 @@ async function run() {
       )
     `);
 
+    // 3. 按顺序执行迁移文件（跳过 init.sql）
     const files = fs.readdirSync(MIGRATIONS_DIR)
-      .filter(f => f.endsWith('.sql'))
+      .filter(f => f.endsWith('.sql') && f !== 'init.sql')
       .sort();
 
     for (const file of files) {
@@ -66,7 +61,9 @@ async function run() {
         await client.query('INSERT INTO _migrations (filename) VALUES ($1)', [file]);
         console.log(`✓ ${file}`);
       } catch (err) {
-        console.error(`✗ ${file}: ${err.message}`);
+        console.error(`\nMigration failed: ${file}`);
+        console.error(`Error: ${err.message}`);
+        console.error(`Detail: ${err.detail || 'none'}`);
         throw err;
       }
     }
@@ -77,4 +74,7 @@ async function run() {
   }
 }
 
-run().catch(e => { console.error(e.message); process.exit(1); });
+run().catch(e => {
+  console.error('Migration failed:', e.message);
+  process.exit(1);
+});
