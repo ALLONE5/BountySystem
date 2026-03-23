@@ -90,13 +90,13 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_role_last_login
 ON users(role, last_login DESC) 
 WHERE last_login IS NOT NULL;
 
--- 用户名的部分匹配索引（用于用户搜索）
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_username_gin 
-ON users USING gin(username gin_trgm_ops);
+-- 用户名的部分匹配索引（用于用户搜索）-- 需要 pg_trgm 扩展，已移除
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_username_gin 
+-- ON users USING gin(username gin_trgm_ops);
 
--- 邮箱的部分匹配索引（用于邮箱搜索）
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_email_gin 
-ON users USING gin(email gin_trgm_ops);
+-- 邮箱的部分匹配索引（用于邮箱搜索）-- 需要 pg_trgm 扩展，已移除
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_email_gin 
+-- ON users USING gin(email gin_trgm_ops);
 
 -- ============================================================================
 -- 位置相关性能索引
