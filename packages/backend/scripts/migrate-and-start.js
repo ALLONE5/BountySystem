@@ -80,8 +80,8 @@ async function migrate() {
 
       const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8');
       try {
-        // 包含 CONCURRENTLY 的文件需要逐条执行（不能在事务块中运行）
-        if (sql.includes('CONCURRENTLY')) {
+        // 包含 CONCURRENTLY 或 ALTER TYPE ADD VALUE 的文件需要逐条执行
+        if (sql.includes('CONCURRENTLY') || sql.includes('ADD VALUE')) {
           const stmts = sql.split(';').map(s => s.trim()).filter(Boolean);
           for (const stmt of stmts) {
             try {
