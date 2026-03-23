@@ -3,51 +3,60 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const pool = new Pool({
+const dbConfig = {
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432'),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-});
+};
 
 const MIGRATIONS_DIR = path.resolve(__dirname, '../../database/migrations');
 const INIT_SQL = path.resolve(__dirname, '../../database/scripts/init.sql');
 
-// 这些错误说明内容已存在，可以安全跳过
-function isAlreadyExistsError(msg) {
-  return msg.includes('already exists') ||
-         msg.includes('duplicate key') ||
-         msg.includes('already exists');
+// 用独立连接执行单条语句，避免事务污染
+async function execSingle(sql) {
+  const pool = new Pool(dbConfig);
+  try {
+    await pool.query(sql);
+  } finally {
+    await pool.end();
+  }
 }
 
 async function migrate() {
-  const client = await pool.connect();
-  try {
-    // 1. init.sql: 扩展和枚举类型
-    const initSql = fs.readFileSync(INIT_SQL, 'utf8')
-      .split('\n').filter(l => !l.trim().startsWith('\\')).join('\n');
-    for (const stmt of initSql.split(';').map(s => s.trim()).filter(Boolean)) {
-      try { await client.query(stmt); } catch(e) {
-        if (!isAlreadyExistsError(e.message)) throw e;
+  // 1. init.sql: 每条语句用独立连接，彻底隔离错误
+  const initSql = fs.readFileSync(INIT_SQL, 'utf8')
+    .split('\n').filter(l => !l.trim().startsWith('\\')).join('\n');
+
+  for (const stmt of initSql.split(';').map(s => s.trim()).filter(Boolean)) {
+    try {
+      await execSingle(stmt);
+    } catch(e) {
+      if (!e.message.includes('already exists')) {
+        console.error('[migrate] init error: ' + e.message);
+        throw e;
       }
     }
-    console.log('[migrate] init.sql done');
+  }
+  console.log('[migrate] init.sql done');
 
-    // 2. 确保 _migrations 表存在且结构正确
-    // 检查是否有旧版 id 列
+  // 2. 主连接处理迁移记录表和迁移文件
+  const pool = new Pool(dbConfig);
+  const client = await pool.connect();
+  try {
+    // 检查 _migrations 表结构
     const { rows: cols } = await client.query(`
       SELECT column_name FROM information_schema.columns
       WHERE table_name = '_migrations'
     `);
-    const hasIdCol = cols.some(r => r.column_name === 'id');
-    const hasFilenameCol = cols.some(r => r.column_name === 'filename');
+    const hasId = cols.some(r => r.column_name === 'id');
+    const hasFilename = cols.some(r => r.column_name === 'filename');
 
-    if (hasIdCol || !hasFilenameCol) {
-      // 旧结构，重建
+    if (hasId || !hasFilename) {
       await client.query('DROP TABLE IF EXISTS _migrations');
-      console.log('[migrate] Rebuilt _migrations table');
+      console.log('[migrate] dropped old _migrations table');
     }
 
     await client.query(`CREATE TABLE IF NOT EXISTS _migrations (
@@ -55,7 +64,7 @@ async function migrate() {
       applied_at TIMESTAMP DEFAULT NOW()
     )`);
 
-    // 3. 按顺序执行迁移
+    // 3. 按顺序执行迁移文件
     const files = fs.readdirSync(MIGRATIONS_DIR)
       .filter(f => f.endsWith('.sql'))
       .sort();
@@ -75,8 +84,9 @@ async function migrate() {
         await client.query('INSERT INTO _migrations(filename) VALUES($1)', [file]);
         console.log('[migrate] ok: ' + file);
       } catch(e) {
-        if (isAlreadyExistsError(e.message)) {
-          // 内容已存在，记录为已执行并继续
+        if (e.message.includes('already exists') || e.message.includes('duplicate')) {
+          // 回滚当前事务状态，记录为已完成
+          try { await client.query('ROLLBACK'); } catch(_) {}
           await client.query(
             'INSERT INTO _migrations(filename) VALUES($1) ON CONFLICT DO NOTHING', [file]
           );
