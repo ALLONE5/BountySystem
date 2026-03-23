@@ -116,6 +116,24 @@ async function migrate() {
       }
     }
     console.log('[migrate] All done');
+
+    // 4. 注入默认账号（如果不存在）
+    const bcrypt = require('bcrypt');
+    const passwordHash = await bcrypt.hash('Password123', 10);
+    const seedUsers = [
+      { username: 'admin',      email: 'admin@example.com',     role: 'super_admin' },
+      { username: 'developer',  email: 'developer@example.com', role: 'developer'   },
+      { username: 'nomaluser',  email: 'nomaluser@example.com', role: 'user'        },
+    ];
+    for (const u of seedUsers) {
+      await client.query(
+        `INSERT INTO users (username, email, password_hash, role)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (email) DO NOTHING`,
+        [u.username, u.email, passwordHash, u.role]
+      );
+    }
+    console.log('[migrate] default users seeded');
   } finally {
     client.release();
     await pool.end();
