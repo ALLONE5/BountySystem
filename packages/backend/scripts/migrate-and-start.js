@@ -134,6 +134,24 @@ async function migrate() {
       );
     }
     console.log('[migrate] default users seeded');
+
+    // 5. 注入默认赏金算法（如果不存在）
+    const { rows: adminRows } = await client.query(
+      `SELECT id FROM users WHERE username = 'admin' LIMIT 1`
+    );
+    if (adminRows.length > 0) {
+      await client.query(
+        `INSERT INTO bounty_algorithms
+           (version, base_amount, urgency_weight, importance_weight, duration_weight,
+            remaining_days_weight, formula, effective_from, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8)
+         ON CONFLICT (version) DO NOTHING`,
+        ['v1.0', 100, 50, 30, 10, 5,
+         'baseAmount + (urgency * urgencyWeight) + (importance * importanceWeight) + (duration * durationWeight)',
+         adminRows[0].id]
+      );
+      console.log('[migrate] default bounty algorithm seeded');
+    }
   } finally {
     client.release();
     await pool.end();
