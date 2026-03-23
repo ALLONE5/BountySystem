@@ -2,7 +2,7 @@
 -- Description: Adds critical indexes to improve query performance
 -- Date: 2026-03-06
 
-BEGIN;
+-- 注意: CONCURRENTLY 不能在事务块中运行，此文件不使用 BEGIN/COMMIT
 
 -- ============================================================================
 -- 任务相关性能索引
@@ -273,5 +273,3 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- 启用 btree_gin 扩展用于复合索引优化
 CREATE EXTENSION IF NOT EXISTS btree_gin;
-
-COMMIT;
