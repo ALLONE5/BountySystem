@@ -33,28 +33,15 @@ async function run() {
     }
     console.log('✓ init.sql');
 
-    // 2. 创建迁移记录表（兼容旧版：如果列结构不对则重建）
+    // 2. 强制重建迁移记录表（确保结构正确）
+    await client.query('DROP TABLE IF EXISTS _migrations');
     await client.query(`
-      CREATE TABLE IF NOT EXISTS _migrations (
+      CREATE TABLE _migrations (
         filename VARCHAR(255) PRIMARY KEY,
         applied_at TIMESTAMP DEFAULT NOW()
       )
     `);
-    // 检查是否是旧版结构（有 id 列），如果是则重建
-    const { rows: cols } = await client.query(`
-      SELECT column_name FROM information_schema.columns
-      WHERE table_name = '_migrations' AND column_name = 'id'
-    `);
-    if (cols.length > 0) {
-      console.log('Rebuilding _migrations table (old schema detected)...');
-      await client.query('DROP TABLE _migrations');
-      await client.query(`
-        CREATE TABLE _migrations (
-          filename VARCHAR(255) PRIMARY KEY,
-          applied_at TIMESTAMP DEFAULT NOW()
-        )
-      `);
-    }
+    console.log('✓ _migrations table ready');
 
     // 3. 按顺序执行迁移文件（跳过 init.sql）
     const files = fs.readdirSync(MIGRATIONS_DIR)
